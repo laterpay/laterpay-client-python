@@ -13,7 +13,7 @@ setup(
     description="LaterPay API client",
     long_description=open("README.rst").read(),
     author="LaterPay GmbH",
-    author_email="TODO",
+    author_email="support@laterpay.net",
     url="https://github.com/laterpay/laterpay-client-python",
     license='MIT',
     keywords="LaterPay API client",
