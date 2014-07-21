@@ -2,8 +2,9 @@
 from distutils.core import setup
 from setuptools import find_packages
 
-import time
-_version = "2.9.dev%s" % int(time.time())
+#import time
+#_version = "3.0.dev%s" % int(time.time())
+_version = "3.0.0"
 _packages = find_packages('.', exclude=["*.tests", "*.tests.*", "tests.*", "tests"])
 
 setup(
