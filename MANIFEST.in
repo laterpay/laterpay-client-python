@@ -1,1 +1,1 @@
-recursive-include src/py/laterpay/django/templates *
+recursive-include laterpay/django/templates *
