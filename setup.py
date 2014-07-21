@@ -2,6 +2,8 @@
 from distutils.core import setup
 from setuptools import find_packages
 
+import codecs
+
 #import time
 #_version = "3.0.dev%s" % int(time.time())
 _version = "3.0.0"
@@ -12,7 +14,7 @@ setup(
     version=_version,
 
     description="LaterPay API client",
-    long_description=open("README.rst").read(),
+    long_description=codecs.open("README.rst", encoding='utf-8').read(),
     author="LaterPay GmbH",
     author_email="support@laterpay.net",
     url="https://github.com/laterpay/laterpay-client-python",
