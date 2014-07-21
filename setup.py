@@ -21,7 +21,7 @@ setup(
     license='MIT',
     keywords="LaterPay API client",
 
-    test_suite="test_client",
+    test_suite="tests",
 
     packages=_packages,
     package_data={'laterpay.django': ['templates/laterpay/inclusion/*']},
