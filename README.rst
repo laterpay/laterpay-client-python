@@ -19,3 +19,5 @@ Development
 -----------
 
 See https://github.com/laterpay/laterpay-client-python
+
+`Tested by Travis <https://travis-ci.org/laterpay/laterpay-client-python>`__
