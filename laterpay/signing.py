@@ -103,12 +103,12 @@ def create_base_message(params, url, method='POST'):
         values_str = []
 
         # If any non basestring objects, ``str()`` them.
-        for v in values:
-            if not isinstance(v, basestring):
-                v = str(v)
-            values_str.append(v)
+        for value in values:
+            if not isinstance(value, basestring):
+                value = str(value)
+            values_str.append(value)
 
-        data[key] = [urllib.quote(_encode_if_unicode(v), safe='') for v in values_str]
+        data[key] = [urllib.quote(_encode_if_unicode(vs), safe='') for vs in values_str]
 
     sorted_params = sort_params(data)
 
