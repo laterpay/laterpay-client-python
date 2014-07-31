@@ -55,7 +55,7 @@ class ItemDefinition(object):
 
             try:
                 float(v[2:])
-            except:
+            except ValueError:
                 raise InvalidItemDefinition('Invalid number part for vat: %s' % vat)
 
         if purchasedatetime is not None and not isinstance(purchasedatetime, int):
