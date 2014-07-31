@@ -18,10 +18,10 @@ def time_independent_HMAC_compare(a, b):
 
 
 def create_HMAC(HMAC_secret, *parts):
-    hash = hmac.new(HMAC_secret, digestmod=hashlib.sha224)
+    authcode = hmac.new(HMAC_secret, digestmod=hashlib.sha224)
     for part in parts:
-        hash.update(part)
-    return hash.hexdigest()
+        authcode.update(part)
+    return authcode.hexdigest()
 
 
 def sort_params(param_dict):
