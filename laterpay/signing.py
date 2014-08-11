@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import, print_function
+
+import functools
 import hashlib
 import hmac
 import time
-import urllib
-import urlparse
+
+from . import compat
+
 
 ALLOWED_METHODS = ('GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD')
 
@@ -18,32 +22,34 @@ def time_independent_HMAC_compare(a, b):
 
 
 def create_HMAC(HMAC_secret, *parts):
-    hash = hmac.new(HMAC_secret, digestmod=hashlib.sha224)
+    hash = hmac.new(compat.b(HMAC_secret), digestmod=hashlib.sha224)
     for part in parts:
-        hash.update(part)
+        hash.update(compat.b(part))
     return hash.hexdigest()
 
 
 def sort_params(param_dict):
 
     def cmp_params(param1, param2):
-        result = cmp(param1[0], param2[0])
+        result = compat.cmp(param1[0], param2[0])
         if result == 0:
-            result = cmp(param1[1], param2[1])
+            result = compat.cmp(param1[1], param2[1])
         return result
 
     param_list = []
-    for name, value_list in param_dict.iteritems():
+    for name, value_list in param_dict.items():
         if isinstance(value_list, (list, tuple)):
             for value in value_list:
-                if not isinstance(value, basestring):
+                if not isinstance(value, compat.string_types):
                     value = str(value)
                 param_list.append((name, value))
         else:
-            if not isinstance(value_list, basestring):
+            if not isinstance(value_list, compat.string_types):
                 value_list = str(value_list)
             param_list.append((name, value_list))
 
+    if compat.py3k:
+        return sorted(param_list, key=functools.cmp_to_key(cmp_params))
     return sorted(param_list, cmp_params)
 
 
@@ -71,7 +77,7 @@ def normalise_param_structure(params):
         return out
 
     # otherwise this is a dictionary, so either it is { a => b } or { a => (b,c) }
-    for key, value in params.iteritems():
+    for key, value in params.items():
         if not isinstance(value, (list, tuple)):
             out[key] = [value]
         else:
@@ -87,7 +93,7 @@ def create_base_message(params, url, method='POST'):
 
     data = {}
 
-    url = urllib.quote(_encode_if_unicode(url), safe='')
+    url = compat.quote(_encode_if_unicode(url), safe='')
 
     if method not in ALLOWED_METHODS:
         raise ValueError('method should be one of: {}'.format(ALLOWED_METHODS))
@@ -95,25 +101,25 @@ def create_base_message(params, url, method='POST'):
     params = normalise_param_structure(params)
 
     for key, values in params.items():
-        key = urllib.quote(_encode_if_unicode(key), safe='')
+        key = compat.quote(_encode_if_unicode(key), safe='')
 
         if not isinstance(values, (list, tuple)):
             values = [values]
 
         values_str = []
 
-        # If any non basestring objects, ``str()`` them.
+        # If any non compat.string_types objects, ``str()`` them.
         for v in values:
-            if not isinstance(v, basestring):
+            if not isinstance(v, compat.string_types):
                 v = str(v)
             values_str.append(v)
 
-        data[key] = [urllib.quote(_encode_if_unicode(v), safe='') for v in values_str]
+        data[key] = [compat.quote(_encode_if_unicode(v), safe='') for v in values_str]
 
     sorted_params = sort_params(data)
 
     param_str = '&'.join('{}={}'.format(k, v) for k, v in sorted_params)
-    param_str = urllib.quote(param_str, safe='')
+    param_str = compat.quote(param_str, safe='')
 
     return msg.format(method=method, url=url, params=param_str)
 
@@ -123,7 +129,7 @@ def sign(secret, params, url, method='POST'):
     Create signature for given `params`, `url` and HTTP method.
 
     How params are canonicalized:
-    - `urllib.quote` every key and value that will be signed
+    - `compat.quote` every key and value that will be signed
     - sort the param list
     - `'&'join` the params
 
@@ -189,7 +195,7 @@ def sign_and_encode(secret, params, url, method="GET"):
         value = _encode_if_unicode(v)
         sorted_data.append((k, value))
 
-    encoded = urllib.urlencode(sorted_data)
+    encoded = compat.urlencode(sorted_data)
     hmac = sign(secret, params, url=url, method=method)
 
     return "%s&hmac=%s" % (encoded, hmac)
@@ -216,12 +222,12 @@ def sign_get_url(secret, url, signature_paramname="hmac"):
     :type signature_paramname: str
     :returns: ``str`` -- the URL, including the signature as an URL parameter
     """
-    parsed = urlparse.urlparse(url)
+    parsed = compat.urlparse(url)
 
     if parsed.query != "":
-        # use urlparse.parse_qsl, because .parse_qs seems to create problems
-        # with urllib.urlencode()
-        qs = urlparse.parse_qsl(parsed.query, keep_blank_values=True)
+        # use compat.parse_qsl, because .parse_qs seems to create problems
+        # with compat.urlencode()
+        qs = compat.parse_qsl(parsed.query, keep_blank_values=True)
 
         ### create string to sign
         # .sort() will sort in alphabetical order
@@ -232,7 +238,7 @@ def sign_get_url(secret, url, signature_paramname="hmac"):
 
         qs.append((signature_paramname, hmac))
         return parsed.scheme + "://" + parsed.netloc + parsed.path + \
-               parsed.params + "?" + urllib.urlencode(qs) + parsed.fragment
+               parsed.params + "?" + compat.urlencode(qs) + parsed.fragment
 
     return None
 
@@ -246,6 +252,7 @@ def _encode_if_unicode(value, encoding='utf-8'):
     This utility is needed because some web frameworks can provide
     request arguments as ``str`` instances.
     """
-    if isinstance(value, unicode):
+
+    if not compat.py3k and isinstance(value, unicode):
         value = value.encode(encoding)
     return value
