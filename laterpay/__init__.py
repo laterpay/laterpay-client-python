@@ -9,10 +9,10 @@ import random
 import re
 import string
 import time
-import urllib
-import urllib2
 
 from . import signing
+from . import compat
+
 import warnings
 
 
@@ -184,22 +184,22 @@ class LaterPayClient(object):
         return url
 
     def _get_dialog_api_url(self, url):
-        return '%s/dialog-api?url=%s' % (self.web_root, urllib.quote_plus(url))
+        return '%s/dialog-api?url=%s' % (self.web_root, compat.quote_plus(url))
 
     def get_login_dialog_url(self, next_url, use_jsevents=False):
-        url = '%s/account/dialog/login?next=%s%s%s' % (self.web_root, urllib.quote_plus(next_url),
+        url = '%s/account/dialog/login?next=%s%s%s' % (self.web_root, compat.quote_plus(next_url),
                                                        "&jsevents=1" if use_jsevents else "",
                                                        "&cp=%s" % self.cp_key)
         return self._get_dialog_api_url(url)
 
     def get_signup_dialog_url(self, next_url, use_jsevents=False):
-        url = '%s/account/dialog/signup?next=%s%s%s' % (self.web_root, urllib.quote_plus(next_url),
+        url = '%s/account/dialog/signup?next=%s%s%s' % (self.web_root, compat.quote_plus(next_url),
                                                         "&jsevents=1" if use_jsevents else "",
                                                         "&cp=%s" % self.cp_key)
         return self._get_dialog_api_url(url)
 
     def get_logout_dialog_url(self, next_url, use_jsevents=False):
-        url = '%s/account/dialog/logout?next=%s%s%s' % (self.web_root, urllib.quote_plus(next_url),
+        url = '%s/account/dialog/logout?next=%s%s%s' % (self.web_root, compat.quote_plus(next_url),
                                                         "&jsevents=1" if use_jsevents else "",
                                                         "&cp=%s" % self.cp_key)
         return self._get_dialog_api_url(url)
@@ -314,16 +314,16 @@ class LaterPayClient(object):
         }
 
         if method == 'POST':
-            req = urllib2.Request(url, data=params, headers=headers)
+            req = compat.Request(url, data=params, headers=headers)
         else:
             url = "%s?%s" % (url, params)
-            req = urllib2.Request(url, headers=headers)
+            req = compat.Request(url, headers=headers)
 
         _log.debug("Making request to %s", url)
 
         try:
-            response = urllib2.urlopen(req).read()
-        except urllib2.URLError, e:
+            response = compat.urlopen(req).read()
+        except compat.URLError as e:
             _log.debug("Request failed with reason: %s", e.reason)
             resp = {'status': 'connection_error'}
         except:
