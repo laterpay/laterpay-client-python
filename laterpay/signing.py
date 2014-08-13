@@ -153,9 +153,10 @@ def sign(secret, params, url, method='POST'):
 
     secret = _encode_if_unicode(secret)
 
-    url = url.split('?')[0]
+    url_parsed = urlparse.urlparse(url)
+    base_url = url_parsed.scheme + "://" + url_parsed.netloc + url_parsed.path
 
-    msg = create_base_message(params, url, method=method)
+    msg = create_base_message(params, base_url, method=method)
 
     mac = create_HMAC(secret, msg)
 
