@@ -153,7 +153,7 @@ def sign(secret, params, url, method='POST'):
 
     secret = _encode_if_unicode(secret)
 
-    url_parsed = urlparse.urlparse(url)
+    url_parsed = compat.urlparse(url)
     base_url = url_parsed.scheme + "://" + url_parsed.netloc + url_parsed.path
 
     msg = create_base_message(params, base_url, method=method)
