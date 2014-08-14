@@ -17,7 +17,7 @@ if py3k:
         return s.encode("latin-1")
 
     from urllib.parse import quote, quote_plus, urlencode
-    from urllib.parse import urlparse, parse_qs
+    from urllib.parse import urlparse, parse_qs, parse_qsl
 
     from urllib.request import Request, urlopen
     from urllib.error import URLError
@@ -32,7 +32,7 @@ else:
 
     from urllib import quote, quote_plus, urlencode
 
-    from urlparse import urlparse, parse_qs
+    from urlparse import urlparse, parse_qs, parse_qsl
 
     from urllib2 import Request, urlopen, URLError
 
