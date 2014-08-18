@@ -3,5 +3,9 @@ python:
   - 2.7
   - 3.3
   - 3.4
+install:
+  - pip install coverage coveralls
 script:
-  - python setup.py test
+  - coverage run --source=laterpay setup.py test
+after_success:
+  coveralls
