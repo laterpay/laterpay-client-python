@@ -3,7 +3,6 @@
 from __future__ import absolute_import, print_function
 
 import sys
-import urlparse
 import uuid
 
 if sys.version_info[:2] < (2, 7):
@@ -11,6 +10,7 @@ if sys.version_info[:2] < (2, 7):
 else:
     import unittest
 
+from laterpay.compat import urlparse, parse_qs
 from laterpay import (
     APIException,
     InvalidItemDefinition,
@@ -38,10 +38,10 @@ class TestLaterPayClient(unittest.TestCase):
             'some-secret')
 
     def get_qs_dict(self, url):
-        o = urlparse.urlparse(url)
-        d = urlparse.parse_qs(o.query)
-        o = urlparse.urlparse(d['url'][0])
-        d = urlparse.parse_qs(o.query)
+        o = urlparse(url)
+        d = parse_qs(o.query)
+        o = urlparse(d['url'][0])
+        d = parse_qs(o.query)
         return d
 
     def assertQueryString(self, url, key, value=None):

@@ -1,6 +1,5 @@
 # -*- coding: UTF-8 -*-
-from distutils.core import setup
-from setuptools import find_packages
+from setuptools import find_packages, setup
 
 import codecs
 import os
@@ -39,6 +38,8 @@ setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3.3",
+        "Programming Language :: Python :: 3.4",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ),
 )
