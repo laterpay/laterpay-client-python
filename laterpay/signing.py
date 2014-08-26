@@ -114,7 +114,7 @@ def create_base_message(params, url, method='POST'):
                 value = str(value)
             values_str.append(value)
 
-        data[key] = [compat.quote(_encode_if_unicode(value), safe='') for value in values_str]
+        data[key] = [compat.quote(_encode_if_unicode(value_str), safe='') for value_str in values_str]
 
     sorted_params = sort_params(data)
 
