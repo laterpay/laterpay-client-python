@@ -39,7 +39,7 @@ class APIException(Exception):
 
 class ItemDefinition(object):
 
-    def __init__(self, item_id, pricing, vat, url, title, purchasedatetime=None, cp=None):
+    def __init__(self, item_id, pricing, vat, url, title, purchasedatetime=None, cp=None, expires=None):
 
         for price in pricing.split(','):
             if not re.match('[A-Z]{3}\d+', price):
@@ -70,6 +70,7 @@ class ItemDefinition(object):
             'url': url,
             'title': title,
             'cp': cp,
+            'expires': expires,
         }
 
 
@@ -345,7 +346,7 @@ class LaterPayClient(object):
 
         return self.lptoken is not None
 
-    def add_metered_access(self, article_id, threshold=5, product_key=None ):
+    def add_metered_access(self, article_id, threshold=5, product_key=None):
 
         params = {
             'lptoken': self.lptoken,
