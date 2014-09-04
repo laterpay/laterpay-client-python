@@ -70,7 +70,7 @@ class ItemDefinition(object):
             'url': url,
             'title': title,
             'cp': cp,
-            'expires': expires_at,
+            'expires_at': expires_at,
         }
 
 
