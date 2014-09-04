@@ -39,7 +39,7 @@ class APIException(Exception):
 
 class ItemDefinition(object):
 
-    def __init__(self, item_id, pricing, vat, url, title, purchasedatetime=None, cp=None, expires=None):
+    def __init__(self, item_id, pricing, vat, url, title, purchasedatetime=None, cp=None, expires_at=None):
 
         for price in pricing.split(','):
             if not re.match('[A-Z]{3}\d+', price):
@@ -70,7 +70,7 @@ class ItemDefinition(object):
             'url': url,
             'title': title,
             'cp': cp,
-            'expires': expires,
+            'expires': expires_at,
         }
 
 
