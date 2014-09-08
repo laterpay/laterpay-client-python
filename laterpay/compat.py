@@ -14,7 +14,7 @@ if py3k:
         return (a > b) - (a < b)
 
     def b(s):
-        return s.encode("latin-1")
+        return s.encode("utf-8")
 
     from urllib.parse import quote, quote_plus, urlencode
     from urllib.parse import urlparse, parse_qs, parse_qsl
