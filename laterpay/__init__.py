@@ -60,7 +60,7 @@ class ItemDefinition(object):
 
         if purchasedatetime is not None and not isinstance(purchasedatetime, int):
             raise InvalidItemDefinition("Invalid purchasedatetime %s. This should be a UTC-based epoch timestamp "
-                                        "in seconds of type int")
+                                        "in seconds of type int" % purchasedatetime)
 
         self.data = {
             'article_id': item_id,
