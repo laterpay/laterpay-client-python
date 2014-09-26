@@ -60,7 +60,11 @@ class ItemDefinition(object):
 
         if purchasedatetime is not None and not isinstance(purchasedatetime, int):
             raise InvalidItemDefinition("Invalid purchasedatetime %s. This should be a UTC-based epoch timestamp "
-                                        "in seconds of type int")
+                                        "in seconds of type int" % purchasedatetime)
+
+        if expiry is not None and not re.match('^(\+?\d+)$', expiry):
+            raise InvalidItemDefinition("Invalid expiry value %s, it should be '+3600' or UTC-based "
+                                        "epoch timestamp in seconds of type int" % expiry)
 
         self.data = {
             'article_id': item_id,

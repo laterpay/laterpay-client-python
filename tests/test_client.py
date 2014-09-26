@@ -28,6 +28,8 @@ class TestItemDefinition(unittest.TestCase):
             ItemDefinition(1, 'EUR20', '', '', 'title')
         with self.assertRaises(InvalidItemDefinition):
             ItemDefinition(1, 'EUR20', 'DE19.0.123.44', '', 'title')
+        with self.assertRaises(InvalidItemDefinition):
+            ItemDefinition(1, 'EUR20', 'DE19.0', 'http://foo.bar.com', 'title', expiry="illegal123")
 
 
 class TestLaterPayClient(unittest.TestCase):
@@ -57,11 +59,11 @@ class TestLaterPayClient(unittest.TestCase):
         _u = str(uuid.uuid4())
 
         url = self.lp.get_add_url(
-                item,
-                product_key=123,
-                dialog=True,
-                use_jsevents=True,
-                transaction_reference=_u)
+            item,
+            product_key=123,
+            dialog=True,
+            use_jsevents=True,
+            transaction_reference=_u)
 
         self.assertQueryString(url, 'tref', value=_u)
 
