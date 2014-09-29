@@ -16,7 +16,7 @@ from . import compat
 import warnings
 
 
-_log = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 
 class InvalidTokenException(Exception):
@@ -324,18 +324,18 @@ class LaterPayClient(object):
             url = "%s?%s" % (url, params)
             req = compat.Request(url, headers=headers)
 
-        _log.debug("Making request to %s", url)
+        _logger.debug("Making request to %s", url)
 
         try:
             response = compat.urlopen(req).read()
         except compat.URLError as e:
-            _log.debug("Request failed with reason: %s", e.reason)
+            _logger.debug("Request failed with reason: %s", e.reason)
             resp = {'status': 'connection_error'}
         except:
-            _log.debug("Unexpected error with request")
+            _logger.debug("Unexpected error with request")
             resp = {'status': 'unexpected error'}
         else:
-            _log.debug("Received response %s", response)
+            _logger.debug("Received response %s", response)
             resp = json.loads(response)
 
         if 'new_token' in resp:
