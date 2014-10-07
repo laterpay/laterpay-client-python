@@ -1,4 +1,6 @@
 language: python
+install:
+  - pip install tox
 env:
   - TOX_ENV=py27
   - TOX_ENV=py33
