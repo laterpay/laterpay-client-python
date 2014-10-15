@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.shortcuts import redirect
+from django.http import HttpResponseRedirect
 from laterpay.django import get_laterpay_client
 
 
@@ -25,7 +25,9 @@ class LPTokenMiddleware(object):
                 # first figure out where we are, so we can get back
                 if request.method == 'GET':
                     here = request.build_absolute_uri()
-                    return redirect(get_laterpay_client(None).get_gettoken_redirect(return_to=here))
+                    return HttpResponseRedirect(
+                        get_laterpay_client(None).get_gettoken_redirect(return_to=here)
+                    )
                 else:
                     # for now, just carry on without a token
                     pass
@@ -49,5 +51,7 @@ class LPTokenMiddleware(object):
         else:
             response.delete_cookie(LPTOKEN_COOKIENAME)
             here = request.build_absolute_uri()
-            return redirect(request.laterpay.get_gettoken_redirect(return_to=here))
+            return HttpResponseRedirect(
+                request.laterpay.get_gettoken_redirect(return_to=here)
+            )
         return response
