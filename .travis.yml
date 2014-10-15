@@ -5,6 +5,7 @@ python:
   - 3.4
 install:
   - pip install coverage coveralls
+  - pip install -r requirements-test.txt
 script:
   - coverage run --source=laterpay setup.py test
 after_success:

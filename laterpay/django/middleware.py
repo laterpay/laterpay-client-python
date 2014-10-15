@@ -8,12 +8,24 @@ LPTOKEN_COOKIENAME = getattr(settings, 'LPTOKEN_COOKIENAME', '__lptoken')
 
 class LPTokenMiddleware(object):
 
+    exempt_paths = []
+
+    @classmethod
+    def add_exempt_paths(cls, *paths):
+        """
+        Exempts given ``paths`` from processing by ``LPTokenMiddleware``.
+        """
+        cls.exempt_paths.extend(paths)
+
     def process_request(self, request):
         """
         Pulls the LPToken out of our cookie if we have set
         it, and adds it to the request object for easy access
         during views.
         """
+        if request.path in self.exempt_paths:
+            return
+
         lptoken = request.GET.get('lptoken', None)
 
         if lptoken is None:
