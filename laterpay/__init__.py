@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function
 
-import copy
 import json
 import logging
 import random
@@ -231,7 +230,8 @@ class LaterPayClient(object):
                      transaction_reference=None,
                      consumable=False):
 
-        data = copy.copy(item_definition.data)
+        # filter out params with None value.
+        data = {k: v for k, v in item_definition.data.items() if v is not None}
 
         if use_jsevents:
             data['jsevents'] = 1

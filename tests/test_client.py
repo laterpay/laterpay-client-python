@@ -85,6 +85,15 @@ class TestLaterPayClient(unittest.TestCase):
                 use_jsevents=True,
                 transaction_reference='123')
 
+    def test_get_web_url_has_no_none_params(self):
+        # item with expiry not set.
+        item = ItemDefinition(1, 'EUR20', 'DE19.0', 'http://help.me/', 'title')
+        url = self.lp.get_add_url(item)
+        self.assertFalse(
+            'expiry%3DNone' in url,
+            'expiry url param is "None". Should be omitted.',
+        )
+
 
 if __name__ == '__main__':
     unittest.main()
