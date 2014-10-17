@@ -196,10 +196,21 @@ def sign_and_encode(secret, params, url, method="GET"):
         value = _encode_if_unicode(v)
         sorted_data.append((k, value))
 
-    encoded = compat.urlencode(sorted_data)
+    #encoded = compat.urlencode(sorted_data)
+    encoded = []
+    for k, v in sorted_data:
+        if isinstance(v, list):
+            encv = []
+            for i in v:
+                encv.append(compat.quote(i, safe=""))
+        else:
+            encv = compat.quote(v, safe="")
+        encoded.append((compat.quote(k, safe=""),  encv))
+    encstr = "&".join(["%s=%s" % (k, v) for k, v in encoded])
+
     hmac = sign(secret, params, url=url, method=method)
 
-    return "%s&hmac=%s" % (encoded, hmac)
+    return "%s&hmac=%s" % (encstr, hmac)
 
 
 def sign_get_url(secret, url, signature_paramname="hmac"):
