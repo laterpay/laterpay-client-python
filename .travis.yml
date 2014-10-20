@@ -9,3 +9,5 @@ env:
   #- TOX_ENV=flake8
 script:
   - tox -e $TOX_ENV
+matrix:
+  fast_finish: true
