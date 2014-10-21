@@ -1,6 +1,10 @@
 from django.conf import settings
 from laterpay import LaterPayClient
 
+import warnings
+
+warnings.warn("laterpay.django deprecated in favour of the distinct `django-laterpay` library (`djlaterpay`) and will be removed in version 4 - please see https://github.com/laterpay/django-laterpay", DeprecationWarning)
+
 
 def get_laterpay_client(lptoken):
     api_root = getattr(settings, 'LP_API_ROOT', None)
