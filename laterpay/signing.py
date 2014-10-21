@@ -230,7 +230,8 @@ def sign_get_url(secret, url, signature_paramname="hmac"):
         # with compat.urlencode()
         qs = compat.parse_qsl(parsed.query, keep_blank_values=True)
 
-        ### create string to sign
+        # create string to sign
+
         # .sort() will sort in alphabetical order
         qs.append(("ts", str(int(time.time()))))
         qs.sort()
@@ -239,7 +240,7 @@ def sign_get_url(secret, url, signature_paramname="hmac"):
 
         qs.append((signature_paramname, hmac))
         return parsed.scheme + "://" + parsed.netloc + parsed.path + \
-               parsed.params + "?" + compat.urlencode(qs) + parsed.fragment
+            parsed.params + "?" + compat.urlencode(qs) + parsed.fragment
 
     return None
 

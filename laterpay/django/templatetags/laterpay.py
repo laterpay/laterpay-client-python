@@ -19,7 +19,7 @@ def render_laterpay_footer(context, identify_callback=None):
     if identify_callback == '':
         identify_callback = None
     laterpay = context['request'].laterpay
-    return { 'identify_url': laterpay.get_identify_url(identify_callback) }
+    return {'identify_url': laterpay.get_identify_url(identify_callback)}
 
 register.inclusion_tag('laterpay/inclusion/render_footer.html', takes_context=True)(render_laterpay_footer)
 
