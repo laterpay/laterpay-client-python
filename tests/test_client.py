@@ -29,7 +29,7 @@ class TestItemDefinition(unittest.TestCase):
         with self.assertRaises(InvalidItemDefinition):
             ItemDefinition(1, 'EUR20', 'DE19.0.123.44', '', 'title')
         with self.assertRaises(InvalidItemDefinition):
-            ItemDefinition(1, 'EUR20', 'DE19.0', 'http://foo.bar.com', 'title', expiry="illegal123")
+            ItemDefinition(1, 'EUR20', 'DE19.0', 'http://foo.invalid', 'title', expiry="illegal123")
 
 
 class TestLaterPayClient(unittest.TestCase):
@@ -54,7 +54,7 @@ class TestLaterPayClient(unittest.TestCase):
 
     def test_transaction_reference(self):
 
-        item = ItemDefinition(1, 'EUR20', 'DE19.0', 'http://foo.bar.com', 'title')
+        item = ItemDefinition(1, 'EUR20', 'DE19.0', 'http://foo.invalid', 'title')
 
         _u = str(uuid.uuid4())
 
@@ -84,6 +84,15 @@ class TestLaterPayClient(unittest.TestCase):
                 dialog=True,
                 use_jsevents=True,
                 transaction_reference='123')
+
+    def test_get_web_url_has_no_none_params(self):
+        # item with expiry not set.
+        item = ItemDefinition(1, 'EUR20', 'DE19.0', 'http://help.me/', 'title')
+        url = self.lp.get_add_url(item)
+        self.assertFalse(
+            'expiry%3DNone' in url,
+            'expiry url param is "None". Should be omitted.',
+        )
 
 
 if __name__ == '__main__':

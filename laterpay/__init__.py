@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function
 
-import copy
 import json
 import logging
 import random
@@ -16,7 +15,7 @@ from . import compat
 import warnings
 
 
-_log = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 
 class InvalidTokenException(Exception):
@@ -24,11 +23,7 @@ class InvalidTokenException(Exception):
 
 
 class InvalidItemDefinition(Exception):
-    def __init__(self, message):
-        self.message = message
-
-    def __repr__(self):
-        return self.message
+    pass
 
 
 class APIException(Exception):
@@ -235,7 +230,8 @@ class LaterPayClient(object):
                      transaction_reference=None,
                      consumable=False):
 
-        data = copy.copy(item_definition.data)
+        # filter out params with None value.
+        data = {k: v for k, v in item_definition.data.items() if v is not None}
 
         if use_jsevents:
             data['jsevents'] = 1
@@ -324,18 +320,18 @@ class LaterPayClient(object):
             url = "%s?%s" % (url, params)
             req = compat.Request(url, headers=headers)
 
-        _log.debug("Making request to %s", url)
+        _logger.debug("Making request to %s", url)
 
         try:
             response = compat.urlopen(req).read()
         except compat.URLError as e:
-            _log.debug("Request failed with reason: %s", e.reason)
+            _logger.debug("Request failed with reason: %s", e.reason)
             resp = {'status': 'connection_error'}
         except:
-            _log.debug("Unexpected error with request")
+            _logger.debug("Unexpected error with request")
             resp = {'status': 'unexpected error'}
         else:
-            _log.debug("Received response %s", response)
+            _logger.debug("Received response %s", response)
             resp = json.loads(response)
 
         if 'new_token' in resp:
