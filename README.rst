@@ -14,7 +14,9 @@ laterpay-client-python
     :target: https://crate.io/packages/laterpay-client?version=latest
 
 
-`LaterPay <http://www.laterpay.net/>`__ Python client
+`LaterPay <http://www.laterpay.net/>`__ Python client.
+
+If you're using `Django <https://www.djangoproject.com/>`__ then you probably want to look at `django-laterpay <https://github.com/laterpay/django-laterpay>`__
 
 Installation
 ------------
