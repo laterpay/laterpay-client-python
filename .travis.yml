@@ -1,12 +1,15 @@
 language: python
-python:
-  - 2.7
-  - 3.3
-  - 3.4
 install:
-  - pip install coverage coveralls
-  - pip install -r requirements-test.txt
+  - pip install tox
+env:
+  - TOX_ENV=py27
+  - TOX_ENV=py33
+  - TOX_ENV=py34
+  - TOX_ENV=cov
+  - TOX_ENV=flake8
 script:
-  - coverage run --source=laterpay setup.py test
-after_success:
-  coveralls
+  - tox -e $TOX_ENV
+matrix:
+  fast_finish: true
+  allow_failures:
+    - env: TOX_ENV=flake8
