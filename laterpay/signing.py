@@ -22,10 +22,10 @@ def time_independent_HMAC_compare(a, b):
 
 
 def create_HMAC(HMAC_secret, *parts):
-    hash = hmac.new(compat.b(HMAC_secret), digestmod=hashlib.sha224)
+    authcode = hmac.new(compat.b(HMAC_secret), digestmod=hashlib.sha224)
     for part in parts:
-        hash.update(compat.b(part))
-    return hash.hexdigest()
+        authcode.update(compat.b(part))
+    return authcode.hexdigest()
 
 
 def sort_params(param_dict):
@@ -109,12 +109,12 @@ def create_base_message(params, url, method='POST'):
         values_str = []
 
         # If any non compat.string_types objects, ``str()`` them.
-        for v in values:
-            if not isinstance(v, compat.string_types):
-                v = str(v)
-            values_str.append(v)
+        for value in values:
+            if not isinstance(value, compat.string_types):
+                value = str(value)
+            values_str.append(value)
 
-        data[key] = [compat.quote(_encode_if_unicode(v), safe='') for v in values_str]
+        data[key] = [compat.quote(_encode_if_unicode(value_str), safe='') for value_str in values_str]
 
     sorted_params = sort_params(data)
 
