@@ -1,4 +1,4 @@
 django
 flake8==2.2.3
-coverage
+coverage==3.7.1
 coveralls
