@@ -1,0 +1,7 @@
+[run]
+source = laterpay
+omit =
+	laterpay/django/*
+	laterpay/compat.py
+
+
