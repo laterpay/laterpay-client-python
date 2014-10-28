@@ -17,7 +17,7 @@ def time_independent_HMAC_compare(a, b):
     No-one likes timing attacks.
 
     This function should probably not be part of the public API, and thus will
-    be deprecated in a future release to be replaced with a private function.
+    be deprecated in a future release to be replaced with a internal function.
     """
     if len(a) != len(b):
         return False
@@ -32,7 +32,7 @@ def create_HMAC(HMAC_secret, *parts):
     Return the standard LaterPay HMAC of `*parts`.
 
     This function should probably not be part of the public API, and thus will
-    be deprecated in a future release to be replaced with a private function.
+    be deprecated in a future release to be replaced with a internal function.
     """
     authcode = hmac.new(compat.b(HMAC_secret), digestmod=hashlib.sha224)
     for part in parts:
@@ -45,7 +45,7 @@ def sort_params(param_dict):
     Sort a key-value mapping with non-unique keys.
 
     This function should probably not be part of the public API, and thus will
-    be deprecated in a future release to be replaced with a private function.
+    be deprecated in a future release to be replaced with a internal function.
     """
     def cmp_params(param1, param2):
         result = compat.cmp(param1[0], param2[0])
@@ -110,7 +110,7 @@ def create_base_message(params, url, method='POST'):
     Construct a message to be signed.
 
     You are unlikely to need to call this directly and should not consider it a
-    stable part of the API. This will be deprecated and replaced with a private
+    stable part of the API. This will be deprecated and replaced with a internal
     method accordingly, in a future release.
 
     See https://www.laterpay.net/developers/docs/start#SigningURLs for details
