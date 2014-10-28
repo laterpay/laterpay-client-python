@@ -42,6 +42,10 @@ class InvalidItemDefinition(Exception):
 class APIException(Exception):
     """
     This will be deprecated in a future release.
+
+    It is currently only raised when attempting to get a web URL with an
+    insufficiently unique transaction reference. Expect this to be replaced with a
+    more specific and helpfully named Exception.
     """
 
 
