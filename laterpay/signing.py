@@ -13,6 +13,12 @@ ALLOWED_METHODS = ('GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD')
 
 
 def time_independent_HMAC_compare(a, b):
+    """
+    No-one likes timing attacks.
+
+    This function should probably not be part of the public API, and thus will
+    be deprecated in a future release to be replaced with a internal function.
+    """
     if len(a) != len(b):
         return False
     result = 0
@@ -22,6 +28,12 @@ def time_independent_HMAC_compare(a, b):
 
 
 def create_HMAC(HMAC_secret, *parts):
+    """
+    Return the standard LaterPay HMAC of `*parts`.
+
+    This function should probably not be part of the public API, and thus will
+    be deprecated in a future release to be replaced with a internal function.
+    """
     authcode = hmac.new(compat.b(HMAC_secret), digestmod=hashlib.sha224)
     for part in parts:
         authcode.update(compat.b(part))
@@ -29,7 +41,12 @@ def create_HMAC(HMAC_secret, *parts):
 
 
 def sort_params(param_dict):
+    """
+    Sort a key-value mapping with non-unique keys.
 
+    This function should probably not be part of the public API, and thus will
+    be deprecated in a future release to be replaced with a internal function.
+    """
     def cmp_params(param1, param2):
         result = compat.cmp(param1[0], param2[0])
         if result == 0:
@@ -55,6 +72,8 @@ def sort_params(param_dict):
 
 def normalise_param_structure(params):
     """
+    Canonicalise representation of key-value data with non-unique keys.
+
     Request parameter dictionaries are handled in different ways in different libraries,
     this function is required to ensure we always have something of the format:
 
@@ -87,6 +106,15 @@ def normalise_param_structure(params):
 
 
 def create_base_message(params, url, method='POST'):
+    """
+    Construct a message to be signed.
+
+    You are unlikely to need to call this directly and should not consider it a
+    stable part of the API. This will be deprecated and replaced with a internal
+    method accordingly, in a future release.
+
+    See https://www.laterpay.net/developers/docs/start#SigningURLs for details
+    """
     msg = '{method}&{url}&{params}'
 
     method = _encode_if_unicode(method).upper()
@@ -164,7 +192,12 @@ def sign(secret, params, url, method='POST'):
 
 
 def verify(signature, secret, params, url, method):
+    """
+    Verify the signature on a signed URL.
 
+    Redirects back to a client's server from LaterPay will be signed to ensure
+    authenticity. Use `verify` to confirm this.
+    """
     if isinstance(signature, (list, tuple)):
         signature = signature[0]
 
@@ -247,14 +280,14 @@ def sign_get_url(secret, url, signature_paramname="hmac"):
 
 def _encode_if_unicode(value, encoding='utf-8'):
     """
-    Encodes and returns a ``value`` using specified ``encoding``.
+    Encode and return a ``value`` using specified ``encoding``.
+
     Encoding is done only if ``value`` is a ``unicode`` instance
     (utf-8 encoding is used as default).
 
     This utility is needed because some web frameworks can provide
     request arguments as ``str`` instances.
     """
-
     if not compat.py3k and isinstance(value, unicode):
         value = value.encode(encoding)
     return value
