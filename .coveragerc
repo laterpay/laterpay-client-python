@@ -1,0 +1,8 @@
+[run]
+source = laterpay
+omit =
+	laterpay/django/*
+	laterpay/compat.py
+
+[report]
+show_missing = True
