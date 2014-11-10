@@ -208,9 +208,12 @@ def verify(signature, secret, params, url, method):
 
 def sign_and_encode(secret, params, url, method="GET"):
     """
-    signs and encodes a URL ``url`` with a ``secret`` key called via a HTTP ``method``. It adds the signature to the URL
+    Sign and encode a URL ``url`` with a ``secret`` key called via an HTTP ``method``.
+
+    It adds the signature to the URL
     as the URL parameter "hmac" and also adds the required timestamp parameter "ts" if it's not already
     in the ``params`` dictionary. ``unicode()`` instances in params are handled correctly.
+
     :param secret: The shared secret as a hex-encoded string
     :param params: A dictionary of URL parameters. Each key can resolve to a single value string or a multi-string list.
     :param url: the URL being called
@@ -237,6 +240,8 @@ def sign_and_encode(secret, params, url, method="GET"):
 
 def sign_get_url(secret, url, signature_paramname="hmac"):
     """
+    Sign a URL to be GET-ed.
+
     This function takes a URL, parses it, sorts the URL parameters in
     alphabetical order, concatenates them with the character "&" inbetween and
     subsequently creates an HMAC using the secret key in ``hmac_key``.
