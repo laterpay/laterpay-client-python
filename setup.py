@@ -4,8 +4,6 @@ from setuptools import find_packages, setup
 import codecs
 import os
 
-#import time
-#_version = "3.0.dev%s" % int(time.time())
 _version = "3.1.0"
 _packages = find_packages('.', exclude=["*.tests", "*.tests.*", "tests.*", "tests"])
 
