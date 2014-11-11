@@ -2,6 +2,10 @@
 
 ## UNRELEASED
 
+* Nothing
+
+## 3.1.0
+
 * Support for Python 3.3 and 3.4 (https://github.com/laterpay/laterpay-client-python/pull/1)
 * Improved documentation coverage
 * Dropped distutils usage
