@@ -1,45 +1,60 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+"""
+The LaterPay API Python client.
+
+https://www.laterpay.net/developers/docs
+"""
+
 from __future__ import absolute_import, print_function
 
-import copy
 import json
 import logging
 import random
 import re
 import string
 import time
-import urllib
-import urllib2
 
 from . import signing
+from . import compat
+
 import warnings
 
 
-_log = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 
 class InvalidTokenException(Exception):
-    pass
+    """
+    Raised when a user's token is invalid (e.g. due to timeout).
+
+    https://www.laterpay.net/developers/docs/backend-api#Invalidtokens
+    """
 
 
 class InvalidItemDefinition(Exception):
-    def __init__(self, message):
-        self.message = message
-
-    def __repr__(self):
-        return self.message
+    """
+    Raised when attempting to construct an `ItemDefinition` with invalid data.
+    """
 
 
 class APIException(Exception):
     """
-    Thrown when generating the url
+    This will be deprecated in a future release.
+
+    It is currently only raised when attempting to get a web URL with an
+    insufficiently unique transaction reference. Expect this to be replaced with a
+    more specific and helpfully named Exception.
     """
 
 
 class ItemDefinition(object):
+    """
+    Contains data about content being sold through LaterPay.
+    """
 
-    def __init__(self, item_id, pricing, vat, url, title, purchasedatetime=None, cp=None):
+    def __init__(self, item_id, pricing, vat, url, title, purchasedatetime=None, cp=None, expiry=None):
 
         for price in pricing.split(','):
             if not re.match('[A-Z]{3}\d+', price):
@@ -55,12 +70,16 @@ class ItemDefinition(object):
 
             try:
                 float(v[2:])
-            except:
+            except ValueError:
                 raise InvalidItemDefinition('Invalid number part for vat: %s' % vat)
 
         if purchasedatetime is not None and not isinstance(purchasedatetime, int):
             raise InvalidItemDefinition("Invalid purchasedatetime %s. This should be a UTC-based epoch timestamp "
-                                        "in seconds of type int")
+                                        "in seconds of type int" % purchasedatetime)
+
+        if expiry is not None and not re.match('^(\+?\d+)$', expiry):
+            raise InvalidItemDefinition("Invalid expiry value %s, it should be '+3600' or UTC-based "
+                                        "epoch timestamp in seconds of type int" % expiry)
 
         self.data = {
             'article_id': item_id,
@@ -70,6 +89,7 @@ class ItemDefinition(object):
             'url': url,
             'title': title,
             'cp': cp,
+            'expiry': expiry,
         }
 
 
@@ -81,7 +101,13 @@ class LaterPayClient(object):
                  api_root='https://api.laterpay.net',
                  web_root='https://web.laterpay.net',
                  lptoken=None):
+        """
+        Instantiate a LaterPay API client.
 
+        Defaults connecting to the production API.
+
+        https://www.laterpay.net/developers/docs
+        """
         self.cp_key = cp_key
         self.api_root = api_root
         self.web_root = web_root
@@ -89,6 +115,11 @@ class LaterPayClient(object):
         self.lptoken = lptoken
 
     def get_gettoken_redirect(self, return_to):
+        """
+        Get a URL from which a user will be issued a LaterPay token.
+
+        https://www.laterpay.net/developers/docs/backend-api#GET/gettoken
+        """
         url = self._gettoken_url
         data = {
             'redir': return_to,
@@ -125,8 +156,9 @@ class LaterPayClient(object):
                                 show_signup=False,
                                 show_long_signup=False,
                                 use_jsevents=False):
+        """ Deprecated, see get_controls_links_url. """
         warnings.warn("get_iframe_links_url is deprecated. Please use get_controls_links_url. "
-                      "It will be removed on a future release.")
+                      "It will be removed on a future release.", DeprecationWarning)
         return self.get_controls_links_url(next_url, css_url, forcelang, show_greeting, show_long_greeting,
                                            show_login, show_signup, show_long_signup, use_jsevents)
 
@@ -140,7 +172,11 @@ class LaterPayClient(object):
                                show_signup=False,
                                show_long_signup=False,
                                use_jsevents=False):
+        """
+        Get the URL for an iframe showing LaterPay account management links.
 
+        https://www.laterpay.net/developers/docs/inpage-api#GET/controls/links
+        """
         data = {'next': next_url}
         data['cp'] = self.cp_key
         if forcelang is not None:
@@ -168,11 +204,17 @@ class LaterPayClient(object):
         return '%s?%s' % (url, params)
 
     def get_iframeapi_balance_url(self, forcelang=None):
+        """ Deprecated, see get_controls_balance_url. """
         warnings.warn("get_iframe_balance_url is deprecated. Please use get_controls_balance_url. "
-                      "It will be removed on a future release.")
+                      "It will be removed on a future release.", DeprecationWarning)
         return self.get_controls_balance_url(forcelang)
 
     def get_controls_balance_url(self, forcelang=None):
+        """
+        Get the URL for an iframe showing the user's invoice balance.
+
+        https://www.laterpay.net/developers/docs/inpage-api#GET/controls/balance
+        """
         data = {'cp': self.cp_key}
         if forcelang is not None:
             data['forcelang'] = forcelang
@@ -184,22 +226,25 @@ class LaterPayClient(object):
         return url
 
     def _get_dialog_api_url(self, url):
-        return '%s/dialog-api?url=%s' % (self.web_root, urllib.quote_plus(url))
+        return '%s/dialog-api?url=%s' % (self.web_root, compat.quote_plus(url))
 
     def get_login_dialog_url(self, next_url, use_jsevents=False):
-        url = '%s/account/dialog/login?next=%s%s%s' % (self.web_root, urllib.quote_plus(next_url),
+        """ Get the URL for a login page. """
+        url = '%s/account/dialog/login?next=%s%s%s' % (self.web_root, compat.quote_plus(next_url),
                                                        "&jsevents=1" if use_jsevents else "",
                                                        "&cp=%s" % self.cp_key)
         return self._get_dialog_api_url(url)
 
     def get_signup_dialog_url(self, next_url, use_jsevents=False):
-        url = '%s/account/dialog/signup?next=%s%s%s' % (self.web_root, urllib.quote_plus(next_url),
+        """ Get the URL for a signup page. """
+        url = '%s/account/dialog/signup?next=%s%s%s' % (self.web_root, compat.quote_plus(next_url),
                                                         "&jsevents=1" if use_jsevents else "",
                                                         "&cp=%s" % self.cp_key)
         return self._get_dialog_api_url(url)
 
     def get_logout_dialog_url(self, next_url, use_jsevents=False):
-        url = '%s/account/dialog/logout?next=%s%s%s' % (self.web_root, urllib.quote_plus(next_url),
+        """ Get the URL for a logout page. """
+        url = '%s/account/dialog/logout?next=%s%s%s' % (self.web_root, compat.quote_plus(next_url),
                                                         "&jsevents=1" if use_jsevents else "",
                                                         "&cp=%s" % self.cp_key)
         return self._get_dialog_api_url(url)
@@ -230,7 +275,8 @@ class LaterPayClient(object):
                      transaction_reference=None,
                      consumable=False):
 
-        data = copy.copy(item_definition.data)
+        # filter out params with None value.
+        data = {k: v for k, v in item_definition.data.items() if v is not None}
 
         if use_jsevents:
             data['jsevents'] = 1
@@ -271,7 +317,11 @@ class LaterPayClient(object):
                     skip_add_to_invoice=False,
                     transaction_reference=None,
                     consumable=False):
+        """
+        Get the URL at which a user can start the checkout process to buy a single item.
 
+        https://www.laterpay.net/developers/docs/dialog-api#GET/dialog/buy
+        """
         return self._get_web_url(
             item_definition,
             'buy',
@@ -290,7 +340,11 @@ class LaterPayClient(object):
                     skip_add_to_invoice=False,
                     transaction_reference=None,
                     consumable=False):
+        """
+        Get the URL at which a user can add an item to their invoice to pay later.
 
+        https://www.laterpay.net/developers/docs/dialog-api#GET/dialog/add
+        """
         return self._get_web_url(
             item_definition,
             'add',
@@ -314,23 +368,23 @@ class LaterPayClient(object):
         }
 
         if method == 'POST':
-            req = urllib2.Request(url, data=params, headers=headers)
+            req = compat.Request(url, data=params, headers=headers)
         else:
             url = "%s?%s" % (url, params)
-            req = urllib2.Request(url, headers=headers)
+            req = compat.Request(url, headers=headers)
 
-        _log.debug("Making request to %s", url)
+        _logger.debug("Making request to %s", url)
 
         try:
-            response = urllib2.urlopen(req).read()
-        except urllib2.URLError, e:
-            _log.debug("Request failed with reason: %s", e.reason)
+            response = compat.urlopen(req).read()
+        except compat.URLError as e:
+            _logger.debug("Request failed with reason: %s", e.reason)
             resp = {'status': 'connection_error'}
         except:
-            _log.debug("Unexpected error with request")
+            _logger.debug("Unexpected error with request")
             resp = {'status': 'unexpected error'}
         else:
-            _log.debug("Received response %s", response)
+            _logger.debug("Received response %s", response)
             resp = json.loads(response)
 
         if 'new_token' in resp:
@@ -342,10 +396,14 @@ class LaterPayClient(object):
         return resp
 
     def has_token(self):
+        """
+        Do we have an identifier token.
 
+        https://www.laterpay.net/developers/docs/backend-api#GET/gettoken
+        """
         return self.lptoken is not None
 
-    def add_metered_access(self, article_id, threshold=5, product_key=None ):
+    def add_metered_access(self, article_id, threshold=5, product_key=None):
 
         params = {
             'lptoken': self.lptoken,
@@ -394,7 +452,11 @@ class LaterPayClient(object):
         return data['articles'], exceeded, subs
 
     def get_access(self, article_ids, product_key=None):
+        """
+        Get access data for a set of article ids.
 
+        https://www.laterpay.net/developers/docs/backend-api#GET/access
+        """
         if not isinstance(article_ids, (list, tuple)):
             article_ids = [article_ids]
 

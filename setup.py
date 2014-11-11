@@ -1,13 +1,12 @@
 # -*- coding: UTF-8 -*-
-from distutils.core import setup
-from setuptools import find_packages
+from setuptools import find_packages, setup
 
 import codecs
 import os
 
 #import time
 #_version = "3.0.dev%s" % int(time.time())
-_version = "3.0.0"
+_version = "3.1.0"
 _packages = find_packages('.', exclude=["*.tests", "*.tests.*", "tests.*", "tests"])
 
 if os.path.exists('README.rst'):
@@ -39,6 +38,8 @@ setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3.3",
+        "Programming Language :: Python :: 3.4",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ),
 )
