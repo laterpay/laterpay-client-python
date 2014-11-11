@@ -158,7 +158,7 @@ class LaterPayClient(object):
                                 use_jsevents=False):
         """ Deprecated, see get_controls_links_url. """
         warnings.warn("get_iframe_links_url is deprecated. Please use get_controls_links_url. "
-                      "It will be removed on a future release.")
+                      "It will be removed on a future release.", DeprecationWarning)
         return self.get_controls_links_url(next_url, css_url, forcelang, show_greeting, show_long_greeting,
                                            show_login, show_signup, show_long_signup, use_jsevents)
 
@@ -206,7 +206,7 @@ class LaterPayClient(object):
     def get_iframeapi_balance_url(self, forcelang=None):
         """ Deprecated, see get_controls_balance_url. """
         warnings.warn("get_iframe_balance_url is deprecated. Please use get_controls_balance_url. "
-                      "It will be removed on a future release.")
+                      "It will be removed on a future release.", DeprecationWarning)
         return self.get_controls_balance_url(forcelang)
 
     def get_controls_balance_url(self, forcelang=None):
