@@ -25,10 +25,6 @@ class TestItemDefinition(unittest.TestCase):
         with self.assertRaises(InvalidItemDefinition):
             ItemDefinition(1, '', '', '', 'title')
         with self.assertRaises(InvalidItemDefinition):
-            ItemDefinition(1, 'EUR20', '', '', 'title')
-        with self.assertRaises(InvalidItemDefinition):
-            ItemDefinition(1, 'EUR20', 'DE19.0.123.44', '', 'title')
-        with self.assertRaises(InvalidItemDefinition):
             ItemDefinition(1, 'EUR20', 'DE19.0', 'http://foo.invalid', 'title', expiry="illegal123")
 
 
