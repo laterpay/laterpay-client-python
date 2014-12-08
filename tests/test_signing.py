@@ -164,7 +164,6 @@ class TestSigningHelper(unittest.TestCase):
             'tref': ['4ebbf443-a12e-4ce9-89e4-999ba93ba1dc'],
             'ts': ['1398861228'],
             'url': ['http://local.laterpaytest.net:8003/mmss/154'],
-            'vat': ['EU19']
         }
 
         params = signing.sign_and_encode(secret, data, base_url, method)
@@ -178,7 +177,6 @@ class TestSigningHelper(unittest.TestCase):
             'tref=4ebbf443-a12e-4ce9-89e4-999ba93ba1dc&'
             'ts=1398861228&'
             'url=http%3A%2F%2Flocal.laterpaytest.net%3A8003%2Fmmss%2F154&'
-            'vat=EU19&'
             'hmac=4d41f1adcb7c6bf6cf9c5eb15b179fdbec667d53f2749e2845c87315'
         )
 
@@ -200,7 +198,6 @@ class TestSigningHelper(unittest.TestCase):
             'tref=4ebbf443-a12e-4ce9-89e4-999ba93ba1dc&'
             'ts=1398861228&'
             'url=http%3A%2F%2Flocal.laterpaytest.net%3A8003%2Fmmss%2F154&'
-            'vat=EU19&'
             'hmac=4d41f1adcb7c6bf6cf9c5eb15b179fdbec667d53f2749e2845c87315'
         )
         false_params = compat.parse_qs(false_string)

@@ -54,24 +54,11 @@ class ItemDefinition(object):
     Contains data about content being sold through LaterPay.
     """
 
-    def __init__(self, item_id, pricing, vat, url, title, purchasedatetime=None, cp=None, expiry=None):
+    def __init__(self, item_id, pricing, url, title, purchasedatetime=None, cp=None, expiry=None):
 
         for price in pricing.split(','):
             if not re.match('[A-Z]{3}\d+', price):
                 raise InvalidItemDefinition('Pricing is not valid: %s' % pricing)
-
-        for v in vat.split(','):
-
-            if len(v) < 2:
-                raise InvalidItemDefinition('Invalid length for vat: %s' % v)
-
-            if not all((65 <= ord(c) <= 90) for c in v[:2]):
-                raise InvalidItemDefinition('Invalid country for vat: %s' % vat)
-
-            try:
-                float(v[2:])
-            except ValueError:
-                raise InvalidItemDefinition('Invalid number part for vat: %s' % vat)
 
         if purchasedatetime is not None and not isinstance(purchasedatetime, int):
             raise InvalidItemDefinition("Invalid purchasedatetime %s. This should be a UTC-based epoch timestamp "
@@ -85,7 +72,6 @@ class ItemDefinition(object):
             'article_id': item_id,
             'purchasedatetime': int(time.time()) if purchasedatetime is None else purchasedatetime,
             'pricing': pricing,
-            'vat': vat,
             'url': url,
             'title': title,
             'cp': cp,
