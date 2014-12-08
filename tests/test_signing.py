@@ -177,13 +177,13 @@ class TestSigningHelper(unittest.TestCase):
             'tref=4ebbf443-a12e-4ce9-89e4-999ba93ba1dc&'
             'ts=1398861228&'
             'url=http%3A%2F%2Flocal.laterpaytest.net%3A8003%2Fmmss%2F154&'
-            'hmac=4d41f1adcb7c6bf6cf9c5eb15b179fdbec667d53f2749e2845c87315'
+            'hmac=d51564b41c2a8719fcdcfc6bad46109d3b6c6f78afea4020d5801a3c'
         )
 
         self.assertEqual(expected_string, params)
 
         # expected signature based on params above
-        signature = '4d41f1adcb7c6bf6cf9c5eb15b179fdbec667d53f2749e2845c87315'
+        signature = 'd51564b41c2a8719fcdcfc6bad46109d3b6c6f78afea4020d5801a3c'
 
         self.assertTrue(signing.verify(signature, secret, data, base_url, method))
 
