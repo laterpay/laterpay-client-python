@@ -54,7 +54,7 @@ class ItemDefinition(object):
     Contains data about content being sold through LaterPay.
     """
 
-    def __init__(self, item_id, pricing, url, title, purchasedatetime=None, cp=None, expiry=None):
+    def __init__(self, item_id, pricing, vat, url, title, purchasedatetime=None, cp=None, expiry=None):
 
         for price in pricing.split(','):
             if not re.match('[A-Z]{3}\d+', price):
@@ -67,6 +67,10 @@ class ItemDefinition(object):
         if expiry is not None and not re.match('^(\+?\d+)$', expiry):
             raise InvalidItemDefinition("Invalid expiry value %s, it should be '+3600' or UTC-based "
                                         "epoch timestamp in seconds of type int" % expiry)
+
+        if vat is not None:
+            warnings.warn("The vat parameter is deprecated and will be removed on a future release.",
+                          DeprecationWarning)
 
         self.data = {
             'article_id': item_id,
