@@ -4,6 +4,10 @@
 
 * Nothing
 
+## 3.1.1
+
+* Deprecating the `vat` parameter in `ItemDefinition` because of new [EU law for calculating VAT](http://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=CELEX:32006L0112&from=DE)
+
 ## 3.1.0
 
 * Support for Python 3.3 and 3.4 (https://github.com/laterpay/laterpay-client-python/pull/1)
