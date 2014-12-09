@@ -60,19 +60,6 @@ class ItemDefinition(object):
             if not re.match('[A-Z]{3}\d+', price):
                 raise InvalidItemDefinition('Pricing is not valid: %s' % pricing)
 
-        for v in vat.split(','):
-
-            if len(v) < 2:
-                raise InvalidItemDefinition('Invalid length for vat: %s' % v)
-
-            if not all((65 <= ord(c) <= 90) for c in v[:2]):
-                raise InvalidItemDefinition('Invalid country for vat: %s' % vat)
-
-            try:
-                float(v[2:])
-            except ValueError:
-                raise InvalidItemDefinition('Invalid number part for vat: %s' % vat)
-
         if purchasedatetime is not None and not isinstance(purchasedatetime, int):
             raise InvalidItemDefinition("Invalid purchasedatetime %s. This should be a UTC-based epoch timestamp "
                                         "in seconds of type int" % purchasedatetime)
@@ -81,11 +68,22 @@ class ItemDefinition(object):
             raise InvalidItemDefinition("Invalid expiry value %s, it should be '+3600' or UTC-based "
                                         "epoch timestamp in seconds of type int" % expiry)
 
+        if vat is not None:
+            warnings.warn(
+                (
+                    "The vat parameter is deprecated. "
+                    "Due to changes in EU VAT legislation, from 1st Jan 2015 "
+                    "VAT will be charged based on _customer_ location and not "
+                    "supplier location: "
+                    "http://ec.europa.eu/taxation_customs/taxation/vat/traders/e-commerce/index_en.htm"
+                ),
+                DeprecationWarning
+            )
+
         self.data = {
             'article_id': item_id,
             'purchasedatetime': int(time.time()) if purchasedatetime is None else purchasedatetime,
             'pricing': pricing,
-            'vat': vat,
             'url': url,
             'title': title,
             'cp': cp,
