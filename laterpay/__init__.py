@@ -69,8 +69,16 @@ class ItemDefinition(object):
                                         "epoch timestamp in seconds of type int" % expiry)
 
         if vat is not None:
-            warnings.warn("The vat parameter is deprecated and will be removed on a future release.",
-                          DeprecationWarning)
+            warnings.warn(
+                (
+                    "The vat parameter is deprecated. "
+                    "Due to changes in EU VAT legislation, from 1st Jan 2015 "
+                    "VAT will be charged based on _customer_ location and not "
+                    "supplier location: "
+                    "http://ec.europa.eu/taxation_customs/taxation/vat/traders/e-commerce/index_en.htm"
+                ),
+                DeprecationWarning
+            )
 
         self.data = {
             'article_id': item_id,
