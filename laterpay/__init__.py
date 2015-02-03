@@ -88,7 +88,7 @@ class ItemDefinition(object):
             'title': title,
             'cp': cp,
             'expiry': expiry,
-            'return_url': url,
+            'return_url': return_url,
         }
 
 
