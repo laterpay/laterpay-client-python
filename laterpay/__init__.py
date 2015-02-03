@@ -310,8 +310,6 @@ class LaterPayClient(object):
         params = self._sign_and_encode(data, base_url, method="GET")
         url = "{base_url}?{params}".format(base_url=base_url, params=params)
 
-        print(url)
-
         return self._get_dialog_api_url(url)
 
     def get_buy_url(self,
@@ -353,8 +351,6 @@ class LaterPayClient(object):
 
         https://www.laterpay.net/developers/docs/dialog-api#GET/dialog/add
         """
-        print(item_definition)
-
         return self._get_web_url(
             item_definition,
             'add',
