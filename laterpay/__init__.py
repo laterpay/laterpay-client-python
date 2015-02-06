@@ -52,6 +52,11 @@ class APIException(Exception):
 class ItemDefinition(object):
     """
     Contains data about content being sold through LaterPay.
+
+    Documentation for usage:
+
+    For PPU purchases: https://laterpay.net/developers/docs/dialog-api#GET/dialog/add
+    For Single item purchases: https://laterpay.net/developers/docs/dialog-api#GET/dialog/buy
     """
 
     def __init__(self, item_id, pricing, vat, url, title, purchasedatetime=None, cp=None, expiry=None, return_url=None):
