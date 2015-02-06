@@ -52,9 +52,14 @@ class APIException(Exception):
 class ItemDefinition(object):
     """
     Contains data about content being sold through LaterPay.
+
+    Documentation for usage:
+
+    For PPU purchases: https://laterpay.net/developers/docs/dialog-api#GET/dialog/add
+    For Single item purchases: https://laterpay.net/developers/docs/dialog-api#GET/dialog/buy
     """
 
-    def __init__(self, item_id, pricing, vat, url, title, purchasedatetime=None, cp=None, expiry=None):
+    def __init__(self, item_id, pricing, vat, url, title, purchasedatetime=None, cp=None, expiry=None, return_url=None):
 
         for price in pricing.split(','):
             if not re.match('[A-Z]{3}\d+', price):
@@ -88,6 +93,7 @@ class ItemDefinition(object):
             'title': title,
             'cp': cp,
             'expiry': expiry,
+            'return_url': return_url,
         }
 
 
@@ -271,7 +277,8 @@ class LaterPayClient(object):
                      use_jsevents=False,
                      skip_add_to_invoice=False,
                      transaction_reference=None,
-                     consumable=False):
+                     consumable=False,
+                     return_url=None):
 
         # filter out params with None value.
         data = {k: v for k, v in item_definition.data.items() if v is not None}
@@ -281,6 +288,9 @@ class LaterPayClient(object):
 
         if consumable:
             data['consumable'] = 1
+
+        if return_url:
+            data['return_url'] = return_url
 
         if transaction_reference:
 
@@ -314,7 +324,8 @@ class LaterPayClient(object):
                     use_jsevents=False,
                     skip_add_to_invoice=False,
                     transaction_reference=None,
-                    consumable=False):
+                    consumable=False,
+                    return_url=None):
         """
         Get the URL at which a user can start the checkout process to buy a single item.
 
@@ -328,7 +339,8 @@ class LaterPayClient(object):
             use_jsevents=use_jsevents,
             skip_add_to_invoice=skip_add_to_invoice,
             transaction_reference=transaction_reference,
-            consumable=consumable)
+            consumable=consumable,
+            return_url=return_url)
 
     def get_add_url(self,
                     item_definition,
@@ -337,7 +349,8 @@ class LaterPayClient(object):
                     use_jsevents=False,
                     skip_add_to_invoice=False,
                     transaction_reference=None,
-                    consumable=False):
+                    consumable=False,
+                    return_url=None):
         """
         Get the URL at which a user can add an item to their invoice to pay later.
 
@@ -351,7 +364,8 @@ class LaterPayClient(object):
             use_jsevents=use_jsevents,
             skip_add_to_invoice=skip_add_to_invoice,
             transaction_reference=transaction_reference,
-            consumable=consumable)
+            consumable=consumable,
+            return_url=return_url)
 
     def _sign_and_encode(self, params, url, method="GET"):
         return signing.sign_and_encode(self.shared_secret, params, url=url, method=method)
