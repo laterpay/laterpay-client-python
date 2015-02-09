@@ -283,7 +283,8 @@ class LaterPayClient(object):
                      skip_add_to_invoice=False,
                      transaction_reference=None,
                      consumable=False,
-                     return_url=None):
+                     return_url=None,
+                     failure_url=None):
 
         # filter out params with None value.
         data = {k: v for k, v in item_definition.data.items() if v is not None}
@@ -296,6 +297,9 @@ class LaterPayClient(object):
 
         if return_url:
             data['return_url'] = return_url
+
+        if failure_url:
+            data['failure_url'] = failure_url
 
         if transaction_reference:
 
@@ -330,7 +334,8 @@ class LaterPayClient(object):
                     skip_add_to_invoice=False,
                     transaction_reference=None,
                     consumable=False,
-                    return_url=None):
+                    return_url=None,
+                    failure_url=None):
         """
         Get the URL at which a user can start the checkout process to buy a single item.
 
@@ -345,7 +350,8 @@ class LaterPayClient(object):
             skip_add_to_invoice=skip_add_to_invoice,
             transaction_reference=transaction_reference,
             consumable=consumable,
-            return_url=return_url)
+            return_url=return_url,
+            failure_url=failure_url)
 
     def get_add_url(self,
                     item_definition,
@@ -355,7 +361,8 @@ class LaterPayClient(object):
                     skip_add_to_invoice=False,
                     transaction_reference=None,
                     consumable=False,
-                    return_url=None):
+                    return_url=None,
+                    failure_url=None):
         """
         Get the URL at which a user can add an item to their invoice to pay later.
 
@@ -370,7 +377,8 @@ class LaterPayClient(object):
             skip_add_to_invoice=skip_add_to_invoice,
             transaction_reference=transaction_reference,
             consumable=consumable,
-            return_url=return_url)
+            return_url=return_url,
+            failure_url=failure_url)
 
     def _sign_and_encode(self, params, url, method="GET"):
         return signing.sign_and_encode(self.shared_secret, params, url=url, method=method)
