@@ -59,7 +59,7 @@ class ItemDefinition(object):
     For Single item purchases: https://laterpay.net/developers/docs/dialog-api#GET/dialog/buy
     """
 
-    def __init__(self, item_id, pricing, vat, url, title, purchasedatetime=None, cp=None, expiry=None, return_url=None):
+    def __init__(self, item_id, pricing, vat, url, title, purchasedatetime=None, cp=None, expiry=None):
 
         for price in pricing.split(','):
             if not re.match('[A-Z]{3}\d+', price):
@@ -93,7 +93,6 @@ class ItemDefinition(object):
             'title': title,
             'cp': cp,
             'expiry': expiry,
-            'return_url': return_url,
         }
 
 
