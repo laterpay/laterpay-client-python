@@ -66,6 +66,12 @@ class ItemDefinition(object):
                 raise InvalidItemDefinition('Pricing is not valid: %s' % pricing)
 
         if purchasedatetime is not None and not isinstance(purchasedatetime, int):
+            warnings.warn(
+                (
+                    "The purchasedatetime parameter is deprecated and will be ignored. "
+                ),
+                DeprecationWarning
+            )
             raise InvalidItemDefinition("Invalid purchasedatetime %s. This should be a UTC-based epoch timestamp "
                                         "in seconds of type int" % purchasedatetime)
 
