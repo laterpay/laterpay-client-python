@@ -14,7 +14,6 @@ import logging
 import random
 import re
 import string
-import time
 
 from . import signing
 from . import compat
