@@ -90,6 +90,13 @@ class TestLaterPayClient(unittest.TestCase):
             'expiry url param is "None". Should be omitted.',
         )
 
+    def test_failure_url_param(self):
+        item = ItemDefinition(1, 'EUR20', 'DE19.0', 'http://help.me/', 'title')
+        url = self.lp.get_add_url(item, failure_url="http://example.com")
+        self.assertTrue('failure_url' in url)
+
+        url = self.lp.get_buy_url(item, failure_url="http://example.com")
+        self.assertTrue('failure_url' in url)
 
 if __name__ == '__main__':
     unittest.main()
