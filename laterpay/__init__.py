@@ -14,7 +14,6 @@ import logging
 import random
 import re
 import string
-import time
 
 from . import signing
 from . import compat
@@ -65,9 +64,8 @@ class ItemDefinition(object):
             if not re.match('[A-Z]{3}\d+', price):
                 raise InvalidItemDefinition('Pricing is not valid: %s' % pricing)
 
-        if purchasedatetime is not None and not isinstance(purchasedatetime, int):
-            raise InvalidItemDefinition("Invalid purchasedatetime %s. This should be a UTC-based epoch timestamp "
-                                        "in seconds of type int" % purchasedatetime)
+        if purchasedatetime is not None:
+            warnings.warn("The purchasedatetime parameter is deprecated and will be ignored. ", DeprecationWarning)
 
         if expiry is not None and not re.match('^(\+?\d+)$', expiry):
             raise InvalidItemDefinition("Invalid expiry value %s, it should be '+3600' or UTC-based "
@@ -87,7 +85,6 @@ class ItemDefinition(object):
 
         self.data = {
             'article_id': item_id,
-            'purchasedatetime': int(time.time()) if purchasedatetime is None else purchasedatetime,
             'pricing': pricing,
             'url': url,
             'title': title,
