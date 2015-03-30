@@ -3,6 +3,7 @@
 ## UNRELEASED
 
 * Deprecating the `vat` parameter in `ItemDefinition` because of new [EU law for calculating VAT](http://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=CELEX:32006L0112&from=DE)
+* Deprecated `LaterPayClient.get_metered_access()` and `LaterPayClient.add_metered_access()` methods.
 
 ## 3.1.0
 

@@ -420,6 +420,12 @@ class LaterPayClient(object):
         return self.lptoken is not None
 
     def add_metered_access(self, article_id, threshold=5, product_key=None):
+        warnings.warn(
+            "`LaterPayClient.add_metered_access()` is deprecated - we are retiring"
+            " the platform feature - if you believe this will impact you, please"
+            " contact support@laterpay.net",
+            DeprecationWarning,
+        )
 
         params = {
             'lptoken': self.lptoken,
@@ -438,6 +444,12 @@ class LaterPayClient(object):
             raise InvalidTokenException()
 
     def get_metered_access(self, article_ids, threshold=5, product_key=None):
+        warnings.warn(
+            "`LaterPayClient.get_metered_access()` is deprecated - we are retiring"
+            " the platform feature - if you believe this will impact you, please"
+            " contact support@laterpay.net",
+            DeprecationWarning,
+        )
 
         if not isinstance(article_ids, (list, tuple)):
             article_ids = [article_ids]
