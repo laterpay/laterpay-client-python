@@ -421,8 +421,9 @@ class LaterPayClient(object):
 
     def add_metered_access(self, article_id, threshold=5, product_key=None):
         warnings.warn(
-            "`LaterPayClient.add_metered_access()` is deprecated."
-            "It will be removed in a future release.",
+            "`LaterPayClient.add_metered_access()` is deprecated - we are retiring"
+            " the platform feature - if you believe this will impact you, please"
+            " contact support@laterpay.net",
             DeprecationWarning,
         )
 
@@ -444,8 +445,9 @@ class LaterPayClient(object):
 
     def get_metered_access(self, article_ids, threshold=5, product_key=None):
         warnings.warn(
-            "`LaterPayClient.get_metered_access()` is deprecated."
-            "It will be removed in a future release.",
+            "`LaterPayClient.get_metered_access()` is deprecated - we are retiring"
+            " the platform feature - if you believe this will impact you, please"
+            " contact support@laterpay.net",
             DeprecationWarning,
         )
 
