@@ -10,6 +10,8 @@ if sys.version_info[:2] < (2, 7):
 else:
     import unittest
 
+from furl import furl
+
 from laterpay.compat import urlparse, parse_qs
 from laterpay import (
     APIException,
@@ -41,6 +43,9 @@ class TestLaterPayClient(unittest.TestCase):
         o = urlparse(d['url'][0])
         d = parse_qs(o.query)
         return d
+
+    def get_dialog_api_furl(self, url):
+        return furl(furl(url).query.params['url'])
 
     def assertQueryString(self, url, key, value=None):
         d = self.get_qs_dict(url)
@@ -97,6 +102,45 @@ class TestLaterPayClient(unittest.TestCase):
 
         url = self.lp.get_buy_url(item, failure_url="http://example.com")
         self.assertTrue('failure_url' in url)
+
+    def test_get_web_url_product_key_param(self):
+        item = ItemDefinition(1, 'EUR20', 'DE19.0', 'http://help.me/', 'title')
+
+        url = self.lp.get_add_url(item, product_key="hopes")
+        data = self.get_qs_dict(url)
+        self.assertEqual(data['product'], ['hopes'])
+        self.assertEqual(
+            str(self.get_dialog_api_furl(url).path),
+            '/dialog/add',
+        )
+
+        url = self.lp.get_buy_url(item, product_key="hopes")
+        data = self.get_qs_dict(url)
+        self.assertEqual(data['product'], ['hopes'])
+        self.assertEqual(
+            str(self.get_dialog_api_furl(url).path),
+            '/dialog/buy',
+        )
+
+    def test_get_web_url_no_product_key_param(self):
+        item = ItemDefinition(1, 'EUR20', 'DE19.0', 'http://help.me/', 'title')
+
+        url = self.lp.get_add_url(item)
+        data = self.get_qs_dict(url)
+        self.assertNotIn('product', data)
+        self.assertEqual(
+            str(self.get_dialog_api_furl(url).path),
+            '/dialog/add',
+        )
+
+        url = self.lp.get_buy_url(item)
+        data = self.get_qs_dict(url)
+        self.assertNotIn('product', data)
+        self.assertEqual(
+            str(self.get_dialog_api_furl(url).path),
+            '/dialog/buy',
+        )
+
 
 if __name__ == '__main__':
     unittest.main()
