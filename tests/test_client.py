@@ -104,7 +104,7 @@ class TestLaterPayClient(unittest.TestCase):
         self.assertTrue('failure_url' in url)
 
     def test_get_web_url_product_key_param(self):
-        item = ItemDefinition(1, 'EUR20', 'DE19.0', 'http://help.me/', 'title')
+        item = ItemDefinition(1, 'EUR20', 'DE19.0', 'http://example.com/', 'title')
 
         url = self.lp.get_add_url(item, product_key="hopes")
         data = self.get_qs_dict(url)
@@ -123,7 +123,7 @@ class TestLaterPayClient(unittest.TestCase):
         )
 
     def test_get_web_url_no_product_key_param(self):
-        item = ItemDefinition(1, 'EUR20', 'DE19.0', 'http://help.me/', 'title')
+        item = ItemDefinition(1, 'EUR20', 'DE19.0', 'http://example.com/', 'title')
 
         url = self.lp.get_add_url(item)
         data = self.get_qs_dict(url)
