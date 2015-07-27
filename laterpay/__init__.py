@@ -308,9 +308,9 @@ class LaterPayClient(object):
             prefix = self.web_root
 
         if product_key is not None:
-            base_url = "%s/%s/%s" % (prefix, product_key, page_type)
-        else:
-            base_url = "%s/%s" % (prefix, page_type)
+            data['product'] = product_key
+
+        base_url = "%s/%s" % (prefix, page_type)
 
         params = self._sign_and_encode(data, base_url, method="GET")
         url = "{base_url}?{params}".format(base_url=base_url, params=params)
