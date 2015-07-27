@@ -36,6 +36,7 @@ class TestLaterPayClient(unittest.TestCase):
         self.lp = LaterPayClient(
             1,
             'some-secret')
+        self.item = ItemDefinition(1, 'EUR20', 'DE19.0', 'http://example.com/', 'title')
 
     def get_qs_dict(self, url):
         o = urlparse(url)
@@ -103,10 +104,12 @@ class TestLaterPayClient(unittest.TestCase):
         url = self.lp.get_buy_url(item, failure_url="http://example.com")
         self.assertTrue('failure_url' in url)
 
-    def test_get_web_url_product_key_param(self):
-        item = ItemDefinition(1, 'EUR20', 'DE19.0', 'http://example.com/', 'title')
-
-        url = self.lp.get_add_url(item, product_key="hopes")
+    def test_get_add_url_product_key_param(self):
+        """
+        Assert that `.get_add_url()` produces a "/dialog/add" url with
+        `product_key` "product" query param.
+        """
+        url = self.lp.get_add_url(self.item, product_key="hopes")
         data = self.get_qs_dict(url)
         self.assertEqual(data['product'], ['hopes'])
         self.assertEqual(
@@ -114,7 +117,12 @@ class TestLaterPayClient(unittest.TestCase):
             '/dialog/add',
         )
 
-        url = self.lp.get_buy_url(item, product_key="hopes")
+    def test_get_buy_url_product_key_param(self):
+        """
+        Assert that `.get_buy_url()` produces a "/dialog/buy" url with
+        `product_key` "product" query param.
+        """
+        url = self.lp.get_buy_url(self.item, product_key="hopes")
         data = self.get_qs_dict(url)
         self.assertEqual(data['product'], ['hopes'])
         self.assertEqual(
@@ -122,10 +130,12 @@ class TestLaterPayClient(unittest.TestCase):
             '/dialog/buy',
         )
 
-    def test_get_web_url_no_product_key_param(self):
-        item = ItemDefinition(1, 'EUR20', 'DE19.0', 'http://example.com/', 'title')
-
-        url = self.lp.get_add_url(item)
+    def test_get_add_url_no_product_key_param(self):
+        """
+        Assert that `.get_add_url()` produces a "/dialog/buy" url without
+        "product" query param when no `product_key` method param is used.
+        """
+        url = self.lp.get_add_url(self.item)
         data = self.get_qs_dict(url)
         self.assertNotIn('product', data)
         self.assertEqual(
@@ -133,7 +143,12 @@ class TestLaterPayClient(unittest.TestCase):
             '/dialog/add',
         )
 
-        url = self.lp.get_buy_url(item)
+    def test_get_buy_url_no_product_key_param(self):
+        """
+        Assert that `.get_buy_url()` produces a "/dialog/buy" url without
+        "product" query param when no `product_key` method param is used.
+        """
+        url = self.lp.get_buy_url(self.item)
         data = self.get_qs_dict(url)
         self.assertNotIn('product', data)
         self.assertEqual(
