@@ -42,7 +42,9 @@ Release Checklist
 
 * Ensure CHANGELOG is representative
 * Determine next version number from the CHANGELOG (ensuring we follow [SemVer](http://semver.org/))
+* `git flow release start $newver`
 * Update the CHANGELOG with the new version
 * Update the version in `setup.py`
-* Commit, tag, push the commit _and_ tags (`git push --tags`)
+* `git flow release finish $newver`
+* `git push --tags origin develop master`
 * `python setup.py register sdist upload`
