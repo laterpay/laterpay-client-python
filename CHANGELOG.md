@@ -2,6 +2,8 @@
 
 ## UNRELEASED
 
+* Standardised the usage of the (internal) `product` API (it was usable via path or parameter, and we're deprecating the path usage)
+
 ## 3.2.0
 
 * Deprecating the `vat` parameter in `ItemDefinition` because of new [EU law for calculating VAT](http://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=CELEX:32006L0112&from=DE)
