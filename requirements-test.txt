@@ -3,3 +3,4 @@ flake8==2.2.3
 coverage==3.7.1
 coveralls
 pep257==0.3.2
+furl==0.4.7

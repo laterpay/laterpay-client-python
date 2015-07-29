@@ -14,7 +14,6 @@ import logging
 import random
 import re
 import string
-import time
 
 from . import signing
 from . import compat
@@ -52,6 +51,11 @@ class APIException(Exception):
 class ItemDefinition(object):
     """
     Contains data about content being sold through LaterPay.
+
+    Documentation for usage:
+
+    For PPU purchases: https://laterpay.net/developers/docs/dialog-api#GET/dialog/add
+    For Single item purchases: https://laterpay.net/developers/docs/dialog-api#GET/dialog/buy
     """
 
     def __init__(self, item_id, pricing, vat, url, title, purchasedatetime=None, cp=None, expiry=None):
@@ -60,32 +64,28 @@ class ItemDefinition(object):
             if not re.match('[A-Z]{3}\d+', price):
                 raise InvalidItemDefinition('Pricing is not valid: %s' % pricing)
 
-        for v in vat.split(','):
-
-            if len(v) < 2:
-                raise InvalidItemDefinition('Invalid length for vat: %s' % v)
-
-            if not all((65 <= ord(c) <= 90) for c in v[:2]):
-                raise InvalidItemDefinition('Invalid country for vat: %s' % vat)
-
-            try:
-                float(v[2:])
-            except ValueError:
-                raise InvalidItemDefinition('Invalid number part for vat: %s' % vat)
-
-        if purchasedatetime is not None and not isinstance(purchasedatetime, int):
-            raise InvalidItemDefinition("Invalid purchasedatetime %s. This should be a UTC-based epoch timestamp "
-                                        "in seconds of type int" % purchasedatetime)
+        if purchasedatetime is not None:
+            warnings.warn("The purchasedatetime parameter is deprecated and will be ignored. ", DeprecationWarning)
 
         if expiry is not None and not re.match('^(\+?\d+)$', expiry):
             raise InvalidItemDefinition("Invalid expiry value %s, it should be '+3600' or UTC-based "
                                         "epoch timestamp in seconds of type int" % expiry)
 
+        if vat is not None:
+            warnings.warn(
+                (
+                    "The vat parameter is deprecated. "
+                    "Due to changes in EU VAT legislation, from 1st Jan 2015 "
+                    "VAT will be charged based on _customer_ location and not "
+                    "supplier location: "
+                    "http://ec.europa.eu/taxation_customs/taxation/vat/traders/e-commerce/index_en.htm"
+                ),
+                DeprecationWarning
+            )
+
         self.data = {
             'article_id': item_id,
-            'purchasedatetime': int(time.time()) if purchasedatetime is None else purchasedatetime,
             'pricing': pricing,
-            'vat': vat,
             'url': url,
             'title': title,
             'cp': cp,
@@ -273,7 +273,9 @@ class LaterPayClient(object):
                      use_jsevents=False,
                      skip_add_to_invoice=False,
                      transaction_reference=None,
-                     consumable=False):
+                     consumable=False,
+                     return_url=None,
+                     failure_url=None):
 
         # filter out params with None value.
         data = {k: v for k, v in item_definition.data.items() if v is not None}
@@ -283,6 +285,12 @@ class LaterPayClient(object):
 
         if consumable:
             data['consumable'] = 1
+
+        if return_url:
+            data['return_url'] = return_url
+
+        if failure_url:
+            data['failure_url'] = failure_url
 
         if transaction_reference:
 
@@ -300,9 +308,9 @@ class LaterPayClient(object):
             prefix = self.web_root
 
         if product_key is not None:
-            base_url = "%s/%s/%s" % (prefix, product_key, page_type)
-        else:
-            base_url = "%s/%s" % (prefix, page_type)
+            data['product'] = product_key
+
+        base_url = "%s/%s" % (prefix, page_type)
 
         params = self._sign_and_encode(data, base_url, method="GET")
         url = "{base_url}?{params}".format(base_url=base_url, params=params)
@@ -316,7 +324,9 @@ class LaterPayClient(object):
                     use_jsevents=False,
                     skip_add_to_invoice=False,
                     transaction_reference=None,
-                    consumable=False):
+                    consumable=False,
+                    return_url=None,
+                    failure_url=None):
         """
         Get the URL at which a user can start the checkout process to buy a single item.
 
@@ -330,7 +340,9 @@ class LaterPayClient(object):
             use_jsevents=use_jsevents,
             skip_add_to_invoice=skip_add_to_invoice,
             transaction_reference=transaction_reference,
-            consumable=consumable)
+            consumable=consumable,
+            return_url=return_url,
+            failure_url=failure_url)
 
     def get_add_url(self,
                     item_definition,
@@ -339,7 +351,9 @@ class LaterPayClient(object):
                     use_jsevents=False,
                     skip_add_to_invoice=False,
                     transaction_reference=None,
-                    consumable=False):
+                    consumable=False,
+                    return_url=None,
+                    failure_url=None):
         """
         Get the URL at which a user can add an item to their invoice to pay later.
 
@@ -353,7 +367,9 @@ class LaterPayClient(object):
             use_jsevents=use_jsevents,
             skip_add_to_invoice=skip_add_to_invoice,
             transaction_reference=transaction_reference,
-            consumable=consumable)
+            consumable=consumable,
+            return_url=return_url,
+            failure_url=failure_url)
 
     def _sign_and_encode(self, params, url, method="GET"):
         return signing.sign_and_encode(self.shared_secret, params, url=url, method=method)
@@ -404,6 +420,12 @@ class LaterPayClient(object):
         return self.lptoken is not None
 
     def add_metered_access(self, article_id, threshold=5, product_key=None):
+        warnings.warn(
+            "`LaterPayClient.add_metered_access()` is deprecated - we are retiring"
+            " the platform feature - if you believe this will impact you, please"
+            " contact support@laterpay.net",
+            DeprecationWarning,
+        )
 
         params = {
             'lptoken': self.lptoken,
@@ -422,6 +444,12 @@ class LaterPayClient(object):
             raise InvalidTokenException()
 
     def get_metered_access(self, article_ids, threshold=5, product_key=None):
+        warnings.warn(
+            "`LaterPayClient.get_metered_access()` is deprecated - we are retiring"
+            " the platform feature - if you believe this will impact you, please"
+            " contact support@laterpay.net",
+            DeprecationWarning,
+        )
 
         if not isinstance(article_ids, (list, tuple)):
             article_ids = [article_ids]

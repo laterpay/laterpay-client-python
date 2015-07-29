@@ -2,7 +2,15 @@
 
 ## UNRELEASED
 
-* Nothing
+## 3.2.1
+
+* Standardised the usage of the (internal) `product` API (it was usable via path or parameter, and we're deprecating the path usage)
+
+## 3.2.0
+
+* Deprecating the `vat` parameter in `ItemDefinition` because of new [EU law for calculating VAT](http://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=CELEX:32006L0112&from=DE)
+* Deprecated `LaterPayClient.get_metered_access()` and `LaterPayClient.add_metered_access()` methods.
+* Added `return_url` / `failure_url` parameters for dialogs: https://www.laterpay.net/developers/docs/dialog-api
 
 ## 3.1.0
 

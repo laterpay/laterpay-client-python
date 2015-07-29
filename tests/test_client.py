@@ -10,6 +10,8 @@ if sys.version_info[:2] < (2, 7):
 else:
     import unittest
 
+from furl import furl
+
 from laterpay.compat import urlparse, parse_qs
 from laterpay import (
     APIException,
@@ -25,10 +27,6 @@ class TestItemDefinition(unittest.TestCase):
         with self.assertRaises(InvalidItemDefinition):
             ItemDefinition(1, '', '', '', 'title')
         with self.assertRaises(InvalidItemDefinition):
-            ItemDefinition(1, 'EUR20', '', '', 'title')
-        with self.assertRaises(InvalidItemDefinition):
-            ItemDefinition(1, 'EUR20', 'DE19.0.123.44', '', 'title')
-        with self.assertRaises(InvalidItemDefinition):
             ItemDefinition(1, 'EUR20', 'DE19.0', 'http://foo.invalid', 'title', expiry="illegal123")
 
 
@@ -38,6 +36,7 @@ class TestLaterPayClient(unittest.TestCase):
         self.lp = LaterPayClient(
             1,
             'some-secret')
+        self.item = ItemDefinition(1, 'EUR20', 'DE19.0', 'http://example.com/', 'title')
 
     def get_qs_dict(self, url):
         o = urlparse(url)
@@ -45,6 +44,9 @@ class TestLaterPayClient(unittest.TestCase):
         o = urlparse(d['url'][0])
         d = parse_qs(o.query)
         return d
+
+    def get_dialog_api_furl(self, url):
+        return furl(furl(url).query.params['url'])
 
     def assertQueryString(self, url, key, value=None):
         d = self.get_qs_dict(url)
@@ -92,6 +94,66 @@ class TestLaterPayClient(unittest.TestCase):
         self.assertFalse(
             'expiry%3DNone' in url,
             'expiry url param is "None". Should be omitted.',
+        )
+
+    def test_failure_url_param(self):
+        item = ItemDefinition(1, 'EUR20', 'DE19.0', 'http://help.me/', 'title')
+        url = self.lp.get_add_url(item, failure_url="http://example.com")
+        self.assertTrue('failure_url' in url)
+
+        url = self.lp.get_buy_url(item, failure_url="http://example.com")
+        self.assertTrue('failure_url' in url)
+
+    def test_get_add_url_product_key_param(self):
+        """
+        Assert that `.get_add_url()` produces a "/dialog/add" url with
+        `product_key` "product" query param.
+        """
+        url = self.lp.get_add_url(self.item, product_key="hopes")
+        data = self.get_qs_dict(url)
+        self.assertEqual(data['product'], ['hopes'])
+        self.assertEqual(
+            str(self.get_dialog_api_furl(url).path),
+            '/dialog/add',
+        )
+
+    def test_get_buy_url_product_key_param(self):
+        """
+        Assert that `.get_buy_url()` produces a "/dialog/buy" url with
+        `product_key` "product" query param.
+        """
+        url = self.lp.get_buy_url(self.item, product_key="hopes")
+        data = self.get_qs_dict(url)
+        self.assertEqual(data['product'], ['hopes'])
+        self.assertEqual(
+            str(self.get_dialog_api_furl(url).path),
+            '/dialog/buy',
+        )
+
+    def test_get_add_url_no_product_key_param(self):
+        """
+        Assert that `.get_add_url()` produces a "/dialog/buy" url without
+        "product" query param when no `product_key` method param is used.
+        """
+        url = self.lp.get_add_url(self.item)
+        data = self.get_qs_dict(url)
+        self.assertNotIn('product', data)
+        self.assertEqual(
+            str(self.get_dialog_api_furl(url).path),
+            '/dialog/add',
+        )
+
+    def test_get_buy_url_no_product_key_param(self):
+        """
+        Assert that `.get_buy_url()` produces a "/dialog/buy" url without
+        "product" query param when no `product_key` method param is used.
+        """
+        url = self.lp.get_buy_url(self.item)
+        data = self.get_qs_dict(url)
+        self.assertNotIn('product', data)
+        self.assertEqual(
+            str(self.get_dialog_api_furl(url).path),
+            '/dialog/buy',
         )
 
 
