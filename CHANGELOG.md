@@ -2,6 +2,8 @@
 
 ## UNRELEASED
 
+## 3.2.1
+
 * Standardised the usage of the (internal) `product` API (it was usable via path or parameter, and we're deprecating the path usage)
 
 ## 3.2.0
