@@ -100,7 +100,8 @@ class LaterPayClient(object):
                  shared_secret,
                  api_root='https://api.laterpay.net',
                  web_root='https://web.laterpay.net',
-                 lptoken=None):
+                 lptoken=None,
+                 timeout_seconds=10):
         """
         Instantiate a LaterPay API client.
 
@@ -113,6 +114,7 @@ class LaterPayClient(object):
         self.web_root = web_root
         self.shared_secret = shared_secret
         self.lptoken = lptoken
+        self.timeout_seconds = timeout_seconds
 
     def get_gettoken_redirect(self, return_to):
         """
@@ -392,7 +394,7 @@ class LaterPayClient(object):
         _logger.debug("Making request to %s", url)
 
         try:
-            response = compat.urlopen(req).read()
+            response = compat.urlopen(req, timeout=self.timeout_seconds).read()
         except Exception as e:
             _logger.exception("Unexpected error with request: %s", e)
             resp = {'status': 'unexpected error: %s' % e}
