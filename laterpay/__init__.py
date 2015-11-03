@@ -393,12 +393,9 @@ class LaterPayClient(object):
 
         try:
             response = compat.urlopen(req).read()
-        except compat.URLError as e:
-            _logger.debug("Request failed with reason: %s", e.reason)
-            resp = {'status': 'connection_error'}
-        except:
-            _logger.debug("Unexpected error with request")
-            resp = {'status': 'unexpected error'}
+        except Exception as e:
+            _logger.exception("Unexpected error with request: %s", e)
+            resp = {'status': 'unexpected error: %s' % e}
         else:
             _logger.debug("Received response %s", response)
             resp = json.loads(response)
