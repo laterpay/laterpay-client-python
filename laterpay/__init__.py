@@ -393,11 +393,11 @@ class LaterPayClient(object):
 
         try:
             response = compat.urlopen(req).read()
-        except compat.URLError as e:
-            _logger.debug("Request failed with reason: %s", e.reason)
-            resp = {'status': 'connection_error'}
         except:
-            _logger.debug("Unexpected error with request")
+            # TODO: Add proper or no exception handling.
+            # Pretending there was a response even if there was none
+            # (can't connect / timeout) seems like a wrong idea.
+            _logger.exception("Unexpected error with request")
             resp = {'status': 'unexpected error'}
         else:
             _logger.debug("Received response %s", response)
