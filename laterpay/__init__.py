@@ -100,19 +100,25 @@ class LaterPayClient(object):
                  shared_secret,
                  api_root='https://api.laterpay.net',
                  web_root='https://web.laterpay.net',
-                 lptoken=None):
+                 lptoken=None,
+                 timeout_seconds=10):
         """
         Instantiate a LaterPay API client.
 
         Defaults connecting to the production API.
 
         https://www.laterpay.net/developers/docs
+
+        :param timeout_seconds: number of seconds after which backend api
+            requests (e.g. /access) will time out (10 by default).
+
         """
         self.cp_key = cp_key
         self.api_root = api_root
         self.web_root = web_root
         self.shared_secret = shared_secret
         self.lptoken = lptoken
+        self.timeout_seconds = timeout_seconds
 
     def get_gettoken_redirect(self, return_to):
         """
@@ -392,7 +398,7 @@ class LaterPayClient(object):
         _logger.debug("Making request to %s", url)
 
         try:
-            response = compat.urlopen(req).read()
+            response = compat.urlopen(req, timeout=self.timeout_seconds).read()
         except:
             # TODO: Add proper or no exception handling.
             # Pretending there was a response even if there was none
