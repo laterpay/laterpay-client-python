@@ -108,6 +108,10 @@ class LaterPayClient(object):
         Defaults connecting to the production API.
 
         https://www.laterpay.net/developers/docs
+
+        :param timeout_seconds: number of seconds after which backend api
+            requests (e.g. /access) will time out (10 by default).
+
         """
         self.cp_key = cp_key
         self.api_root = api_root
