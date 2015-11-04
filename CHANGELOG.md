@@ -1,6 +1,9 @@
 # Changelog
 
-## UNRELEASED
+## Unreleased
+
+
+## 4.0.0
 
 * Exceptions raised by `urlopen` in `LaterPayClient._make_request()` are now logged with `ERROR` level using `Logger.exception()`.
 * Added `timeout_seconds` (default value is 10) param to `LaterPayClient`. Backend API requests will time out now according to that value.
