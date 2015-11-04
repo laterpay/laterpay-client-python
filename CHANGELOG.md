@@ -3,6 +3,7 @@
 ## UNRELEASED
 
 * Added `timeout_seconds` (default value is 10) param to `LaterPayClient`. Backend API requests will time out now according to that value.
+* Removed deprecated `laterpay.django` package.
 
 
 ## 3.2.1
