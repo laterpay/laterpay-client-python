@@ -25,9 +25,20 @@ class TestItemDefinition(unittest.TestCase):
 
     def test_item_definition(self):
         with self.assertRaises(InvalidItemDefinition):
-            ItemDefinition(1, '', '', '', 'title')
+            ItemDefinition(1, '', '', 'title')
         with self.assertRaises(InvalidItemDefinition):
-            ItemDefinition(1, 'EUR20', 'DE19.0', 'http://foo.invalid', 'title', expiry="illegal123")
+            ItemDefinition(1, 'EUR20', 'http://foo.invalid', 'title', expiry="illegal123")
+
+        it = ItemDefinition(1, 'EUR20', 'http://example.com/t', 'title', expiry='+100')
+
+        self.assertEqual(it.data, {
+            'article_id': 1,
+            'cp': None,
+            'expiry': '+100',
+            'pricing': 'EUR20',
+            'title': 'title',
+            'url': 'http://example.com/t',
+        })
 
 
 class TestLaterPayClient(unittest.TestCase):
@@ -36,7 +47,7 @@ class TestLaterPayClient(unittest.TestCase):
         self.lp = LaterPayClient(
             1,
             'some-secret')
-        self.item = ItemDefinition(1, 'EUR20', 'DE19.0', 'http://example.com/', 'title')
+        self.item = ItemDefinition(1, 'EUR20', 'http://example.com/', 'title')
 
     def get_qs_dict(self, url):
         o = urlparse(url)
@@ -56,7 +67,7 @@ class TestLaterPayClient(unittest.TestCase):
 
     def test_transaction_reference(self):
 
-        item = ItemDefinition(1, 'EUR20', 'DE19.0', 'http://foo.invalid', 'title')
+        item = ItemDefinition(1, 'EUR20', 'http://foo.invalid', 'title')
 
         _u = str(uuid.uuid4())
 
@@ -89,7 +100,7 @@ class TestLaterPayClient(unittest.TestCase):
 
     def test_get_web_url_has_no_none_params(self):
         # item with expiry not set.
-        item = ItemDefinition(1, 'EUR20', 'DE19.0', 'http://help.me/', 'title')
+        item = ItemDefinition(1, 'EUR20', 'http://help.me/', 'title')
         url = self.lp.get_add_url(item)
         self.assertFalse(
             'expiry%3DNone' in url,
@@ -97,7 +108,7 @@ class TestLaterPayClient(unittest.TestCase):
         )
 
     def test_failure_url_param(self):
-        item = ItemDefinition(1, 'EUR20', 'DE19.0', 'http://help.me/', 'title')
+        item = ItemDefinition(1, 'EUR20', 'http://help.me/', 'title')
         url = self.lp.get_add_url(item, failure_url="http://example.com")
         self.assertTrue('failure_url' in url)
 

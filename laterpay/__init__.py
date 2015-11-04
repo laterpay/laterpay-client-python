@@ -58,30 +58,15 @@ class ItemDefinition(object):
     For Single item purchases: https://laterpay.net/developers/docs/dialog-api#GET/dialog/buy
     """
 
-    def __init__(self, item_id, pricing, vat, url, title, purchasedatetime=None, cp=None, expiry=None):
+    def __init__(self, item_id, pricing, url, title, cp=None, expiry=None):
 
         for price in pricing.split(','):
             if not re.match('[A-Z]{3}\d+', price):
                 raise InvalidItemDefinition('Pricing is not valid: %s' % pricing)
 
-        if purchasedatetime is not None:
-            warnings.warn("The purchasedatetime parameter is deprecated and will be ignored. ", DeprecationWarning)
-
         if expiry is not None and not re.match('^(\+?\d+)$', expiry):
             raise InvalidItemDefinition("Invalid expiry value %s, it should be '+3600' or UTC-based "
                                         "epoch timestamp in seconds of type int" % expiry)
-
-        if vat is not None:
-            warnings.warn(
-                (
-                    "The vat parameter is deprecated. "
-                    "Due to changes in EU VAT legislation, from 1st Jan 2015 "
-                    "VAT will be charged based on _customer_ location and not "
-                    "supplier location: "
-                    "http://ec.europa.eu/taxation_customs/taxation/vat/traders/e-commerce/index_en.htm"
-                ),
-                DeprecationWarning
-            )
 
         self.data = {
             'article_id': item_id,
@@ -424,66 +409,6 @@ class LaterPayClient(object):
         https://www.laterpay.net/developers/docs/backend-api#GET/gettoken
         """
         return self.lptoken is not None
-
-    def add_metered_access(self, article_id, threshold=5, product_key=None):
-        warnings.warn(
-            "`LaterPayClient.add_metered_access()` is deprecated - we are retiring"
-            " the platform feature - if you believe this will impact you, please"
-            " contact support@laterpay.net",
-            DeprecationWarning,
-        )
-
-        params = {
-            'lptoken': self.lptoken,
-            'cp': self.cp_key,
-            'threshold': threshold,
-            'feature': 'metered',
-            'period': 'monthly',
-            'article_id': article_id
-        }
-        if product_key is not None:
-            params['product'] = product_key
-
-        data = self._make_request(self._add_url, params, method='POST')
-
-        if data['status'] == 'invalid_token':
-            raise InvalidTokenException()
-
-    def get_metered_access(self, article_ids, threshold=5, product_key=None):
-        warnings.warn(
-            "`LaterPayClient.get_metered_access()` is deprecated - we are retiring"
-            " the platform feature - if you believe this will impact you, please"
-            " contact support@laterpay.net",
-            DeprecationWarning,
-        )
-
-        if not isinstance(article_ids, (list, tuple)):
-            article_ids = [article_ids]
-
-        params = {
-            'lptoken': self.lptoken,
-            'cp': self.cp_key,
-            'article_id': article_ids,
-            'feature': 'metered',
-            'threshold': threshold,
-            'period': 'monthly'
-        }
-
-        if product_key is not None:
-            params['product'] = product_key
-
-        data = self._make_request(self._access_url, params)
-        subs = data.get('subs', [])
-
-        if data['status'] == 'invalid_token':
-            raise InvalidTokenException()
-
-        if data['status'] != 'ok':
-            raise Exception()
-
-        exceeded = data.get('exceeded', False)
-
-        return data['articles'], exceeded, subs
 
     def get_access(self, article_ids, product_key=None):
         """
