@@ -3,6 +3,7 @@
 ## UNRELEASED
 
 * Added `timeout_seconds` (default value is 10) param to `LaterPayClient`. Backend API requests will time out now according to that value.
+* Removed deprecated `laterpay.django` package.
 * Removed deprecated `vat` and `purchasedatetime` params from `ItemDefinition.__init__()`. This is a backward incompatible change to `__init__(self, item_id, pricing, url, title, cp=None, expiry=None)` from `__init__(self, item_id, pricing, vat, url, title, purchasedatetime=None, cp=None, expiry=None)`.
 * Removed deprecated `add_metered_access()` and `get_metered_access()` methods from `LaterPayClient`.
 
