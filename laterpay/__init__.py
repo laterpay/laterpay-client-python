@@ -225,6 +225,11 @@ class LaterPayClient(object):
                                                        "&jsevents=1" if use_jsevents else "",
                                                        "&cp=%s" % self.cp_key)
         if use_dialog_api:
+            warnings.warn("The Dialog API Wrapper is deprecated and no longer recommended. "
+                          "Please set use_dialog_api to False when calling get_login_dialog_url. "
+                          "Future releases will not use the Dialog API Wrapper by default. "
+                          "See http://docs.laterpay.net/platform/dialogs/third_party_cookies/",
+                          DeprecationWarning)
             return self._get_dialog_api_url(url)
         return url
 
@@ -234,6 +239,11 @@ class LaterPayClient(object):
                                                         "&jsevents=1" if use_jsevents else "",
                                                         "&cp=%s" % self.cp_key)
         if use_dialog_api:
+            warnings.warn("The Dialog API Wrapper is deprecated and no longer recommended. "
+                          "Please set use_dialog_api to False when calling get_signup_dialog_url. "
+                          "Future releases will not use the Dialog API Wrapper by default. "
+                          "See http://docs.laterpay.net/platform/dialogs/third_party_cookies/",
+                          DeprecationWarning)
             return self._get_dialog_api_url(url)
         return url
 
@@ -243,6 +253,11 @@ class LaterPayClient(object):
                                                         "&jsevents=1" if use_jsevents else "",
                                                         "&cp=%s" % self.cp_key)
         if use_dialog_api:
+            warnings.warn("The Dialog API Wrapper is deprecated and no longer recommended. "
+                          "Please set use_dialog_api to False when calling get_logout_dialog_url. "
+                          "Future releases will not use the Dialog API Wrapper by default. "
+                          "See http://docs.laterpay.net/platform/dialogs/third_party_cookies/",
+                          DeprecationWarning)
             return self._get_dialog_api_url(url)
         return url
 
@@ -314,6 +329,11 @@ class LaterPayClient(object):
         url = "{base_url}?{params}".format(base_url=base_url, params=params)
 
         if use_dialog_api:
+            warnings.warn("The Dialog API Wrapper is deprecated and no longer recommended. "
+                          "Please set use_dialog_api to False when calling get_buy_url or get_add_url. "
+                          "Future releases will not use the Dialog API Wrapper by default. "
+                          "See http://docs.laterpay.net/platform/dialogs/third_party_cookies/",
+                          DeprecationWarning)
             return self._get_dialog_api_url(url)
         return url
 
