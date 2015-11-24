@@ -167,6 +167,73 @@ class TestLaterPayClient(unittest.TestCase):
             '/dialog/buy',
         )
 
+    def test_get_buy_url_with_use_dialog_api_false(self):
+        """
+        Assert that `.get_buy_url()` returns a direct buy url, with no
+        dialog-api iframe, when `use_dialog_api=False`
+        """
+        url = self.lp.get_buy_url(self.item, use_dialog_api=False)
+        self.assertEqual(str(furl(url).path), '/dialog/buy')
+
+    def test_get_add_url_with_use_dialog_api_false(self):
+        """
+        Assert that `.get_add_url()` returns a direct add url, with no
+        dialog-api iframe, when `use_dialog_api=False`
+        """
+        url = self.lp.get_add_url(self.item, use_dialog_api=False)
+        self.assertEqual(str(furl(url).path), '/dialog/add')
+
+    def test_get_login_dialog_url_with_use_dialog_api_false(self):
+        """
+        Assert that `.get_login_dialog_url()` returns a url with no
+        dialog-api iframe, when `use_dialog_api=False`
+        """
+        url = self.lp.get_login_dialog_url('http://example.org',
+                                           use_dialog_api=False)
+        self.assertEqual(str(furl(url).path), '/account/dialog/login')
+
+    def test_get_login_dialog_url_without_use_dialog_api(self):
+        """
+        Assert that `.get_login_dialog_url()` returns a url with no
+        dialog-api iframe, when `use_dialog_api` is not set (default)
+        """
+        url = self.lp.get_login_dialog_url('http://example.org')
+        self.assertEqual(str(furl(url).path), '/dialog-api')
+
+    def test_get_logout_dialog_url_with_use_dialog_api_false(self):
+        """
+        Assert that `.get_logout_dialog_url()` returns a url with no
+        dialog-api iframe, when `use_dialog_api=False`
+        """
+        url = self.lp.get_logout_dialog_url('http://example.org',
+                                            use_dialog_api=False)
+        self.assertEqual(str(furl(url).path), '/account/dialog/logout')
+
+    def test_get_logout_dialog_url_without_use_dialog_api(self):
+        """
+        Assert that `.get_logout_dialog_url()` returns a url with no
+        dialog-api iframe, when `use_dialog_api` is not set (default)
+        """
+        url = self.lp.get_logout_dialog_url('http://example.org')
+        self.assertEqual(str(furl(url).path), '/dialog-api')
+
+    def test_get_signup_dialog_url_with_use_dialog_api_false(self):
+        """
+        Assert that `.get_signup_dialog_url()` returns a url with no
+        dialog-api iframe, when `use_dialog_api=False`
+        """
+        url = self.lp.get_signup_dialog_url('http://example.org',
+                                            use_dialog_api=False)
+        self.assertEqual(str(furl(url).path), '/account/dialog/signup')
+
+    def test_get_signup_dialog_url_without_use_dialog_api(self):
+        """
+        Assert that `.get_signup_dialog_url()` returns a url with no
+        dialog-api iframe, when `use_dialog_api` is not set (default)
+        """
+        url = self.lp.get_signup_dialog_url('http://example.org')
+        self.assertEqual(str(furl(url).path), '/dialog-api')
+
 
 if __name__ == '__main__':
     unittest.main()
