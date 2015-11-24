@@ -219,26 +219,32 @@ class LaterPayClient(object):
     def _get_dialog_api_url(self, url):
         return '%s/dialog-api?url=%s' % (self.web_root, compat.quote_plus(url))
 
-    def get_login_dialog_url(self, next_url, use_jsevents=False):
+    def get_login_dialog_url(self, next_url, use_jsevents=False, use_dialog_api=True):
         """ Get the URL for a login page. """
         url = '%s/account/dialog/login?next=%s%s%s' % (self.web_root, compat.quote_plus(next_url),
                                                        "&jsevents=1" if use_jsevents else "",
                                                        "&cp=%s" % self.cp_key)
-        return self._get_dialog_api_url(url)
+        if use_dialog_api:
+            return self._get_dialog_api_url(url)
+        return url
 
-    def get_signup_dialog_url(self, next_url, use_jsevents=False):
+    def get_signup_dialog_url(self, next_url, use_jsevents=False, use_dialog_api=True):
         """ Get the URL for a signup page. """
         url = '%s/account/dialog/signup?next=%s%s%s' % (self.web_root, compat.quote_plus(next_url),
                                                         "&jsevents=1" if use_jsevents else "",
                                                         "&cp=%s" % self.cp_key)
-        return self._get_dialog_api_url(url)
+        if use_dialog_api:
+            return self._get_dialog_api_url(url)
+        return url
 
-    def get_logout_dialog_url(self, next_url, use_jsevents=False):
+    def get_logout_dialog_url(self, next_url, use_jsevents=False, use_dialog_api=True):
         """ Get the URL for a logout page. """
         url = '%s/account/dialog/logout?next=%s%s%s' % (self.web_root, compat.quote_plus(next_url),
                                                         "&jsevents=1" if use_jsevents else "",
                                                         "&cp=%s" % self.cp_key)
-        return self._get_dialog_api_url(url)
+        if use_dialog_api:
+            return self._get_dialog_api_url(url)
+        return url
 
     @property
     def _access_url(self):
@@ -266,7 +272,8 @@ class LaterPayClient(object):
                      transaction_reference=None,
                      consumable=False,
                      return_url=None,
-                     failure_url=None):
+                     failure_url=None,
+                     use_dialog_api=True):
 
         # filter out params with None value.
         data = {k: v for k, v in item_definition.data.items() if v is not None}
@@ -306,7 +313,9 @@ class LaterPayClient(object):
         params = self._sign_and_encode(data, base_url, method="GET")
         url = "{base_url}?{params}".format(base_url=base_url, params=params)
 
-        return self._get_dialog_api_url(url)
+        if use_dialog_api:
+            return self._get_dialog_api_url(url)
+        return url
 
     def get_buy_url(self,
                     item_definition,
@@ -317,7 +326,8 @@ class LaterPayClient(object):
                     transaction_reference=None,
                     consumable=False,
                     return_url=None,
-                    failure_url=None):
+                    failure_url=None,
+                    use_dialog_api=True):
         """
         Get the URL at which a user can start the checkout process to buy a single item.
 
@@ -333,7 +343,8 @@ class LaterPayClient(object):
             transaction_reference=transaction_reference,
             consumable=consumable,
             return_url=return_url,
-            failure_url=failure_url)
+            failure_url=failure_url,
+            use_dialog_api=use_dialog_api)
 
     def get_add_url(self,
                     item_definition,
@@ -344,7 +355,8 @@ class LaterPayClient(object):
                     transaction_reference=None,
                     consumable=False,
                     return_url=None,
-                    failure_url=None):
+                    failure_url=None,
+                    use_dialog_api=True):
         """
         Get the URL at which a user can add an item to their invoice to pay later.
 
@@ -360,7 +372,8 @@ class LaterPayClient(object):
             transaction_reference=transaction_reference,
             consumable=consumable,
             return_url=return_url,
-            failure_url=failure_url)
+            failure_url=failure_url,
+            use_dialog_api=use_dialog_api)
 
     def _sign_and_encode(self, params, url, method="GET"):
         return signing.sign_and_encode(self.shared_secret, params, url=url, method=method)
