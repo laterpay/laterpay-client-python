@@ -68,12 +68,14 @@ class ItemDefinition(object):
             raise InvalidItemDefinition("Invalid expiry value %s, it should be '+3600' or UTC-based "
                                         "epoch timestamp in seconds of type int" % expiry)
 
+        if cp is not None:
+            warnings.warn("ItemDefinition's  cp parameter is deprecated and will be ignored. ", DeprecationWarning)
+
         self.data = {
             'article_id': item_id,
             'pricing': pricing,
             'url': url,
             'title': title,
-            'cp': cp,
             'expiry': expiry,
         }
 
