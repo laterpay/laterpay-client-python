@@ -69,7 +69,7 @@ class ItemDefinition(object):
                                         "epoch timestamp in seconds of type int" % expiry)
 
         if cp is not None:
-            warnings.warn("ItemDefinition's  cp parameter is deprecated and will be ignored. ", DeprecationWarning)
+            warnings.warn("ItemDefinition's cp parameter is deprecated and will be ignored.", DeprecationWarning)
 
         self.data = {
             'article_id': item_id,
