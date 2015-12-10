@@ -33,7 +33,6 @@ class TestItemDefinition(unittest.TestCase):
 
         self.assertEqual(it.data, {
             'article_id': 1,
-            'cp': None,
             'expiry': '+100',
             'pricing': 'EUR20',
             'title': 'title',
