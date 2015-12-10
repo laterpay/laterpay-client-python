@@ -292,6 +292,7 @@ class LaterPayClient(object):
 
         # filter out params with None value.
         data = {k: v for k, v in item_definition.data.items() if v is not None}
+        data['cp'] = self.cp_key
 
         if use_jsevents:
             data['jsevents'] = 1
