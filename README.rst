@@ -41,7 +41,7 @@ Release Checklist
 -----------------
 
 * Ensure CHANGELOG is representative
-* Determine next version number from the CHANGELOG (ensuring we follow [SemVer](http://semver.org/))
+* Determine next version number from the CHANGELOG (ensuring we follow `SemVer <http://semver.org/>`_)
 * `git flow release start $newver`
 * Update the CHANGELOG with the new version
 * Update the version in `setup.py`
