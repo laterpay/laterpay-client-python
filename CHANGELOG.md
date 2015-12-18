@@ -4,7 +4,7 @@
 
 TBD
 
-## 4.0.1
+## 4.1.0
 
 * Dialog API Wrapper is [deprecated](http://docs.laterpay.net/platform/dialogs/third_party_cookies/).
 * `get_buy_url()`, `get_add_url()`, `get_login_dialog_url()`, `get_signup_dialog_url()`, and `get_logout_dialog_url()` have a new `use_dialog_api` parameter that sets if the URL returned uses the Dialog API Wrapper or not. Defaults to True during the Dialog API deprecation period.
