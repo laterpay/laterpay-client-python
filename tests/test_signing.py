@@ -3,6 +3,7 @@
 from __future__ import absolute_import, print_function
 
 import sys
+import hashlib
 
 if sys.version_info[:2] < (2, 7):
     import unittest2 as unittest
@@ -101,7 +102,7 @@ class TestSigningHelper(unittest.TestCase):
             'ts=1330088810&hmac=01c928dcdbbf4ba467969ec9607bfdec0563524d93e06df7d8d3c80d'
         )
 
-    def test_verify(self):
+    def test_verify_str_signature(self):
         params = {
             u'parĄm1': u'valuĘ',
             'param2': ['value2', 'value3'],
@@ -117,8 +118,36 @@ class TestSigningHelper(unittest.TestCase):
             url,
             'POST',
         )
-
         self.assertTrue(verified)
+
+    def test_verify_unicode_signature(self):
+        params = {
+            u'parĄm1': u'valuĘ',
+            'param2': ['value2', 'value3'],
+        }
+        url = u'https://endpoint.com/api'
+        verified = signing.verify(
+            u'346f3d53ad762f3ed3fb7f2427dec2bbfaf0338bb7f91f0460aff15c',
+            u'secret',
+            params,
+            url,
+            'POST',
+        )
+        self.assertTrue(verified)
+
+    def test_verify_invalid_unicode_signature(self):
+        params = {}
+        url = 'https://endpoint.com/api'
+        secret = 'secret'
+
+        verified = signing.verify(
+            u'Ɛ' * len(hashlib.sha224(b'').hexdigest()),
+            secret,
+            params,
+            url,
+            'POST',
+        )
+        self.assertFalse(verified)
 
     def test_url_verification(self):
         secret = '401e9a684fcc49578c1f23176a730abc'
