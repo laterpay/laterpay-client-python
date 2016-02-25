@@ -7,7 +7,6 @@ import time
 import warnings
 
 import six
-
 from six.moves.urllib.parse import parse_qsl, quote, urlencode, urlparse
 
 from . import compat
@@ -51,7 +50,7 @@ def sort_params(param_dict):
     be deprecated in a future release to be replaced with a internal function.
     """
     param_list = []
-    for name, value_list in param_dict.items():
+    for name, value_list in six.iteritems(param_dict):
         if isinstance(value_list, (list, tuple)):
             for value in value_list:
                 if not isinstance(value, six.string_types):
@@ -91,7 +90,7 @@ def normalise_param_structure(params):
         return out
 
     # otherwise this is a dictionary, so either it is { a => b } or { a => (b,c) }
-    for key, value in params.items():
+    for key, value in six.iteritems(params):
         if not isinstance(value, (list, tuple)):
             out[key] = [value]
         else:
@@ -123,7 +122,7 @@ def create_base_message(params, url, method='POST'):
 
     params = normalise_param_structure(params)
 
-    for key, values in params.items():
+    for key, values in six.iteritems(params):
         key = quote(compat.encode_if_unicode(key), safe='')
 
         values_str = []
