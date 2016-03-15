@@ -2,7 +2,8 @@
 
 ## Unreleased
 
-TBD
+* `signing.sign_get_url()` is deprecated and will be removed in a future release.
+
 
 ## 4.1.0
 
