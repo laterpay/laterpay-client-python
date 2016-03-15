@@ -3,6 +3,7 @@
 ## Unreleased
 
 * `signing.sign_get_url()` is deprecated and will be removed in a future release.
+* `laterpay.signing.sign_and_encode()` is deprecated. Consider using `laterpay.utils.signed_query()` instead.
 
 
 ## 4.1.0

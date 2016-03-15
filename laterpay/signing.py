@@ -209,6 +209,8 @@ def verify(signature, secret, params, url, method):
 
 def sign_and_encode(secret, params, url, method="GET"):
     """
+    Deprecated. Consider using ``laterpay.utils.signed_query()`` instead.
+
     Sign and encode a URL ``url`` with a ``secret`` key called via an HTTP ``method``.
 
     It adds the signature to the URL
@@ -221,6 +223,12 @@ def sign_and_encode(secret, params, url, method="GET"):
     :param method: an uppercase string representation of the HTTP method being used for the call (e.g. "GET", "POST")
     :return: a signed and correctly encoded URL
     """
+    warnings.warn(
+        "sign_and_encode is deprecated. It will be removed in a future release. "
+        "Consider using ``laterpay.utils.signed_query()`` instead.",
+        DeprecationWarning,
+    )
+
     if 'ts' not in params:
         params['ts'] = str(int(time.time()))
 
