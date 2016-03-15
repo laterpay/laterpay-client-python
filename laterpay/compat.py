@@ -61,3 +61,14 @@ else:
 
     from urllib2 import Request, urlopen, URLError
 
+
+def encode_if_unicode(value, encoding='utf-8'):
+    """
+    Encode and return a ``value`` using specified ``encoding``.
+
+    Encoding is done only if ``value`` is a ``unicode`` instance
+    (utf-8 encoding is used as default).
+    """
+    if not py3k and isinstance(value, unicode):
+        value = value.encode(encoding)
+    return value

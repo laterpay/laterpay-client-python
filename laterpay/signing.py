@@ -118,11 +118,11 @@ def create_base_message(params, url, method='POST'):
     """
     msg = '{method}&{url}&{params}'
 
-    method = _encode_if_unicode(method).upper()
+    method = compat.encode_if_unicode(method).upper()
 
     data = {}
 
-    url = compat.quote(_encode_if_unicode(url), safe='')
+    url = compat.quote(compat.encode_if_unicode(url), safe='')
 
     if method not in ALLOWED_METHODS:
         raise ValueError('method should be one of: {}'.format(ALLOWED_METHODS))
@@ -130,7 +130,7 @@ def create_base_message(params, url, method='POST'):
     params = normalise_param_structure(params)
 
     for key, values in params.items():
-        key = compat.quote(_encode_if_unicode(key), safe='')
+        key = compat.quote(compat.encode_if_unicode(key), safe='')
 
         if not isinstance(values, (list, tuple)):
             values = [values]
@@ -143,7 +143,7 @@ def create_base_message(params, url, method='POST'):
                 value = str(value)
             values_str.append(value)
 
-        data[key] = [compat.quote(_encode_if_unicode(value_str), safe='') for value_str in values_str]
+        data[key] = [compat.quote(compat.encode_if_unicode(value_str), safe='') for value_str in values_str]
 
     sorted_params = sort_params(data)
 
@@ -180,7 +180,7 @@ def sign(secret, params, url, method='POST'):
     if 'gettoken' in params:
         params.pop('gettoken')
 
-    secret = _encode_if_unicode(secret)
+    secret = compat.encode_if_unicode(secret)
 
     url_parsed = compat.urlparse(url)
     base_url = url_parsed.scheme + "://" + url_parsed.netloc + url_parsed.path
@@ -229,8 +229,8 @@ def sign_and_encode(secret, params, url, method="GET"):
 
     sorted_data = []
     for k, v in sort_params(params):
-        k = _encode_if_unicode(k)
-        value = _encode_if_unicode(v)
+        k = compat.encode_if_unicode(k)
+        value = compat.encode_if_unicode(v)
         sorted_data.append((k, value))
 
     encoded = compat.urlencode(sorted_data)
@@ -291,18 +291,3 @@ def sign_get_url(secret, url, signature_paramname="hmac"):
             parsed.params + "?" + compat.urlencode(qs) + parsed.fragment
 
     return None
-
-
-def _encode_if_unicode(value, encoding='utf-8'):
-    """
-    Encode and return a ``value`` using specified ``encoding``.
-
-    Encoding is done only if ``value`` is a ``unicode`` instance
-    (utf-8 encoding is used as default).
-
-    This utility is needed because some web frameworks can provide
-    request arguments as ``str`` instances.
-    """
-    if not compat.py3k and isinstance(value, unicode):
-        value = value.encode(encoding)
-    return value
