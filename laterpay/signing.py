@@ -5,6 +5,7 @@ import functools
 import hashlib
 import hmac
 import time
+import warnings
 
 from . import compat
 
@@ -240,6 +241,8 @@ def sign_and_encode(secret, params, url, method="GET"):
 
 def sign_get_url(secret, url, signature_paramname="hmac"):
     """
+    Deprecated.
+
     Sign a URL to be GET-ed.
 
     This function takes a URL, parses it, sorts the URL parameters in
@@ -261,6 +264,13 @@ def sign_get_url(secret, url, signature_paramname="hmac"):
     :type signature_paramname: str
     :returns: ``str`` -- the URL, including the signature as an URL parameter
     """
+    warnings.warn(
+        "sign_get_url is deprecated. It will be removed in a future release. "
+        "It wasn't intended for public use. It's recommended to use the core "
+        "signing API which is sign() and verify().",
+        DeprecationWarning,
+    )
+
     parsed = compat.urlparse(url)
 
     if parsed.query != "":
