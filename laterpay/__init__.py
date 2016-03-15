@@ -15,7 +15,7 @@ import random
 import re
 import string
 
-from . import signing
+from . import utils
 from . import compat
 
 import warnings
@@ -399,7 +399,7 @@ class LaterPayClient(object):
             use_dialog_api=use_dialog_api)
 
     def _sign_and_encode(self, params, url, method="GET"):
-        return signing.sign_and_encode(self.shared_secret, params, url=url, method=method)
+        return utils.signed_query(self.shared_secret, params, url=url, method=method)
 
     def _make_request(self, url, params, method='GET'):
 
