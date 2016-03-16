@@ -29,6 +29,10 @@ setup(
     packages=_packages,
     package_data={'laterpay.django': ['templates/laterpay/inclusion/*']},
 
+    install_requires=[
+        'requests',
+    ],
+
     classifiers=(
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",

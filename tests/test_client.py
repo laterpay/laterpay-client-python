@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function
 
+import json
 import sys
 import uuid
 
@@ -9,6 +10,9 @@ if sys.version_info[:2] < (2, 7):
     import unittest2 as unittest
 else:
     import unittest
+
+import mock
+import responses
 
 from furl import furl
 
@@ -232,6 +236,70 @@ class TestLaterPayClient(unittest.TestCase):
         """
         url = self.lp.get_signup_dialog_url('http://example.org')
         self.assertEqual(str(furl(url).path), '/dialog-api')
+
+    @mock.patch('laterpay.signing.sign')
+    @mock.patch('time.time')
+    @responses.activate
+    def test_get_access_data_success(self, time_time_mock, sign_mock):
+        time_time_mock.return_value = 123
+        sign_mock.return_value = 'fake-signature'
+        responses.add(
+            responses.GET,
+            'http://example.net/access',
+            body=json.dumps({
+                "status": "ok",
+                "articles": {
+                    "article-1": {"access": True},
+                    "article-2": {"access": False},
+                },
+            }),
+            status=200,
+            content_type='application/json',
+        )
+
+        client = LaterPayClient(
+            'fake-cp-key',
+            'fake-shared-secret',
+            api_root='http://example.net',
+        )
+
+        data = client.get_access_data(
+            ['article-1', 'article-2'],
+            lptoken='fake-lptoken',
+        )
+
+        self.assertEqual(data, {
+            "status": "ok",
+            "articles": {
+                "article-1": {"access": True},
+                "article-2": {"access": False},
+            },
+        })
+        self.assertEqual(len(responses.calls), 1)
+
+        call = responses.calls[0]
+
+        self.assertEqual(call.request.headers['X-LP-APIVersion'], 2)
+
+        qd = parse_qs(urlparse(call.request.url).query)
+
+        self.assertEqual(qd['ts'], ['123'])
+        self.assertEqual(qd['lptoken'], ['fake-lptoken'])
+        self.assertEqual(qd['cp'], ['fake-cp-key'])
+        self.assertEqual(qd['article_id'], ['article-1', 'article-2'])
+        self.assertEqual(qd['hmac'], ['fake-signature'])
+
+        sign_mock.assert_called_once_with(
+            secret='fake-shared-secret',
+            params={
+                'cp': 'fake-cp-key',
+                'article_id': ['article-1', 'article-2'],
+                'ts': '123',
+                'lptoken': 'fake-lptoken',
+            },
+            url='http://example.net/access',
+            method='GET',
+        )
 
 
 if __name__ == '__main__':
