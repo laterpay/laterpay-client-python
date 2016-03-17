@@ -155,24 +155,15 @@ def create_base_message(params, url, method='POST'):
 
 def sign(secret, params, url, method='POST'):
     """
-    Create signature for given `params`, `url` and HTTP method.
+    Create signature for given `params`, `url` and HTTP `method`.
 
-    How params are canonicalized:
-    - `compat.quote` every key and value that will be signed
-    - sort the param list
-    - `'&'join` the params
-
-    :param secret: Secret used to create signature
-    :type secret: str/unicode
-    :param params: Mapping of all params that should be signed.
-        This includes url params as well as requests body params,
-        regardless if body is 'application/x-www-form-urlencoded' or
-        'application/json'.
-    :type params: dict of unicode/str keys and values. Values can
-        be a list/tuple of unicode/str.
-    :param url: full url of the target endpoint, no url params
-        (eg. https://host/api)
-    :type url: str/unicode
+    :param secret: secret string used to create the signature
+    :param params: params dict (values can be strings or lists of strings)
+    :param url: base url for which the params were signed.
+                Example: https://example.net/here
+                (no query params or fragments)
+    :param method: HTTP method used to transport the signed data
+                   ('POST' is default)
     """
     if 'hmac' in params:
         params.pop('hmac')
@@ -194,10 +185,15 @@ def sign(secret, params, url, method='POST'):
 
 def verify(signature, secret, params, url, method):
     """
-    Verify the signature on a signed URL.
+    Verify the signature of a given `params` dict.
 
-    Redirects back to a client's server from LaterPay will be signed to ensure
-    authenticity. Use `verify` to confirm this.
+    :param signature: signature string to be verified
+    :param secret: secret string used to create the signature
+    :param params: params dict (values can be strings or lists of strings)
+    :param url: base url for which the params were signed.
+                Example: https://example.net/here
+                (no query params or fragments)
+    :param method: HTTP method used to transport the signed data
     """
     if isinstance(signature, (list, tuple)):
         signature = signature[0]
