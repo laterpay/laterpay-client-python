@@ -449,10 +449,19 @@ class LaterPayClient(object):
 
     def get_access(self, article_ids, product_key=None):
         """
+        Deprecated. Consider using ``.get_access_data()`` instead.
+
         Get access data for a set of article ids.
 
         https://www.laterpay.net/developers/docs/backend-api#GET/access
         """
+        warnings.warn(
+            "LaterPayClient.get_access() is deprecated "
+            "and will be removed in a future release. "
+            "Consider using ``.get_access_data()`` instead.",
+            DeprecationWarning,
+        )
+
         if not isinstance(article_ids, (list, tuple)):
             article_ids = [article_ids]
 
