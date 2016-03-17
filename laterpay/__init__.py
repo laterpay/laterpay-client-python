@@ -14,11 +14,12 @@ import logging
 import random
 import re
 import string
-
-from . import utils
-from . import compat
-
+import time
 import warnings
+
+import requests
+
+from . import compat, signing, utils
 
 
 _logger = logging.getLogger(__name__)
@@ -448,10 +449,19 @@ class LaterPayClient(object):
 
     def get_access(self, article_ids, product_key=None):
         """
+        Deprecated. Consider using ``.get_access_data()`` instead.
+
         Get access data for a set of article ids.
 
         https://www.laterpay.net/developers/docs/backend-api#GET/access
         """
+        warnings.warn(
+            "LaterPayClient.get_access() is deprecated "
+            "and will be removed in a future release. "
+            "Consider using ``.get_access_data()`` instead.",
+            DeprecationWarning,
+        )
+
         if not isinstance(article_ids, (list, tuple)):
             article_ids = [article_ids]
 
@@ -472,3 +482,76 @@ class LaterPayClient(object):
             raise Exception(data['status'])
 
         return data
+
+    def get_request_headers(self):
+        """
+        Return a ``dict`` of request headers to be sent to the API.
+        """
+        return {
+            'X-LP-APIVersion': 2,
+            # TODO: Add client version information.
+            'User-Agent': 'LaterPay Client Python',
+        }
+
+    def get_access_url(self):
+        """
+        Return the base url for /access endpoint.
+
+        Example: https://api.laterpay.net/access
+        """
+        return self._access_url
+
+    def get_access_params(self, article_ids, lptoken=None):
+        """
+        Return a params ``dict`` for /access call.
+
+        A correct signature is included in the dict as the "hmac" param.
+
+        :param article_ids: list of article ids or a single article id as a
+                            string
+        :param lptoken: optional lptoken as `str`
+        """
+        if not isinstance(article_ids, (list, tuple)):
+            article_ids = [article_ids]
+
+        params = {
+            'cp': self.cp_key,
+            'ts': str(int(time.time())),
+            'lptoken': str(lptoken or self.lptoken),
+            'article_id': article_ids,
+        }
+
+        params['hmac'] = signing.sign(
+            secret=self.shared_secret,
+            params=params.copy(),
+            url=self.get_access_url(),
+            method='GET',
+        )
+
+        return params
+
+    def get_access_data(self, article_ids, lptoken=None):
+        """
+        Perform a request to /access API and return obtained data.
+
+        This method uses ``requests.get`` to fetch the data and then calls
+        ``.raise_for_status()`` on the response. It does not handle any errors
+        raised by ``requests`` API.
+
+        :param article_ids: list of article ids or a single article id as a
+                            string
+        :param lptoken: optional lptoken as `str`
+        """
+        params = self.get_access_params(article_ids=article_ids, lptoken=lptoken)
+        url = self.get_access_url()
+        headers = self.get_request_headers()
+
+        response = requests.get(
+            url,
+            params=params,
+            headers=headers,
+            timeout=self.timeout_seconds,
+        )
+        response.raise_for_status()
+
+        return response.json()
