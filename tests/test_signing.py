@@ -39,7 +39,7 @@ class TestSigningHelper(unittest.TestCase):
     def test_create_message_sorting_and_combining_params(self):
         params = {
             u'parĄm1': u'valuĘ',
-            'param2': ['value2', 'value3'],
+            'param2': ['value3', 'value2'],
             u'param3': u'with a space'
         }
         url = 'https://endpoint.com/api'
