@@ -2,13 +2,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function
 
-import sys
 import hashlib
 import unittest
 
 from six.moves.urllib.parse import parse_qs
 
-from laterpay import compat
 from laterpay import signing
 
 
@@ -107,7 +105,7 @@ class TestSigningHelper(unittest.TestCase):
         }
         url = u'https://endpoint.com/api'
 
-        secret = u'secret'  # unicode is what we usually get from api/db..
+        secret = 'secret'
 
         verified = signing.verify(
             '346f3d53ad762f3ed3fb7f2427dec2bbfaf0338bb7f91f0460aff15c',
