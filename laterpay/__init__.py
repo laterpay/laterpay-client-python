@@ -132,6 +132,15 @@ class LaterPayClient(object):
         return url
 
     def get_identify_url(self, identify_callback=None):
+        """
+        Deprecated.
+        """
+        warnings.warn(
+            "LaterPayClient.get_identify_url() is deprecated "
+            "and will be removed in a future release.",
+            DeprecationWarning,
+        )
+
         base_url = self._identify_url
         data = {'cp': self.cp_key}
 

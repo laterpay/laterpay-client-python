@@ -8,6 +8,8 @@
   release.
 * `LaterPayClient.get_access()` is deprecated and will be removed in a future
   release. Consider using `LaterPayClient.get_access_data()` instead.
+* `LaterPayClient.get_identify_url()` is deprecated and will be removed in a future
+  release.
 
 
 ## 4.1.0
