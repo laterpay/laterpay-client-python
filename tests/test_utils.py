@@ -55,3 +55,18 @@ class UtilsTest(unittest.TestCase):
 
         self.assertEqual(qsd['ts'], ['123'])
         self.assertEqual(qsd['foo'], ['bar'])
+
+    def test_signed_url(self):
+        params = {'foo': 'bar'}
+        url = utils.signed_url(
+            'secret',
+            params,
+            'http://example.net/here',
+            add_timestamp=False,
+            signature_param_name='sig',
+        )
+        self.assertEqual(
+            url,
+            'http://example.net/here?foo=bar'
+            '&sig=83e26a62c0a3cf7405c7f2b4b75a46c4facc5c4dd013d57fa24936ce',
+        )

@@ -54,3 +54,11 @@ def signed_query(secret,
     signature = signing.sign(secret, params, url=url, method=method)
 
     return "{}&{}={}".format(qs, signature_param_name, signature)
+
+
+def signed_url(secret, params, url, **kwargs):
+    """
+    Same as ``signed_query`` but returns the base url with appended query.
+    """
+    qs = signed_query(secret, params, url, **kwargs)
+    return "{}?{}".format(url, qs)
