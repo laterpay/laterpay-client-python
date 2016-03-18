@@ -1,17 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function, unicode_literals
 
-import sys
+import unittest
 
 import mock
 
-from laterpay import utils
-from laterpay import compat
+from six.moves.urllib.parse import parse_qs
 
-if sys.version_info[:2] < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
+from laterpay import utils
+from laterpay.compat import encode_if_unicode
 
 
 class UtilsTest(unittest.TestCase):
@@ -27,10 +24,22 @@ class UtilsTest(unittest.TestCase):
 
         q = utils.signed_query(secret, params, url)
 
+        qd = parse_qs(q)
+
         self.assertEqual(
-            q,
-            'param2=value2&param2=value3&par%C4%84m1=valu%C4%98&'
-            'ts=1330088810&hmac=01c928dcdbbf4ba467969ec9607bfdec0563524d93e06df7d8d3c80d'
+            set(qd.keys()),
+            set(['ts', encode_if_unicode('parĄm1'), 'param2', 'hmac']),
+        )
+
+        self.assertEqual(qd['ts'], [params['ts']])
+        self.assertEqual(qd['param2'], params['param2'])
+        self.assertEqual(
+            qd[encode_if_unicode('parĄm1')],
+            [encode_if_unicode(params['parĄm1'])],
+        )
+        self.assertEqual(
+            qd['hmac'],
+            ['01c928dcdbbf4ba467969ec9607bfdec0563524d93e06df7d8d3c80d'],
         )
 
     @mock.patch('time.time')
@@ -42,7 +51,7 @@ class UtilsTest(unittest.TestCase):
         secret = 'secret'
 
         qs = utils.signed_query(secret, params, url)
-        qsd = compat.parse_qs(qs)
+        qsd = parse_qs(qs)
 
         self.assertEqual(qsd['ts'], ['123'])
         self.assertEqual(qsd['foo'], ['bar'])

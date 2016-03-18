@@ -3,8 +3,10 @@ from __future__ import absolute_import, print_function
 
 import time
 
+from six.moves.urllib.parse import urlencode
+
 from laterpay import signing
-from laterpay import compat
+from laterpay.compat import encode_if_unicode
 
 
 def signed_query(secret,
@@ -40,13 +42,15 @@ def signed_query(secret,
     if "ts" not in params and add_timestamp:
         params["ts"] = str(int(time.time()))
 
-    sorted_data = []
-    for k, v in signing.sort_params(params):
-        k = compat.encode_if_unicode(k)
-        value = compat.encode_if_unicode(v)
-        sorted_data.append((k, value))
+    params = [
+        (encode_if_unicode(key),
+         [encode_if_unicode(v) for v in val]
+         if isinstance(val, (list, tuple)) else encode_if_unicode(val))
+        for key, val in params.items()
+    ]
 
-    qs = compat.urlencode(sorted_data)
+    qs = urlencode(params, doseq=True)
+
     signature = signing.sign(secret, params, url=url, method=method)
 
     return "{}&{}={}".format(qs, signature_param_name, signature)
