@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function
 
-import functools
 import hashlib
 import hmac
 import time
@@ -51,12 +50,6 @@ def sort_params(param_dict):
     This function should probably not be part of the public API, and thus will
     be deprecated in a future release to be replaced with a internal function.
     """
-    def cmp_params(param1, param2):
-        result = compat.cmp(param1[0], param2[0])
-        if result == 0:
-            result = compat.cmp(param1[1], param2[1])
-        return result
-
     param_list = []
     for name, value_list in param_dict.items():
         if isinstance(value_list, (list, tuple)):
@@ -69,9 +62,7 @@ def sort_params(param_dict):
                 value_list = str(value_list)
             param_list.append((name, value_list))
 
-    if six.PY2:
-        return sorted(param_list, cmp_params)
-    return sorted(param_list, key=functools.cmp_to_key(cmp_params))
+    return sorted(param_list)
 
 
 def normalise_param_structure(params):
