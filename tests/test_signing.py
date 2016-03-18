@@ -180,7 +180,7 @@ class TestSigningHelper(unittest.TestCase):
         # creating this data with ItemDefinition and copy.copy(item.data) doesn't work
         # since it has a purchase_date based on now(), so the signature isn't the same..
         data = {
-            'article_id': [154],
+            'article_id': 154,
             'cp': ['laternews'],
             'jsevents': [1],
             'pricing': ['EUR200'],
