@@ -126,9 +126,6 @@ def create_base_message(params, url, method='POST'):
     for key, values in params.items():
         key = quote(compat.encode_if_unicode(key), safe='')
 
-        if not isinstance(values, (list, tuple)):
-            values = [values]
-
         values_str = []
 
         # If any non six.string_types objects, ``str()`` them.
