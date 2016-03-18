@@ -38,9 +38,9 @@ def create_HMAC(HMAC_secret, *parts):
     This function should probably not be part of the public API, and thus will
     be deprecated in a future release to be replaced with a internal function.
     """
-    authcode = hmac.new(compat.b(HMAC_secret), digestmod=hashlib.sha224)
+    authcode = hmac.new(six.b(HMAC_secret), digestmod=hashlib.sha224)
     for part in parts:
-        authcode.update(compat.b(part))
+        authcode.update(six.b(part))
     return authcode.hexdigest()
 
 

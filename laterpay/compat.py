@@ -6,15 +6,6 @@ import six
 
 if six.PY2:
     cmp = cmp
-
-    def b(s):
-        """
-        Dummy function for compatibility reasons.
-
-        This converts a string into a list of bytes, which in Python 2 means
-        doing nothing, but for Python 3 requires explicit conversion.
-        """
-        return s
 else:
     def cmp(a, b):
         """
@@ -27,15 +18,6 @@ else:
         https://docs.python.org/3.0/whatsnew/3.0.html#ordering-comparisons
         """
         return (a > b) - (a < b)
-
-    def b(s):
-        """
-        Turn a string into bytes.
-
-        Python 3 strings aren't a list of bytes, but Python 2 strings are; this
-        provides a conversion wrapper.
-        """
-        return s.encode("utf-8")
 
 
 def encode_if_unicode(value, encoding='utf-8'):
