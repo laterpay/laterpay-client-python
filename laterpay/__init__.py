@@ -19,7 +19,10 @@ import warnings
 
 import requests
 
-from . import compat, signing, utils
+from six.moves.urllib.parse import quote_plus
+from six.moves.urllib.request import Request, urlopen
+
+from . import signing, utils
 
 
 _logger = logging.getLogger(__name__)
@@ -220,11 +223,11 @@ class LaterPayClient(object):
         return url
 
     def _get_dialog_api_url(self, url):
-        return '%s/dialog-api?url=%s' % (self.web_root, compat.quote_plus(url))
+        return '%s/dialog-api?url=%s' % (self.web_root, quote_plus(url))
 
     def get_login_dialog_url(self, next_url, use_jsevents=False, use_dialog_api=True):
         """ Get the URL for a login page. """
-        url = '%s/account/dialog/login?next=%s%s%s' % (self.web_root, compat.quote_plus(next_url),
+        url = '%s/account/dialog/login?next=%s%s%s' % (self.web_root, quote_plus(next_url),
                                                        "&jsevents=1" if use_jsevents else "",
                                                        "&cp=%s" % self.cp_key)
         if use_dialog_api:
@@ -238,7 +241,7 @@ class LaterPayClient(object):
 
     def get_signup_dialog_url(self, next_url, use_jsevents=False, use_dialog_api=True):
         """ Get the URL for a signup page. """
-        url = '%s/account/dialog/signup?next=%s%s%s' % (self.web_root, compat.quote_plus(next_url),
+        url = '%s/account/dialog/signup?next=%s%s%s' % (self.web_root, quote_plus(next_url),
                                                         "&jsevents=1" if use_jsevents else "",
                                                         "&cp=%s" % self.cp_key)
         if use_dialog_api:
@@ -252,7 +255,7 @@ class LaterPayClient(object):
 
     def get_logout_dialog_url(self, next_url, use_jsevents=False, use_dialog_api=True):
         """ Get the URL for a logout page. """
-        url = '%s/account/dialog/logout?next=%s%s%s' % (self.web_root, compat.quote_plus(next_url),
+        url = '%s/account/dialog/logout?next=%s%s%s' % (self.web_root, quote_plus(next_url),
                                                         "&jsevents=1" if use_jsevents else "",
                                                         "&cp=%s" % self.cp_key)
         if use_dialog_api:
@@ -412,15 +415,15 @@ class LaterPayClient(object):
         }
 
         if method == 'POST':
-            req = compat.Request(url, data=params, headers=headers)
+            req = Request(url, data=params, headers=headers)
         else:
             url = "%s?%s" % (url, params)
-            req = compat.Request(url, headers=headers)
+            req = Request(url, headers=headers)
 
         _logger.debug("Making request to %s", url)
 
         try:
-            response = compat.urlopen(req, timeout=self.timeout_seconds).read()
+            response = urlopen(req, timeout=self.timeout_seconds).read()
         except:
             # TODO: Add proper or no exception handling.
             # Pretending there was a response even if there was none

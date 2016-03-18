@@ -2,15 +2,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function
 
-import sys
 import hashlib
+import unittest
 
-if sys.version_info[:2] < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
+from six.moves.urllib.parse import parse_qs
 
-from laterpay import compat
 from laterpay import signing
 
 
@@ -43,7 +39,7 @@ class TestSigningHelper(unittest.TestCase):
     def test_create_message_sorting_and_combining_params(self):
         params = {
             u'parĄm1': u'valuĘ',
-            'param2': ['value2', 'value3'],
+            'param2': ['value3', 'value2'],
             u'param3': u'with a space'
         }
         url = 'https://endpoint.com/api'
@@ -109,7 +105,7 @@ class TestSigningHelper(unittest.TestCase):
         }
         url = u'https://endpoint.com/api'
 
-        secret = u'secret'  # unicode is what we usually get from api/db..
+        secret = 'secret'
 
         verified = signing.verify(
             '346f3d53ad762f3ed3fb7f2427dec2bbfaf0338bb7f91f0460aff15c',
@@ -229,7 +225,7 @@ class TestSigningHelper(unittest.TestCase):
             'url=http%3A%2F%2Flocal.laterpaytest.net%3A8003%2Fmmss%2F154&'
             'hmac=4d41f1adcb7c6bf6cf9c5eb15b179fdbec667d53f2749e2845c87315'
         )
-        false_params = compat.parse_qs(false_string)
+        false_params = parse_qs(false_string)
 
         self.assertFalse(signing.verify(signature, secret, false_params, base_url, method))
 
