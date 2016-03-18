@@ -19,7 +19,7 @@ import warnings
 
 import requests
 
-from . import compat, signing
+from . import compat, signing, utils
 
 
 _logger = logging.getLogger(__name__)
@@ -400,7 +400,7 @@ class LaterPayClient(object):
             use_dialog_api=use_dialog_api)
 
     def _sign_and_encode(self, params, url, method="GET"):
-        return signing.sign_and_encode(self.shared_secret, params, url=url, method=method)
+        return utils.signed_query(self.shared_secret, params, url=url, method=method)
 
     def _make_request(self, url, params, method='GET'):
 
