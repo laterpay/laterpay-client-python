@@ -4,7 +4,18 @@ from __future__ import absolute_import, print_function, unicode_literals
 import six
 
 
-if six.PY3:
+if six.PY2:
+    cmp = cmp
+
+    def b(s):
+        """
+        Dummy function for compatibility reasons.
+
+        This converts a string into a list of bytes, which in Python 2 means
+        doing nothing, but for Python 3 requires explicit conversion.
+        """
+        return s
+else:
     def cmp(a, b):
         """
         Compare two objects and return an integer according to the outcome.
@@ -25,17 +36,6 @@ if six.PY3:
         provides a conversion wrapper.
         """
         return s.encode("utf-8")
-else:
-    cmp = cmp
-
-    def b(s):
-        """
-        Dummy function for compatibility reasons.
-
-        This converts a string into a list of bytes, which in Python 2 means
-        doing nothing, but for Python 3 requires explicit conversion.
-        """
-        return s
 
 
 def encode_if_unicode(value, encoding='utf-8'):

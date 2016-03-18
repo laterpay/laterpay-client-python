@@ -69,9 +69,9 @@ def sort_params(param_dict):
                 value_list = str(value_list)
             param_list.append((name, value_list))
 
-    if six.PY3:
-        return sorted(param_list, key=functools.cmp_to_key(cmp_params))
-    return sorted(param_list, cmp_params)
+    if six.PY2:
+        return sorted(param_list, cmp_params)
+    return sorted(param_list, key=functools.cmp_to_key(cmp_params))
 
 
 def normalise_param_structure(params):
