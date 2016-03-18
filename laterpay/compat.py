@@ -7,6 +7,7 @@
 from __future__ import absolute_import, print_function
 
 import sys
+import six
 
 py3k = sys.version_info[:2] >= (3, 0)
 
@@ -69,6 +70,6 @@ def encode_if_unicode(value, encoding='utf-8'):
     Encoding is done only if ``value`` is a ``unicode`` instance
     (utf-8 encoding is used as default).
     """
-    if not py3k and isinstance(value, unicode):
+    if six.PY2 and isinstance(value, unicode):
         value = value.encode(encoding)
     return value
