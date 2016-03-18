@@ -1,20 +1,10 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import, print_function, unicode_literals
 
-# flake8: noqa
-
-""" Python 2/3 compatibility wrapper. """
-
-from __future__ import absolute_import, print_function
-
-import sys
 import six
 
-py3k = sys.version_info[:2] >= (3, 0)
 
-
-if py3k:
-    string_types = str,
-
+if six.PY3:
     def cmp(a, b):
         """
         Compare two objects and return an integer according to the outcome.
@@ -35,16 +25,7 @@ if py3k:
         provides a conversion wrapper.
         """
         return s.encode("utf-8")
-
-    from urllib.parse import quote, quote_plus, urlencode
-    from urllib.parse import urlparse, parse_qs, parse_qsl
-
-    from urllib.request import Request, urlopen
-    from urllib.error import URLError
-
 else:
-    string_types = basestring,
-
     cmp = cmp
 
     def b(s):
@@ -55,12 +36,6 @@ else:
         doing nothing, but for Python 3 requires explicit conversion.
         """
         return s
-
-    from urllib import quote, quote_plus, urlencode
-
-    from urlparse import urlparse, parse_qs, parse_qsl
-
-    from urllib2 import Request, urlopen, URLError
 
 
 def encode_if_unicode(value, encoding='utf-8'):

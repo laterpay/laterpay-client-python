@@ -7,8 +7,11 @@ import hmac
 import time
 import warnings
 
-from . import compat
+import six
 
+from six.moves.urllib.parse import parse_qsl, quote, urlencode, urlparse
+
+from . import compat
 
 ALLOWED_METHODS = ('GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD')
 
@@ -58,15 +61,15 @@ def sort_params(param_dict):
     for name, value_list in param_dict.items():
         if isinstance(value_list, (list, tuple)):
             for value in value_list:
-                if not isinstance(value, compat.string_types):
+                if not isinstance(value, six.string_types):
                     value = str(value)
                 param_list.append((name, value))
         else:
-            if not isinstance(value_list, compat.string_types):
+            if not isinstance(value_list, six.string_types):
                 value_list = str(value_list)
             param_list.append((name, value_list))
 
-    if compat.py3k:
+    if six.PY3:
         return sorted(param_list, key=functools.cmp_to_key(cmp_params))
     return sorted(param_list, cmp_params)
 
@@ -122,7 +125,7 @@ def create_base_message(params, url, method='POST'):
 
     data = {}
 
-    url = compat.quote(compat.encode_if_unicode(url), safe='')
+    url = quote(compat.encode_if_unicode(url), safe='')
 
     if method not in ALLOWED_METHODS:
         raise ValueError('method should be one of: {}'.format(ALLOWED_METHODS))
@@ -130,25 +133,25 @@ def create_base_message(params, url, method='POST'):
     params = normalise_param_structure(params)
 
     for key, values in params.items():
-        key = compat.quote(compat.encode_if_unicode(key), safe='')
+        key = quote(compat.encode_if_unicode(key), safe='')
 
         if not isinstance(values, (list, tuple)):
             values = [values]
 
         values_str = []
 
-        # If any non compat.string_types objects, ``str()`` them.
+        # If any non six.string_types objects, ``str()`` them.
         for value in values:
-            if not isinstance(value, compat.string_types):
+            if not isinstance(value, six.string_types):
                 value = str(value)
             values_str.append(value)
 
-        data[key] = [compat.quote(compat.encode_if_unicode(value_str), safe='') for value_str in values_str]
+        data[key] = [quote(compat.encode_if_unicode(value_str), safe='') for value_str in values_str]
 
     sorted_params = sort_params(data)
 
     param_str = '&'.join('{}={}'.format(k, v) for k, v in sorted_params)
-    param_str = compat.quote(param_str, safe='')
+    param_str = quote(param_str, safe='')
 
     return msg.format(method=method, url=url, params=param_str)
 
@@ -173,7 +176,7 @@ def sign(secret, params, url, method='POST'):
 
     secret = compat.encode_if_unicode(secret)
 
-    url_parsed = compat.urlparse(url)
+    url_parsed = urlparse(url)
     base_url = url_parsed.scheme + "://" + url_parsed.netloc + url_parsed.path
 
     msg = create_base_message(params, base_url, method=method)
@@ -237,7 +240,7 @@ def sign_and_encode(secret, params, url, method="GET"):
         value = compat.encode_if_unicode(v)
         sorted_data.append((k, value))
 
-    encoded = compat.urlencode(sorted_data)
+    encoded = urlencode(sorted_data)
     hmac = sign(secret, params, url=url, method=method)
 
     return "%s&hmac=%s" % (encoded, hmac)
@@ -275,12 +278,12 @@ def sign_get_url(secret, url, signature_paramname="hmac"):
         DeprecationWarning,
     )
 
-    parsed = compat.urlparse(url)
+    parsed = urlparse(url)
 
     if parsed.query != "":
-        # use compat.parse_qsl, because .parse_qs seems to create problems
-        # with compat.urlencode()
-        qs = compat.parse_qsl(parsed.query, keep_blank_values=True)
+        # use parse_qsl, because .parse_qs seems to create problems
+        # with urlencode()
+        qs = parse_qsl(parsed.query, keep_blank_values=True)
 
         # create string to sign
 
@@ -292,6 +295,6 @@ def sign_get_url(secret, url, signature_paramname="hmac"):
 
         qs.append((signature_paramname, hmac))
         return parsed.scheme + "://" + parsed.netloc + parsed.path + \
-            parsed.params + "?" + compat.urlencode(qs) + parsed.fragment
+            parsed.params + "?" + urlencode(qs) + parsed.fragment
 
     return None

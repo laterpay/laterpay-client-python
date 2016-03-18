@@ -3,20 +3,15 @@
 from __future__ import absolute_import, print_function
 
 import json
-import sys
 import uuid
-
-if sys.version_info[:2] < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
+import unittest
 
 import mock
 import responses
 
 from furl import furl
+from six.moves.urllib.parse import urlparse, parse_qs
 
-from laterpay.compat import urlparse, parse_qs
 from laterpay import (
     APIException,
     InvalidItemDefinition,
