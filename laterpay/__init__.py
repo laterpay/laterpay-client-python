@@ -122,14 +122,7 @@ class LaterPayClient(object):
             'redir': return_to,
             'cp': self.cp_key,
         }
-        params = self._sign_and_encode(
-            params=data,
-            url=url,
-            method="GET",
-        )
-        url = '%s?%s' % (url, params)
-
-        return url
+        return utils.signed_url(self.shared_secret, data, url, method='GET')
 
     def get_identify_url(self, identify_callback=None):
         """
@@ -205,9 +198,8 @@ class LaterPayClient(object):
         data['xdmprefix'] = "".join(random.choice(string.ascii_letters) for x in xrange(10))
 
         url = '%s/controls/links' % self.web_root
-        params = self._sign_and_encode(data, url, method="GET")
 
-        return '%s?%s' % (url, params)
+        return utils.signed_url(self.shared_secret, data, url, method='GET')
 
     def get_iframeapi_balance_url(self, forcelang=None):
         """ Deprecated, see get_controls_balance_url. """
@@ -227,9 +219,8 @@ class LaterPayClient(object):
         data['xdmprefix'] = "".join(random.choice(string.ascii_letters) for x in xrange(10))
 
         base_url = "{web_root}/controls/balance".format(web_root=self.web_root)
-        encoded_data = self._sign_and_encode(data, base_url)
-        url = "{base_url}?{encoded_data}".format(base_url=base_url, encoded_data=encoded_data)
-        return url
+
+        return utils.signed_url(self.shared_secret, data, base_url, method='GET')
 
     def _get_dialog_api_url(self, url):
         return '%s/dialog-api?url=%s' % (self.web_root, quote_plus(url))
@@ -341,8 +332,7 @@ class LaterPayClient(object):
 
         base_url = "%s/%s" % (prefix, page_type)
 
-        params = self._sign_and_encode(data, base_url, method="GET")
-        url = "{base_url}?{params}".format(base_url=base_url, params=params)
+        url = utils.signed_url(self.shared_secret, data, base_url, method='GET')
 
         if use_dialog_api:
             warnings.warn("The Dialog API Wrapper is deprecated and no longer recommended. "
