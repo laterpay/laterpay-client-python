@@ -296,6 +296,29 @@ class TestLaterPayClient(unittest.TestCase):
             method='GET',
         )
 
+    @mock.patch('time.time')
+    def test_get_gettoken_redirect(self, time_mock):
+        time_mock.return_value = 12345678
+
+        gettoken_url = self.lp.get_gettoken_redirect(
+            'http://example.com/token-here')
+
+        scheme, netloc, path, _, query, _ = urlparse(gettoken_url)
+        qd = parse_qs(query)
+
+        self.assertEqual(scheme, 'https')
+        self.assertEqual(netloc, 'api.laterpay.net')
+        self.assertEqual(path, '/gettoken')
+
+        self.assertEqual(set(qd.keys()), set(['cp', 'redir', 'ts', 'hmac']))
+        self.assertEqual(qd['ts'], ['12345678'])
+        self.assertEqual(qd['cp'], ['1'])
+        self.assertEqual(qd['redir'], ['http://example.com/token-here'])
+        self.assertEqual(
+            qd['hmac'],
+            ['4f59ae6601fc99e962297fb1db607caeeb8e841fee8f439b526c7f41'],
+        )
+
 
 if __name__ == '__main__':
     unittest.main()
