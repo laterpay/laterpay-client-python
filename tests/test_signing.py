@@ -2,14 +2,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function
 
-import sys
+import hashlib
+import unittest
 
-if sys.version_info[:2] < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
+from six.moves.urllib.parse import parse_qs
 
-from laterpay import compat
 from laterpay import signing
 
 
@@ -42,7 +39,7 @@ class TestSigningHelper(unittest.TestCase):
     def test_create_message_sorting_and_combining_params(self):
         params = {
             u'parĄm1': u'valuĘ',
-            'param2': ['value2', 'value3'],
+            'param2': ['value3', 'value2'],
             u'param3': u'with a space'
         }
         url = 'https://endpoint.com/api'
@@ -101,14 +98,14 @@ class TestSigningHelper(unittest.TestCase):
             'ts=1330088810&hmac=01c928dcdbbf4ba467969ec9607bfdec0563524d93e06df7d8d3c80d'
         )
 
-    def test_verify(self):
+    def test_verify_str_signature(self):
         params = {
             u'parĄm1': u'valuĘ',
             'param2': ['value2', 'value3'],
         }
         url = u'https://endpoint.com/api'
 
-        secret = u'secret'  # unicode is what we usually get from api/db..
+        secret = 'secret'
 
         verified = signing.verify(
             '346f3d53ad762f3ed3fb7f2427dec2bbfaf0338bb7f91f0460aff15c',
@@ -117,8 +114,36 @@ class TestSigningHelper(unittest.TestCase):
             url,
             'POST',
         )
-
         self.assertTrue(verified)
+
+    def test_verify_unicode_signature(self):
+        params = {
+            u'parĄm1': u'valuĘ',
+            'param2': ['value2', 'value3'],
+        }
+        url = u'https://endpoint.com/api'
+        verified = signing.verify(
+            u'346f3d53ad762f3ed3fb7f2427dec2bbfaf0338bb7f91f0460aff15c',
+            u'secret',
+            params,
+            url,
+            'POST',
+        )
+        self.assertTrue(verified)
+
+    def test_verify_invalid_unicode_signature(self):
+        params = {}
+        url = 'https://endpoint.com/api'
+        secret = 'secret'
+
+        verified = signing.verify(
+            u'Ɛ' * len(hashlib.sha224(b'').hexdigest()),
+            secret,
+            params,
+            url,
+            'POST',
+        )
+        self.assertFalse(verified)
 
     def test_url_verification(self):
         secret = '401e9a684fcc49578c1f23176a730abc'
@@ -155,7 +180,7 @@ class TestSigningHelper(unittest.TestCase):
         # creating this data with ItemDefinition and copy.copy(item.data) doesn't work
         # since it has a purchase_date based on now(), so the signature isn't the same..
         data = {
-            'article_id': [154],
+            'article_id': 154,
             'cp': ['laternews'],
             'jsevents': [1],
             'pricing': ['EUR200'],
@@ -200,7 +225,7 @@ class TestSigningHelper(unittest.TestCase):
             'url=http%3A%2F%2Flocal.laterpaytest.net%3A8003%2Fmmss%2F154&'
             'hmac=4d41f1adcb7c6bf6cf9c5eb15b179fdbec667d53f2749e2845c87315'
         )
-        false_params = compat.parse_qs(false_string)
+        false_params = parse_qs(false_string)
 
         self.assertFalse(signing.verify(signature, secret, false_params, base_url, method))
 

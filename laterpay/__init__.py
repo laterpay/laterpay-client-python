@@ -14,11 +14,15 @@ import logging
 import random
 import re
 import string
-
-from . import signing
-from . import compat
-
+import time
 import warnings
+
+import requests
+
+from six.moves.urllib.parse import quote_plus
+from six.moves.urllib.request import Request, urlopen
+
+from . import signing, utils
 
 
 _logger = logging.getLogger(__name__)
@@ -118,16 +122,18 @@ class LaterPayClient(object):
             'redir': return_to,
             'cp': self.cp_key,
         }
-        params = self._sign_and_encode(
-            params=data,
-            url=url,
-            method="GET",
-        )
-        url = '%s?%s' % (url, params)
-
-        return url
+        return utils.signed_url(self.shared_secret, data, url, method='GET')
 
     def get_identify_url(self, identify_callback=None):
+        """
+        Deprecated.
+        """
+        warnings.warn(
+            "LaterPayClient.get_identify_url() is deprecated "
+            "and will be removed in a future release.",
+            DeprecationWarning,
+        )
+
         base_url = self._identify_url
         data = {'cp': self.cp_key}
 
@@ -192,9 +198,8 @@ class LaterPayClient(object):
         data['xdmprefix'] = "".join(random.choice(string.ascii_letters) for x in xrange(10))
 
         url = '%s/controls/links' % self.web_root
-        params = self._sign_and_encode(data, url, method="GET")
 
-        return '%s?%s' % (url, params)
+        return utils.signed_url(self.shared_secret, data, url, method='GET')
 
     def get_iframeapi_balance_url(self, forcelang=None):
         """ Deprecated, see get_controls_balance_url. """
@@ -214,16 +219,15 @@ class LaterPayClient(object):
         data['xdmprefix'] = "".join(random.choice(string.ascii_letters) for x in xrange(10))
 
         base_url = "{web_root}/controls/balance".format(web_root=self.web_root)
-        encoded_data = self._sign_and_encode(data, base_url)
-        url = "{base_url}?{encoded_data}".format(base_url=base_url, encoded_data=encoded_data)
-        return url
+
+        return utils.signed_url(self.shared_secret, data, base_url, method='GET')
 
     def _get_dialog_api_url(self, url):
-        return '%s/dialog-api?url=%s' % (self.web_root, compat.quote_plus(url))
+        return '%s/dialog-api?url=%s' % (self.web_root, quote_plus(url))
 
     def get_login_dialog_url(self, next_url, use_jsevents=False, use_dialog_api=True):
         """ Get the URL for a login page. """
-        url = '%s/account/dialog/login?next=%s%s%s' % (self.web_root, compat.quote_plus(next_url),
+        url = '%s/account/dialog/login?next=%s%s%s' % (self.web_root, quote_plus(next_url),
                                                        "&jsevents=1" if use_jsevents else "",
                                                        "&cp=%s" % self.cp_key)
         if use_dialog_api:
@@ -237,7 +241,7 @@ class LaterPayClient(object):
 
     def get_signup_dialog_url(self, next_url, use_jsevents=False, use_dialog_api=True):
         """ Get the URL for a signup page. """
-        url = '%s/account/dialog/signup?next=%s%s%s' % (self.web_root, compat.quote_plus(next_url),
+        url = '%s/account/dialog/signup?next=%s%s%s' % (self.web_root, quote_plus(next_url),
                                                         "&jsevents=1" if use_jsevents else "",
                                                         "&cp=%s" % self.cp_key)
         if use_dialog_api:
@@ -251,7 +255,7 @@ class LaterPayClient(object):
 
     def get_logout_dialog_url(self, next_url, use_jsevents=False, use_dialog_api=True):
         """ Get the URL for a logout page. """
-        url = '%s/account/dialog/logout?next=%s%s%s' % (self.web_root, compat.quote_plus(next_url),
+        url = '%s/account/dialog/logout?next=%s%s%s' % (self.web_root, quote_plus(next_url),
                                                         "&jsevents=1" if use_jsevents else "",
                                                         "&cp=%s" % self.cp_key)
         if use_dialog_api:
@@ -328,8 +332,7 @@ class LaterPayClient(object):
 
         base_url = "%s/%s" % (prefix, page_type)
 
-        params = self._sign_and_encode(data, base_url, method="GET")
-        url = "{base_url}?{params}".format(base_url=base_url, params=params)
+        url = utils.signed_url(self.shared_secret, data, base_url, method='GET')
 
         if use_dialog_api:
             warnings.warn("The Dialog API Wrapper is deprecated and no longer recommended. "
@@ -399,7 +402,7 @@ class LaterPayClient(object):
             use_dialog_api=use_dialog_api)
 
     def _sign_and_encode(self, params, url, method="GET"):
-        return signing.sign_and_encode(self.shared_secret, params, url=url, method=method)
+        return utils.signed_query(self.shared_secret, params, url=url, method=method)
 
     def _make_request(self, url, params, method='GET'):
 
@@ -411,15 +414,15 @@ class LaterPayClient(object):
         }
 
         if method == 'POST':
-            req = compat.Request(url, data=params, headers=headers)
+            req = Request(url, data=params, headers=headers)
         else:
             url = "%s?%s" % (url, params)
-            req = compat.Request(url, headers=headers)
+            req = Request(url, headers=headers)
 
         _logger.debug("Making request to %s", url)
 
         try:
-            response = compat.urlopen(req, timeout=self.timeout_seconds).read()
+            response = urlopen(req, timeout=self.timeout_seconds).read()
         except:
             # TODO: Add proper or no exception handling.
             # Pretending there was a response even if there was none
@@ -448,10 +451,19 @@ class LaterPayClient(object):
 
     def get_access(self, article_ids, product_key=None):
         """
+        Deprecated. Consider using ``.get_access_data()`` instead.
+
         Get access data for a set of article ids.
 
         https://www.laterpay.net/developers/docs/backend-api#GET/access
         """
+        warnings.warn(
+            "LaterPayClient.get_access() is deprecated "
+            "and will be removed in a future release. "
+            "Consider using ``.get_access_data()`` instead.",
+            DeprecationWarning,
+        )
+
         if not isinstance(article_ids, (list, tuple)):
             article_ids = [article_ids]
 
@@ -472,3 +484,76 @@ class LaterPayClient(object):
             raise Exception(data['status'])
 
         return data
+
+    def get_request_headers(self):
+        """
+        Return a ``dict`` of request headers to be sent to the API.
+        """
+        return {
+            'X-LP-APIVersion': 2,
+            # TODO: Add client version information.
+            'User-Agent': 'LaterPay Client Python',
+        }
+
+    def get_access_url(self):
+        """
+        Return the base url for /access endpoint.
+
+        Example: https://api.laterpay.net/access
+        """
+        return self._access_url
+
+    def get_access_params(self, article_ids, lptoken=None):
+        """
+        Return a params ``dict`` for /access call.
+
+        A correct signature is included in the dict as the "hmac" param.
+
+        :param article_ids: list of article ids or a single article id as a
+                            string
+        :param lptoken: optional lptoken as `str`
+        """
+        if not isinstance(article_ids, (list, tuple)):
+            article_ids = [article_ids]
+
+        params = {
+            'cp': self.cp_key,
+            'ts': str(int(time.time())),
+            'lptoken': str(lptoken or self.lptoken),
+            'article_id': article_ids,
+        }
+
+        params['hmac'] = signing.sign(
+            secret=self.shared_secret,
+            params=params.copy(),
+            url=self.get_access_url(),
+            method='GET',
+        )
+
+        return params
+
+    def get_access_data(self, article_ids, lptoken=None):
+        """
+        Perform a request to /access API and return obtained data.
+
+        This method uses ``requests.get`` to fetch the data and then calls
+        ``.raise_for_status()`` on the response. It does not handle any errors
+        raised by ``requests`` API.
+
+        :param article_ids: list of article ids or a single article id as a
+                            string
+        :param lptoken: optional lptoken as `str`
+        """
+        params = self.get_access_params(article_ids=article_ids, lptoken=lptoken)
+        url = self.get_access_url()
+        headers = self.get_request_headers()
+
+        response = requests.get(
+            url,
+            params=params,
+            headers=headers,
+            timeout=self.timeout_seconds,
+        )
+        response.raise_for_status()
+
+        return response.json()
