@@ -1,5 +1,6 @@
 # Changelog
 
+
 ## Unreleased
 
 * `laterpay.signing.sign_and_encode()` is deprecated and will be removed in a
@@ -10,6 +11,18 @@
   release. Consider using `LaterPayClient.get_access_data()` instead.
 * `LaterPayClient.get_identify_url()` is deprecated and will be removed in a future
   release.
+* New utility functions: `laterpay.utils.signed_query()` and
+  `laterpay.utils.signed_url()`
+* New `LaterPayClient` methods:
+
+    * `get_request_headers()`
+    * `get_access_url()`
+    * `get_access_params()`
+    * `get_access_data()`
+
+* Improved and newly added tests.
+* Improved `laterpay.signing` docs.
+* Replaced most of `compat` with proper `six` usage.
 
 
 ## 4.1.0
