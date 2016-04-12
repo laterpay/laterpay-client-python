@@ -320,7 +320,8 @@ class LaterPayClient(object):
             data['tref'] = transaction_reference
 
         if skip_add_to_invoice:
-            data['skip_add_to_invoice'] = 1
+            warnings.warn('The param skip_add_to_invoice is deprecated and it '
+                          'will be removed in a future release.')
 
         if dialog:
             prefix = '%s/%s' % (self.web_root, 'dialog')
