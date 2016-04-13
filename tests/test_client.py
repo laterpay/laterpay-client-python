@@ -105,6 +105,16 @@ class TestLaterPayClient(unittest.TestCase):
             'expiry url param is "None". Should be omitted.',
         )
 
+    @mock.patch('laterpay.warnings.warn')
+    def test_log_warning_for_skip_add_to_invoice_deprecation(self, warning_mock):
+        item = ItemDefinition(1, 'EUR20', 'http://help.me/', 'title')
+        self.lp.get_add_url(item, skip_add_to_invoice=True,
+                            use_dialog_api=False)
+        warning_mock.assert_called_once_with("The param skip_add_to_invoice is "
+                                             "deprecated and it will be removed "
+                                             "in a future release.")
+
+
     def test_failure_url_param(self):
         item = ItemDefinition(1, 'EUR20', 'http://help.me/', 'title')
         url = self.lp.get_add_url(item, failure_url="http://example.com")
