@@ -321,7 +321,7 @@ class LaterPayClient(object):
 
         if skip_add_to_invoice:
             warnings.warn('The param skip_add_to_invoice is deprecated and it '
-                          'will be removed in a future release.')
+                          'will be removed in a future release.', DeprecationWarning)
 
         if dialog:
             prefix = '%s/%s' % (self.web_root, 'dialog')

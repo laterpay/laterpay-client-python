@@ -112,7 +112,8 @@ class TestLaterPayClient(unittest.TestCase):
                             use_dialog_api=False)
         warning_mock.assert_called_once_with("The param skip_add_to_invoice is "
                                              "deprecated and it will be removed "
-                                             "in a future release.")
+                                             "in a future release.",
+                                             DeprecationWarning)
 
 
     def test_failure_url_param(self):
