@@ -2,6 +2,9 @@
 
 
 ## Unreleased
+* The parameter `skip_add_to_invoice` in `LaterPayClient.get_add_url()` and 
+  `LaterPayClient.get_buy_url()` is deprecated and will be removed in a future
+  release.
 
 
 ## 4.2.0
