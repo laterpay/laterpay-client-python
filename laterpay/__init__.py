@@ -4,7 +4,7 @@
 """
 The LaterPay API Python client.
 
-https://www.laterpay.net/developers/docs
+http://docs.laterpay.net/
 """
 
 from __future__ import absolute_import, print_function
@@ -32,7 +32,7 @@ class InvalidTokenException(Exception):
     """
     Raised when a user's token is invalid (e.g. due to timeout).
 
-    https://www.laterpay.net/developers/docs/backend-api#Invalidtokens
+    This exception is deprecated and will not be raised anymore.
     """
 
 
@@ -58,8 +58,8 @@ class ItemDefinition(object):
 
     Documentation for usage:
 
-    For PPU purchases: https://laterpay.net/developers/docs/dialog-api#GET/dialog/add
-    For Single item purchases: https://laterpay.net/developers/docs/dialog-api#GET/dialog/buy
+    For PPU purchases: http://docs.laterpay.net/platform/dialogs/add/
+    For Single item purchases: http://docs.laterpay.net/platform/dialogs/buy/
     """
 
     def __init__(self, item_id, pricing, url, title, cp=None, expiry=None):
@@ -98,7 +98,7 @@ class LaterPayClient(object):
 
         Defaults connecting to the production API.
 
-        https://www.laterpay.net/developers/docs
+        http://docs.laterpay.net/
 
         :param timeout_seconds: number of seconds after which backend api
             requests (e.g. /access) will time out (10 by default).
@@ -115,7 +115,7 @@ class LaterPayClient(object):
         """
         Get a URL from which a user will be issued a LaterPay token.
 
-        https://www.laterpay.net/developers/docs/backend-api#GET/gettoken
+        http://docs.laterpay.net/platform/identification/gettoken/
         """
         url = self._gettoken_url
         data = {
@@ -174,7 +174,7 @@ class LaterPayClient(object):
         """
         Get the URL for an iframe showing LaterPay account management links.
 
-        https://www.laterpay.net/developers/docs/inpage-api#GET/controls/links
+        http://docs.laterpay.net/platform/inpage/login/
         """
         data = {'next': next_url}
         data['cp'] = self.cp_key
@@ -211,7 +211,7 @@ class LaterPayClient(object):
         """
         Get the URL for an iframe showing the user's invoice balance.
 
-        https://www.laterpay.net/developers/docs/inpage-api#GET/controls/balance
+        http://docs.laterpay.net/platform/inpage/balance/#get-controls-balance
         """
         data = {'cp': self.cp_key}
         if forcelang is not None:
@@ -358,7 +358,7 @@ class LaterPayClient(object):
         """
         Get the URL at which a user can start the checkout process to buy a single item.
 
-        https://www.laterpay.net/developers/docs/dialog-api#GET/dialog/buy
+        http://docs.laterpay.net/platform/dialogs/buy/
         """
         return self._get_web_url(
             item_definition,
@@ -387,7 +387,7 @@ class LaterPayClient(object):
         """
         Get the URL at which a user can add an item to their invoice to pay later.
 
-        https://www.laterpay.net/developers/docs/dialog-api#GET/dialog/add
+        http://docs.laterpay.net/platform/dialogs/add/
         """
         return self._get_web_url(
             item_definition,
@@ -446,7 +446,7 @@ class LaterPayClient(object):
         """
         Do we have an identifier token.
 
-        https://www.laterpay.net/developers/docs/backend-api#GET/gettoken
+        http://docs.laterpay.net/platform/identification/gettoken/
         """
         return self.lptoken is not None
 
@@ -456,7 +456,7 @@ class LaterPayClient(object):
 
         Get access data for a set of article ids.
 
-        https://www.laterpay.net/developers/docs/backend-api#GET/access
+        http://docs.laterpay.net/platform/access/access/
         """
         warnings.warn(
             "LaterPayClient.get_access() is deprecated "
