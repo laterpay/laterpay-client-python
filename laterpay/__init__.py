@@ -72,7 +72,7 @@ class ItemDefinition(object):
             raise InvalidItemDefinition("Invalid expiry value %s, it should be '+3600' or UTC-based "
                                         "epoch timestamp in seconds of type int" % expiry)
 
-        if cp is not None:
+        if cp is not None:  # pragma: no cover
             warnings.warn("ItemDefinition's cp parameter is deprecated and will be ignored.", DeprecationWarning)
 
         self.data = {
@@ -124,7 +124,7 @@ class LaterPayClient(object):
         }
         return utils.signed_url(self.shared_secret, data, url, method='GET')
 
-    def get_identify_url(self, identify_callback=None):
+    def get_identify_url(self, identify_callback=None):  # pragma: no cover
         """
         Deprecated.
         """
@@ -154,7 +154,7 @@ class LaterPayClient(object):
                                 show_login=False,
                                 show_signup=False,
                                 show_long_signup=False,
-                                use_jsevents=False):
+                                use_jsevents=False):  # pragma: no cover
         """ Deprecated, see get_controls_links_url. """
         warnings.warn("get_iframe_links_url is deprecated. Please use get_controls_links_url. "
                       "It will be removed on a future release.", DeprecationWarning)
@@ -201,7 +201,7 @@ class LaterPayClient(object):
 
         return utils.signed_url(self.shared_secret, data, url, method='GET')
 
-    def get_iframeapi_balance_url(self, forcelang=None):
+    def get_iframeapi_balance_url(self, forcelang=None):  # pragma: no cover
         """ Deprecated, see get_controls_balance_url. """
         warnings.warn("get_iframe_balance_url is deprecated. Please use get_controls_balance_url. "
                       "It will be removed on a future release.", DeprecationWarning)
@@ -450,7 +450,7 @@ class LaterPayClient(object):
         """
         return self.lptoken is not None
 
-    def get_access(self, article_ids, product_key=None):
+    def get_access(self, article_ids, product_key=None):  # pragma: no cover
         """
         Deprecated. Consider using ``.get_access_data()`` instead.
 
