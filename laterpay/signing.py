@@ -108,7 +108,7 @@ def create_base_message(params, url, method='POST'):
     stable part of the API. This will be deprecated and replaced with a internal
     method accordingly, in a future release.
 
-    See https://www.laterpay.net/developers/docs/start#SigningURLs for details
+    http://docs.laterpay.net/platform/intro/signing_urls/
     """
     msg = '{method}&{url}&{params}'
 
