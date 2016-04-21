@@ -294,7 +294,8 @@ class LaterPayClient(object):
                      consumable=False,
                      return_url=None,
                      failure_url=None,
-                     use_dialog_api=True):
+                     use_dialog_api=True,
+                     **kwargs):
 
         # filter out params with None value.
         data = {k: v for k, v in item_definition.data.items() if v is not None}
@@ -333,6 +334,8 @@ class LaterPayClient(object):
 
         base_url = "%s/%s" % (prefix, page_type)
 
+        data.update(kwargs)
+
         url = utils.signed_url(self.shared_secret, data, base_url, method='GET')
 
         if use_dialog_api:
@@ -354,7 +357,8 @@ class LaterPayClient(object):
                     consumable=False,
                     return_url=None,
                     failure_url=None,
-                    use_dialog_api=True):
+                    use_dialog_api=True,
+                    **kwargs):
         """
         Get the URL at which a user can start the checkout process to buy a single item.
 
@@ -371,7 +375,8 @@ class LaterPayClient(object):
             consumable=consumable,
             return_url=return_url,
             failure_url=failure_url,
-            use_dialog_api=use_dialog_api)
+            use_dialog_api=use_dialog_api,
+            **kwargs)
 
     def get_add_url(self,
                     item_definition,
@@ -383,7 +388,8 @@ class LaterPayClient(object):
                     consumable=False,
                     return_url=None,
                     failure_url=None,
-                    use_dialog_api=True):
+                    use_dialog_api=True,
+                    **kwargs):
         """
         Get the URL at which a user can add an item to their invoice to pay later.
 
@@ -400,7 +406,8 @@ class LaterPayClient(object):
             consumable=consumable,
             return_url=return_url,
             failure_url=failure_url,
-            use_dialog_api=use_dialog_api)
+            use_dialog_api=use_dialog_api,
+            **kwargs)
 
     def _sign_and_encode(self, params, url, method="GET"):
         return utils.signed_query(self.shared_secret, params, url=url, method=method)
