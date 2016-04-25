@@ -4,7 +4,7 @@
 """
 The LaterPay API Python client.
 
-https://www.laterpay.net/developers/docs
+http://docs.laterpay.net/
 """
 
 from __future__ import absolute_import, print_function
@@ -32,7 +32,7 @@ class InvalidTokenException(Exception):
     """
     Raised when a user's token is invalid (e.g. due to timeout).
 
-    https://www.laterpay.net/developers/docs/backend-api#Invalidtokens
+    This exception is deprecated and will not be raised anymore.
     """
 
 
@@ -58,8 +58,8 @@ class ItemDefinition(object):
 
     Documentation for usage:
 
-    For PPU purchases: https://laterpay.net/developers/docs/dialog-api#GET/dialog/add
-    For Single item purchases: https://laterpay.net/developers/docs/dialog-api#GET/dialog/buy
+    For PPU purchases: http://docs.laterpay.net/platform/dialogs/add/
+    For Single item purchases: http://docs.laterpay.net/platform/dialogs/buy/
     """
 
     def __init__(self, item_id, pricing, url, title, cp=None, expiry=None):
@@ -72,7 +72,7 @@ class ItemDefinition(object):
             raise InvalidItemDefinition("Invalid expiry value %s, it should be '+3600' or UTC-based "
                                         "epoch timestamp in seconds of type int" % expiry)
 
-        if cp is not None:
+        if cp is not None:  # pragma: no cover
             warnings.warn("ItemDefinition's cp parameter is deprecated and will be ignored.", DeprecationWarning)
 
         self.data = {
@@ -98,7 +98,7 @@ class LaterPayClient(object):
 
         Defaults connecting to the production API.
 
-        https://www.laterpay.net/developers/docs
+        http://docs.laterpay.net/
 
         :param timeout_seconds: number of seconds after which backend api
             requests (e.g. /access) will time out (10 by default).
@@ -115,7 +115,7 @@ class LaterPayClient(object):
         """
         Get a URL from which a user will be issued a LaterPay token.
 
-        https://www.laterpay.net/developers/docs/backend-api#GET/gettoken
+        http://docs.laterpay.net/platform/identification/gettoken/
         """
         url = self._gettoken_url
         data = {
@@ -124,7 +124,7 @@ class LaterPayClient(object):
         }
         return utils.signed_url(self.shared_secret, data, url, method='GET')
 
-    def get_identify_url(self, identify_callback=None):
+    def get_identify_url(self, identify_callback=None):  # pragma: no cover
         """
         Deprecated.
         """
@@ -154,7 +154,7 @@ class LaterPayClient(object):
                                 show_login=False,
                                 show_signup=False,
                                 show_long_signup=False,
-                                use_jsevents=False):
+                                use_jsevents=False):  # pragma: no cover
         """ Deprecated, see get_controls_links_url. """
         warnings.warn("get_iframe_links_url is deprecated. Please use get_controls_links_url. "
                       "It will be removed on a future release.", DeprecationWarning)
@@ -174,7 +174,7 @@ class LaterPayClient(object):
         """
         Get the URL for an iframe showing LaterPay account management links.
 
-        https://www.laterpay.net/developers/docs/inpage-api#GET/controls/links
+        http://docs.laterpay.net/platform/inpage/login/
         """
         data = {'next': next_url}
         data['cp'] = self.cp_key
@@ -201,7 +201,7 @@ class LaterPayClient(object):
 
         return utils.signed_url(self.shared_secret, data, url, method='GET')
 
-    def get_iframeapi_balance_url(self, forcelang=None):
+    def get_iframeapi_balance_url(self, forcelang=None):  # pragma: no cover
         """ Deprecated, see get_controls_balance_url. """
         warnings.warn("get_iframe_balance_url is deprecated. Please use get_controls_balance_url. "
                       "It will be removed on a future release.", DeprecationWarning)
@@ -211,7 +211,7 @@ class LaterPayClient(object):
         """
         Get the URL for an iframe showing the user's invoice balance.
 
-        https://www.laterpay.net/developers/docs/inpage-api#GET/controls/balance
+        http://docs.laterpay.net/platform/inpage/balance/#get-controls-balance
         """
         data = {'cp': self.cp_key}
         if forcelang is not None:
@@ -294,7 +294,8 @@ class LaterPayClient(object):
                      consumable=False,
                      return_url=None,
                      failure_url=None,
-                     use_dialog_api=True):
+                     use_dialog_api=True,
+                     **kwargs):
 
         # filter out params with None value.
         data = {k: v for k, v in item_definition.data.items() if v is not None}
@@ -320,7 +321,8 @@ class LaterPayClient(object):
             data['tref'] = transaction_reference
 
         if skip_add_to_invoice:
-            data['skip_add_to_invoice'] = 1
+            warnings.warn('The param skip_add_to_invoice is deprecated and it '
+                          'will be removed in a future release.', DeprecationWarning)
 
         if dialog:
             prefix = '%s/%s' % (self.web_root, 'dialog')
@@ -331,6 +333,8 @@ class LaterPayClient(object):
             data['product'] = product_key
 
         base_url = "%s/%s" % (prefix, page_type)
+
+        data.update(kwargs)
 
         url = utils.signed_url(self.shared_secret, data, base_url, method='GET')
 
@@ -353,11 +357,12 @@ class LaterPayClient(object):
                     consumable=False,
                     return_url=None,
                     failure_url=None,
-                    use_dialog_api=True):
+                    use_dialog_api=True,
+                    **kwargs):
         """
         Get the URL at which a user can start the checkout process to buy a single item.
 
-        https://www.laterpay.net/developers/docs/dialog-api#GET/dialog/buy
+        http://docs.laterpay.net/platform/dialogs/buy/
         """
         return self._get_web_url(
             item_definition,
@@ -370,7 +375,8 @@ class LaterPayClient(object):
             consumable=consumable,
             return_url=return_url,
             failure_url=failure_url,
-            use_dialog_api=use_dialog_api)
+            use_dialog_api=use_dialog_api,
+            **kwargs)
 
     def get_add_url(self,
                     item_definition,
@@ -382,11 +388,12 @@ class LaterPayClient(object):
                     consumable=False,
                     return_url=None,
                     failure_url=None,
-                    use_dialog_api=True):
+                    use_dialog_api=True,
+                    **kwargs):
         """
         Get the URL at which a user can add an item to their invoice to pay later.
 
-        https://www.laterpay.net/developers/docs/dialog-api#GET/dialog/add
+        http://docs.laterpay.net/platform/dialogs/add/
         """
         return self._get_web_url(
             item_definition,
@@ -399,7 +406,8 @@ class LaterPayClient(object):
             consumable=consumable,
             return_url=return_url,
             failure_url=failure_url,
-            use_dialog_api=use_dialog_api)
+            use_dialog_api=use_dialog_api,
+            **kwargs)
 
     def _sign_and_encode(self, params, url, method="GET"):
         return utils.signed_query(self.shared_secret, params, url=url, method=method)
@@ -445,17 +453,17 @@ class LaterPayClient(object):
         """
         Do we have an identifier token.
 
-        https://www.laterpay.net/developers/docs/backend-api#GET/gettoken
+        http://docs.laterpay.net/platform/identification/gettoken/
         """
         return self.lptoken is not None
 
-    def get_access(self, article_ids, product_key=None):
+    def get_access(self, article_ids, product_key=None):  # pragma: no cover
         """
         Deprecated. Consider using ``.get_access_data()`` instead.
 
         Get access data for a set of article ids.
 
-        https://www.laterpay.net/developers/docs/backend-api#GET/access
+        http://docs.laterpay.net/platform/access/access/
         """
         warnings.warn(
             "LaterPayClient.get_access() is deprecated "

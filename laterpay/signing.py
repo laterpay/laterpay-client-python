@@ -108,7 +108,7 @@ def create_base_message(params, url, method='POST'):
     stable part of the API. This will be deprecated and replaced with a internal
     method accordingly, in a future release.
 
-    See https://www.laterpay.net/developers/docs/start#SigningURLs for details
+    http://docs.laterpay.net/platform/intro/signing_urls/
     """
     msg = '{method}&{url}&{params}'
 
@@ -194,7 +194,7 @@ def verify(signature, secret, params, url, method):
     return time_independent_HMAC_compare(signature, mac)
 
 
-def sign_and_encode(secret, params, url, method="GET"):
+def sign_and_encode(secret, params, url, method="GET"):  # pragma: no cover
     """
     Deprecated. Consider using ``laterpay.utils.signed_query()`` instead.
 
@@ -234,7 +234,7 @@ def sign_and_encode(secret, params, url, method="GET"):
     return "%s&hmac=%s" % (encoded, hmac)
 
 
-def sign_get_url(secret, url, signature_paramname="hmac"):
+def sign_get_url(secret, url, signature_paramname="hmac"):  # pragma: no cover
     """
     Deprecated.
 
