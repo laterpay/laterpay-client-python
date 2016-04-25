@@ -105,6 +105,24 @@ class TestLaterPayClient(unittest.TestCase):
             'expiry url param is "None". Should be omitted.',
         )
 
+    def test_get_web_url_extra_kwargs(self):
+        item = ItemDefinition(1, 'EUR20', 'http://example.net/t', 'title')
+        url = self.lp.get_add_url(
+            item,
+            use_dialog_api=False,
+            something_more=['x', 'y']
+        )
+        qd = parse_qs(urlparse(url).query)
+        self.assertEqual(qd['something_more'], ['x', 'y'])
+
+        url = self.lp.get_buy_url(
+            item,
+            use_dialog_api=False,
+            something_more=['x', 'y']
+        )
+        qd = parse_qs(urlparse(url).query)
+        self.assertEqual(qd['something_more'], ['x', 'y'])
+
     @mock.patch('laterpay.warnings.warn')
     def test_log_warning_for_skip_add_to_invoice_deprecation(self, warning_mock):
         item = ItemDefinition(1, 'EUR20', 'http://help.me/', 'title')
