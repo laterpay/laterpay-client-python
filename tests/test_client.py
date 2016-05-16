@@ -325,6 +325,22 @@ class TestLaterPayClient(unittest.TestCase):
             method='GET',
         )
 
+    @mock.patch('laterpay.signing.sign')
+    @mock.patch('time.time')
+    def test_get_access_params(self, time_time_mock, sign_mock):
+        time_time_mock.return_value = 123
+        sign_mock.return_value = 'fake-signature'
+
+        params = self.lp.get_access_params('article-1', lptoken='fake-lptoken')
+
+        self.assertEqual(params, {
+            'cp': 1,
+            'ts': '123',
+            'lptoken': 'fake-lptoken',
+            'article_id': ['article-1'],
+            'hmac': 'fake-signature',
+        })
+
     @mock.patch('time.time')
     def test_get_gettoken_redirect(self, time_mock):
         time_mock.return_value = 12345678
@@ -347,6 +363,13 @@ class TestLaterPayClient(unittest.TestCase):
             qd['hmac'],
             ['4f59ae6601fc99e962297fb1db607caeeb8e841fee8f439b526c7f41'],
         )
+
+    def test_has_token(self):
+        client = LaterPayClient('cp-key', 'shared-secret')
+        self.assertFalse(client.has_token())
+
+        client = LaterPayClient('cp-key', 'shared-secret', lptoken='foo')
+        self.assertTrue(client.has_token())
 
 
 if __name__ == '__main__':

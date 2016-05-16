@@ -237,6 +237,30 @@ class TestSigningHelper(unittest.TestCase):
         false_method = 'POST'
         self.assertFalse(signing.verify(signature, secret, data, base_url, false_method))
 
+    def test_normalise_param_structure(self):
+        params = {
+            'key1': 'value1',
+            'key2': ['value21', 'value22'],
+            'key3': ('value31', 'value32'),
+        }
+        self.assertEqual(signing.normalise_param_structure(params), {
+            'key1': ['value1'],
+            'key2': ['value21', 'value22'],
+            'key3': ('value31', 'value32'),  # Do we want a list here?
+        })
+
+        params = [
+            ['key1', 'value11'],
+            ['key1', 'value12'],
+            ('key2', ['value21', 'value22']),
+            ('key3', ('value31', 'value32')),
+        ]
+        self.assertEqual(signing.normalise_param_structure(params), {
+            'key1': ['value11', 'value12'],
+            'key2': ['value21', 'value22'],
+            'key3': ('value31', 'value32'),  # Do we want a list here?
+        })
+
 
 if __name__ == '__main__':
     unittest.main()

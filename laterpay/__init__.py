@@ -412,8 +412,7 @@ class LaterPayClient(object):
     def _sign_and_encode(self, params, url, method="GET"):
         return utils.signed_query(self.shared_secret, params, url=url, method=method)
 
-    def _make_request(self, url, params, method='GET'):
-
+    def _make_request(self, url, params, method='GET'):  # pragma: no cover
         params = self._sign_and_encode(params=params, url=url, method=method)
 
         headers = {
