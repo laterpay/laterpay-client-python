@@ -19,6 +19,7 @@ import warnings
 
 import requests
 
+import six
 from six.moves.urllib.parse import quote_plus
 from six.moves.urllib.request import Request, urlopen
 
@@ -195,7 +196,7 @@ class LaterPayClient(object):
         elif show_signup:
             data['show'] = '%ss' % data.get('show', '')
 
-        data['xdmprefix'] = "".join(random.choice(string.ascii_letters) for x in xrange(10))
+        data['xdmprefix'] = "".join(random.choice(string.ascii_letters) for x in range(10))
 
         url = '%s/controls/links' % self.web_root
 
@@ -216,7 +217,7 @@ class LaterPayClient(object):
         data = {'cp': self.cp_key}
         if forcelang is not None:
             data['forcelang'] = forcelang
-        data['xdmprefix'] = "".join(random.choice(string.ascii_letters) for x in xrange(10))
+        data['xdmprefix'] = "".join(random.choice(string.ascii_letters) for x in range(10))
 
         base_url = "{web_root}/controls/balance".format(web_root=self.web_root)
 
@@ -298,7 +299,7 @@ class LaterPayClient(object):
                      **kwargs):
 
         # filter out params with None value.
-        data = {k: v for k, v in item_definition.data.items() if v is not None}
+        data = {k: v for k, v in six.iteritems(item_definition.data) if v is not None}
         data['cp'] = self.cp_key
 
         if use_jsevents:
@@ -413,6 +414,11 @@ class LaterPayClient(object):
         return utils.signed_query(self.shared_secret, params, url=url, method=method)
 
     def _make_request(self, url, params, method='GET'):  # pragma: no cover
+        """
+        Deprecated.
+
+        Used by deprecated ``get_access()`` only.
+        """
         params = self._sign_and_encode(params=params, url=url, method=method)
 
         headers = {
@@ -438,7 +444,7 @@ class LaterPayClient(object):
             resp = {'status': 'unexpected error'}
         else:
             _logger.debug("Received response %s", response)
-            resp = json.loads(response)
+            resp = json.loads(response.decode())
 
         if 'new_token' in resp:
             self.lptoken = resp['new_token']
