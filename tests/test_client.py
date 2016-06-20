@@ -325,6 +325,22 @@ class TestLaterPayClient(unittest.TestCase):
             method='GET',
         )
 
+    @mock.patch('laterpay.signing.sign')
+    @mock.patch('time.time')
+    def test_get_access_params(self, time_time_mock, sign_mock):
+        time_time_mock.return_value = 123
+        sign_mock.return_value = 'fake-signature'
+
+        params = self.lp.get_access_params('article-1', lptoken='fake-lptoken')
+
+        self.assertEqual(params, {
+            'cp': 1,
+            'ts': '123',
+            'lptoken': 'fake-lptoken',
+            'article_id': ['article-1'],
+            'hmac': 'fake-signature',
+        })
+
     @mock.patch('time.time')
     def test_get_gettoken_redirect(self, time_mock):
         time_mock.return_value = 12345678
@@ -347,6 +363,116 @@ class TestLaterPayClient(unittest.TestCase):
             qd['hmac'],
             ['4f59ae6601fc99e962297fb1db607caeeb8e841fee8f439b526c7f41'],
         )
+
+    def test_has_token(self):
+        client = LaterPayClient('cp-key', 'shared-secret')
+        self.assertFalse(client.has_token())
+
+        client = LaterPayClient('cp-key', 'shared-secret', lptoken='foo')
+        self.assertTrue(client.has_token())
+
+    @mock.patch('time.time', return_value=12345678)
+    def test_get_controls_links_url_all_defaults(self, time_mock):
+        signed_url = self.lp.get_controls_links_url('http://example.com/foo/?bar=buz')
+        scheme, netloc, path, _, query, _ = urlparse(signed_url)
+        query = parse_qs(query)
+        self.assertEqual(scheme, 'https')
+        self.assertEqual(netloc, 'web.laterpay.net')
+        self.assertEqual(path, '/controls/links')
+        del query['hmac']  # Ensures the key was set
+        del query['xdmprefix']  # Ensures the key was set
+        self.assertEqual(query, {
+            'cp': ['1'],
+            'next': ['http://example.com/foo/?bar=buz'],
+            'ts': ['12345678'],
+        })
+
+    @mock.patch('time.time', return_value=12345678)
+    def test_get_controls_links_url_all_set_short(self, time_mock):
+        signed_url = self.lp.get_controls_links_url(
+            'http://example.com/foo/?bar=buz',
+            css_url='http://cdn.com/some.css',
+            forcelang='de',
+            show_greeting=True,
+            show_login=True,
+            show_signup=True,
+            use_jsevents=True,
+        )
+        scheme, netloc, path, _, query, _ = urlparse(signed_url)
+        query = parse_qs(query)
+        self.assertEqual(scheme, 'https')
+        self.assertEqual(netloc, 'web.laterpay.net')
+        self.assertEqual(path, '/controls/links')
+        del query['hmac']  # Ensures the key was set
+        del query['xdmprefix']  # Ensures the key was set
+        self.assertEqual(query, {
+            'cp': ['1'],
+            'css': ['http://cdn.com/some.css'],
+            'forcelang': ['de'],
+            'jsevents': ['1'],
+            'next': ['http://example.com/foo/?bar=buz'],
+            'show': ['gls'],
+            'ts': ['12345678'],
+        })
+
+    @mock.patch('time.time', return_value=12345678)
+    def test_get_controls_links_url_all_set_long(self, time_mock):
+        signed_url = self.lp.get_controls_links_url(
+            'http://example.com/foo/?bar=buz',
+            css_url='http://cdn.com/some.css',
+            forcelang='de',
+            show_long_greeting=True,
+            show_login=True,
+            show_long_signup=True,
+            use_jsevents=True,
+        )
+        scheme, netloc, path, _, query, _ = urlparse(signed_url)
+        query = parse_qs(query)
+        self.assertEqual(scheme, 'https')
+        self.assertEqual(netloc, 'web.laterpay.net')
+        self.assertEqual(path, '/controls/links')
+        del query['hmac']  # Ensures the key was set
+        del query['xdmprefix']  # Ensures the key was set
+        self.assertEqual(query, {
+            'cp': ['1'],
+            'css': ['http://cdn.com/some.css'],
+            'forcelang': ['de'],
+            'jsevents': ['1'],
+            'next': ['http://example.com/foo/?bar=buz'],
+            'show': ['gglss'],
+            'ts': ['12345678'],
+        })
+
+    @mock.patch('time.time', return_value=12345678)
+    def test_get_controls_balance_url_all_defaults(self, time_mock):
+        signed_url = self.lp.get_controls_balance_url()
+        scheme, netloc, path, _, query, _ = urlparse(signed_url)
+        query = parse_qs(query)
+        self.assertEqual(scheme, 'https')
+        self.assertEqual(netloc, 'web.laterpay.net')
+        self.assertEqual(path, '/controls/balance')
+        del query['hmac']  # Ensures the key was set
+        del query['xdmprefix']  # Ensures the key was set
+        self.assertEqual(query, {
+            'cp': ['1'],
+            'ts': ['12345678'],
+        })
+
+    @mock.patch('time.time', return_value=12345678)
+    def test_get_controls_balance_url_all_set(self, time_mock):
+        signed_url = self.lp.get_controls_balance_url(forcelang='de')
+        scheme, netloc, path, _, query, _ = urlparse(signed_url)
+        query = parse_qs(query)
+        self.assertEqual(scheme, 'https')
+        self.assertEqual(netloc, 'web.laterpay.net')
+        self.assertEqual(path, '/controls/balance')
+        del query['hmac']  # Ensures the key was set
+        del query['xdmprefix']  # Ensures the key was set
+        self.assertEqual(query, {
+            'cp': ['1'],
+            'forcelang': ['de'],
+            'ts': ['12345678'],
+        })
 
 
 if __name__ == '__main__':

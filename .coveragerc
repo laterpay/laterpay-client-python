@@ -1,5 +1,6 @@
 [run]
 source = laterpay
+branch = True
 omit =
 	laterpay/django/*
 	laterpay/compat.py

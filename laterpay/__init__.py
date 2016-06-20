@@ -19,6 +19,7 @@ import warnings
 
 import requests
 
+import six
 from six.moves.urllib.parse import quote_plus
 from six.moves.urllib.request import Request, urlopen
 
@@ -155,7 +156,7 @@ class LaterPayClient(object):
                                 show_signup=False,
                                 show_long_signup=False,
                                 use_jsevents=False):  # pragma: no cover
-        """ Deprecated, see get_controls_links_url. """
+        """Deprecated, see get_controls_links_url."""
         warnings.warn("get_iframe_links_url is deprecated. Please use get_controls_links_url. "
                       "It will be removed on a future release.", DeprecationWarning)
         return self.get_controls_links_url(next_url, css_url, forcelang, show_greeting, show_long_greeting,
@@ -195,14 +196,14 @@ class LaterPayClient(object):
         elif show_signup:
             data['show'] = '%ss' % data.get('show', '')
 
-        data['xdmprefix'] = "".join(random.choice(string.ascii_letters) for x in xrange(10))
+        data['xdmprefix'] = "".join(random.choice(string.ascii_letters) for x in range(10))
 
         url = '%s/controls/links' % self.web_root
 
         return utils.signed_url(self.shared_secret, data, url, method='GET')
 
     def get_iframeapi_balance_url(self, forcelang=None):  # pragma: no cover
-        """ Deprecated, see get_controls_balance_url. """
+        """Deprecated, see get_controls_balance_url."""
         warnings.warn("get_iframe_balance_url is deprecated. Please use get_controls_balance_url. "
                       "It will be removed on a future release.", DeprecationWarning)
         return self.get_controls_balance_url(forcelang)
@@ -216,7 +217,7 @@ class LaterPayClient(object):
         data = {'cp': self.cp_key}
         if forcelang is not None:
             data['forcelang'] = forcelang
-        data['xdmprefix'] = "".join(random.choice(string.ascii_letters) for x in xrange(10))
+        data['xdmprefix'] = "".join(random.choice(string.ascii_letters) for x in range(10))
 
         base_url = "{web_root}/controls/balance".format(web_root=self.web_root)
 
@@ -226,7 +227,7 @@ class LaterPayClient(object):
         return '%s/dialog-api?url=%s' % (self.web_root, quote_plus(url))
 
     def get_login_dialog_url(self, next_url, use_jsevents=False, use_dialog_api=True):
-        """ Get the URL for a login page. """
+        """Get the URL for a login page."""
         url = '%s/account/dialog/login?next=%s%s%s' % (self.web_root, quote_plus(next_url),
                                                        "&jsevents=1" if use_jsevents else "",
                                                        "&cp=%s" % self.cp_key)
@@ -240,7 +241,7 @@ class LaterPayClient(object):
         return url
 
     def get_signup_dialog_url(self, next_url, use_jsevents=False, use_dialog_api=True):
-        """ Get the URL for a signup page. """
+        """Get the URL for a signup page."""
         url = '%s/account/dialog/signup?next=%s%s%s' % (self.web_root, quote_plus(next_url),
                                                         "&jsevents=1" if use_jsevents else "",
                                                         "&cp=%s" % self.cp_key)
@@ -254,7 +255,7 @@ class LaterPayClient(object):
         return url
 
     def get_logout_dialog_url(self, next_url, use_jsevents=False, use_dialog_api=True):
-        """ Get the URL for a logout page. """
+        """Get the URL for a logout page."""
         url = '%s/account/dialog/logout?next=%s%s%s' % (self.web_root, quote_plus(next_url),
                                                         "&jsevents=1" if use_jsevents else "",
                                                         "&cp=%s" % self.cp_key)
@@ -298,7 +299,7 @@ class LaterPayClient(object):
                      **kwargs):
 
         # filter out params with None value.
-        data = {k: v for k, v in item_definition.data.items() if v is not None}
+        data = {k: v for k, v in six.iteritems(item_definition.data) if v is not None}
         data['cp'] = self.cp_key
 
         if use_jsevents:
@@ -412,8 +413,12 @@ class LaterPayClient(object):
     def _sign_and_encode(self, params, url, method="GET"):
         return utils.signed_query(self.shared_secret, params, url=url, method=method)
 
-    def _make_request(self, url, params, method='GET'):
+    def _make_request(self, url, params, method='GET'):  # pragma: no cover
+        """
+        Deprecated.
 
+        Used by deprecated ``get_access()`` only.
+        """
         params = self._sign_and_encode(params=params, url=url, method=method)
 
         headers = {
@@ -439,7 +444,7 @@ class LaterPayClient(object):
             resp = {'status': 'unexpected error'}
         else:
             _logger.debug("Received response %s", response)
-            resp = json.loads(response)
+            resp = json.loads(response.decode())
 
         if 'new_token' in resp:
             self.lptoken = resp['new_token']

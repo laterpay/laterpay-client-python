@@ -4,6 +4,15 @@
 ## Unreleased
 
 
+## 4.4.0
+
+* `laterpay.utils.signed_query()` now passes a `dict` params instance to
+  `laterpay.signing.sign()` which makes it compatible with `sign()` ignoring
+  some params being ignored by `sign()` by looking them up with `in` operator.
+
+* Added Python 3.5 support
+
+
 ## 4.3.0
 
 * `LaterPayClient.get_add_url()` and `LaterPayClient.get_buy_url()` accept

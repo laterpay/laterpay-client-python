@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 import codecs
 import os
 
-_version = "4.3.0"
+_version = "4.4.0"
 _packages = find_packages('.', exclude=["*.tests", "*.tests.*", "tests.*", "tests"])
 
 if os.path.exists('README.rst'):
@@ -27,7 +27,6 @@ setup(
     test_suite="tests",
 
     packages=_packages,
-    package_data={'laterpay.django': ['templates/laterpay/inclusion/*']},
 
     install_requires=[
         'requests',
@@ -43,6 +42,7 @@ setup(
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3.3",
         "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.5",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ),
 )
