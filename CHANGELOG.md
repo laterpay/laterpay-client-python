@@ -3,6 +3,9 @@
 
 ## Unreleased
 
+
+## 4.4.0
+
 * `laterpay.utils.signed_query()` now passes a `dict` params instance to
   `laterpay.signing.sign()` which makes it compatible with `sign()` ignoring
   some params being ignored by `sign()` by looking them up with `in` operator.
