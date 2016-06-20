@@ -156,7 +156,7 @@ class LaterPayClient(object):
                                 show_signup=False,
                                 show_long_signup=False,
                                 use_jsevents=False):  # pragma: no cover
-        """ Deprecated, see get_controls_links_url. """
+        """Deprecated, see get_controls_links_url."""
         warnings.warn("get_iframe_links_url is deprecated. Please use get_controls_links_url. "
                       "It will be removed on a future release.", DeprecationWarning)
         return self.get_controls_links_url(next_url, css_url, forcelang, show_greeting, show_long_greeting,
@@ -203,7 +203,7 @@ class LaterPayClient(object):
         return utils.signed_url(self.shared_secret, data, url, method='GET')
 
     def get_iframeapi_balance_url(self, forcelang=None):  # pragma: no cover
-        """ Deprecated, see get_controls_balance_url. """
+        """Deprecated, see get_controls_balance_url."""
         warnings.warn("get_iframe_balance_url is deprecated. Please use get_controls_balance_url. "
                       "It will be removed on a future release.", DeprecationWarning)
         return self.get_controls_balance_url(forcelang)
@@ -227,7 +227,7 @@ class LaterPayClient(object):
         return '%s/dialog-api?url=%s' % (self.web_root, quote_plus(url))
 
     def get_login_dialog_url(self, next_url, use_jsevents=False, use_dialog_api=True):
-        """ Get the URL for a login page. """
+        """Get the URL for a login page."""
         url = '%s/account/dialog/login?next=%s%s%s' % (self.web_root, quote_plus(next_url),
                                                        "&jsevents=1" if use_jsevents else "",
                                                        "&cp=%s" % self.cp_key)
@@ -241,7 +241,7 @@ class LaterPayClient(object):
         return url
 
     def get_signup_dialog_url(self, next_url, use_jsevents=False, use_dialog_api=True):
-        """ Get the URL for a signup page. """
+        """Get the URL for a signup page."""
         url = '%s/account/dialog/signup?next=%s%s%s' % (self.web_root, quote_plus(next_url),
                                                         "&jsevents=1" if use_jsevents else "",
                                                         "&cp=%s" % self.cp_key)
@@ -255,7 +255,7 @@ class LaterPayClient(object):
         return url
 
     def get_logout_dialog_url(self, next_url, use_jsevents=False, use_dialog_api=True):
-        """ Get the URL for a logout page. """
+        """Get the URL for a logout page."""
         url = '%s/account/dialog/logout?next=%s%s%s' % (self.web_root, quote_plus(next_url),
                                                         "&jsevents=1" if use_jsevents else "",
                                                         "&cp=%s" % self.cp_key)
