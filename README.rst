@@ -40,6 +40,7 @@ See https://github.com/laterpay/laterpay-client-python
 Release Checklist
 -----------------
 
+* Install `twine` with `$ pipsi install twine`
 * Ensure CHANGELOG is representative
 * Determine next version number from the CHANGELOG (ensuring we follow `SemVer <http://semver.org/>`_)
 * `git flow release start $newver`
@@ -47,4 +48,5 @@ Release Checklist
 * Update the version in `setup.py`
 * `git flow release finish $newver`
 * `git push --tags origin develop master`
-* `python setup.py register sdist upload`
+* `python setup.py sdist bdist_wheel`
+* `twine upload dist/laterpay*$newver*` or optionally, for signed releases `twine upload -s ...`
