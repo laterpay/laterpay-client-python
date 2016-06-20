@@ -27,7 +27,6 @@ setup(
     test_suite="tests",
 
     packages=_packages,
-    package_data={'laterpay.django': ['templates/laterpay/inclusion/*']},
 
     install_requires=[
         'requests',
