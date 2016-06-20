@@ -4,6 +4,11 @@
 ## Unreleased
 
 
+## 4.4.1
+
+* Enabled universal wheel builds
+
+
 ## 4.4.0
 
 * `laterpay.utils.signed_query()` now passes a `dict` params instance to
