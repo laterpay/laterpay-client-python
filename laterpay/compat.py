@@ -11,6 +11,6 @@ def encode_if_unicode(value, encoding='utf-8'):
     Encoding is done only if ``value`` is a ``unicode`` instance
     (utf-8 encoding is used as default).
     """
-    if six.PY2 and isinstance(value, unicode):
+    if six.PY2 and isinstance(value, six.text_type):
         value = value.encode(encoding)
     return value

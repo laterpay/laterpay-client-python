@@ -133,7 +133,6 @@ class TestLaterPayClient(unittest.TestCase):
                                              "in a future release.",
                                              DeprecationWarning)
 
-
     def test_failure_url_param(self):
         item = ItemDefinition(1, 'EUR20', 'http://help.me/', 'title')
         url = self.lp.get_add_url(item, failure_url="http://example.com")
