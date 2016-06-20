@@ -204,10 +204,12 @@ def sign_and_encode(secret, params, url, method="GET"):  # pragma: no cover
     in the ``params`` dictionary. ``unicode()`` instances in params are handled correctly.
 
     :param secret: The shared secret as a hex-encoded string
-    :param params: A dictionary of URL parameters. Each key can resolve to a single value string or a multi-string list.
-    :param url: the URL being called
-    :param method: an uppercase string representation of the HTTP method being used for the call (e.g. "GET", "POST")
-    :return: a signed and correctly encoded URL
+    :param params: A dictionary of URL parameters. Each key can resolve to a
+                   single value string or a multi-string list.
+    :param url: The URL being called
+    :param method: An uppercase string representation of the HTTP method being
+                   used for the call (e.g. "GET", "POST")
+    :return: A signed and correctly encoded URL
     """
     warnings.warn(
         "sign_and_encode is deprecated. It will be removed in a future release. "
