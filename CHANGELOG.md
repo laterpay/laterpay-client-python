@@ -7,6 +7,8 @@
   `laterpay.signing.sign()` which makes it compatible with `sign()` ignoring
   some params being ignored by `sign()` by looking them up with `in` operator.
 
+* Added Python 3.5 support
+
 
 ## 4.3.0
 
