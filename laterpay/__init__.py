@@ -421,10 +421,7 @@ class LaterPayClient(object):
         """
         params = self._sign_and_encode(params=params, url=url, method=method)
 
-        headers = {
-            'X-LP-APIVersion': 2,
-            'User-Agent': 'LaterPay Client - Python - v0.2'
-        }
+        headers = self.get_request_headers()
 
         if method == 'POST':
             req = Request(url, data=params, headers=headers)
@@ -503,7 +500,7 @@ class LaterPayClient(object):
         Return a ``dict`` of request headers to be sent to the API.
         """
         return {
-            'X-LP-APIVersion': 2,
+            'X-LP-APIVersion': '2',
             # TODO: Add client version information.
             'User-Agent': 'LaterPay Client Python',
         }

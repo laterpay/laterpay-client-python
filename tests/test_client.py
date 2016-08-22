@@ -302,7 +302,7 @@ class TestLaterPayClient(unittest.TestCase):
 
         call = responses.calls[0]
 
-        self.assertEqual(call.request.headers['X-LP-APIVersion'], 2)
+        self.assertEqual(call.request.headers['X-LP-APIVersion'], '2')
 
         qd = parse_qs(urlparse(call.request.url).query)
 
