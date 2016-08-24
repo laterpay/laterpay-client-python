@@ -3,6 +3,11 @@
 
 ## Unreleased
 
+## 4.5.0
+
+* Added support for Python requests >= 2.11
+* Added current version number to HTTP request headers
+
 
 ## 4.4.1
 
