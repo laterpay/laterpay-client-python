@@ -11,6 +11,7 @@ from __future__ import absolute_import, print_function
 
 import json
 import logging
+import pkg_resources
 import random
 import re
 import string
@@ -499,10 +500,10 @@ class LaterPayClient(object):
         """
         Return a ``dict`` of request headers to be sent to the API.
         """
+        version = pkg_resources.get_distribution('laterpay-client').version
         return {
             'X-LP-APIVersion': '2',
-            # TODO: Add client version information.
-            'User-Agent': 'LaterPay Client Python',
+            'User-Agent': 'LaterPay Client Python v%s' % version,
         }
 
     def get_access_url(self):
