@@ -1,5 +1,30 @@
 # Changelog
 
+## 5.0.0 (under development)
+
+* Removed the following long deprecated methods from the
+  `laterpay.LaterPayClient`:
+
+  * `get_access()`, use `get_access_data()` instead
+  * `get_iframeapi_balance_url()`, us `get_controls_balance_url()` instead
+  * `get_iframeapi_links_url()`, us `get_controls_links_url()` instead
+  * `get_identify_url()` is not needed following our modern access control
+    checks
+
+* Removed the following deprecated arguments from `laterpay.LaterPayClient`
+  methods:
+
+  * `use_dialog_api` from `get_login_dialog_url()`
+  * `use_dialog_api` from `get_signup_dialog_url()`
+  * `use_dialog_api` from `get_logout_dialog_url()`
+
+* Removed the following public methods from `laterpay.signing`:
+
+  * `sign_and_encode()` in favor of `laterpay.utils.signed_query()`
+  * `sign_get_url()` in favor of `laterpay.utils.signed_url()`
+
+* Removed the deprecated `cp` argument from `laterpay.ItemDefinition`
+
 
 ## 4.6.0
 

@@ -3,11 +3,9 @@ from __future__ import absolute_import, print_function
 
 import hashlib
 import hmac
-import time
-import warnings
 
 import six
-from six.moves.urllib.parse import parse_qsl, quote, urlencode, urlparse
+from six.moves.urllib.parse import quote, urlparse
 
 from . import compat
 
@@ -190,99 +188,3 @@ def verify(signature, secret, params, url, method):
     mac = sign(secret, params, url, method)
 
     return time_independent_HMAC_compare(signature, mac)
-
-
-def sign_and_encode(secret, params, url, method="GET"):  # pragma: no cover
-    """
-    Deprecated. Consider using ``laterpay.utils.signed_query()`` instead.
-
-    Sign and encode a URL ``url`` with a ``secret`` key called via an HTTP ``method``.
-
-    It adds the signature to the URL
-    as the URL parameter "hmac" and also adds the required timestamp parameter "ts" if it's not already
-    in the ``params`` dictionary. ``unicode()`` instances in params are handled correctly.
-
-    :param secret: The shared secret as a hex-encoded string
-    :param params: A dictionary of URL parameters. Each key can resolve to a
-                   single value string or a multi-string list.
-    :param url: The URL being called
-    :param method: An uppercase string representation of the HTTP method being
-                   used for the call (e.g. "GET", "POST")
-    :return: A signed and correctly encoded URL
-    """
-    warnings.warn(
-        "sign_and_encode is deprecated. It will be removed in a future release. "
-        "Consider using ``laterpay.utils.signed_query()`` instead.",
-        DeprecationWarning,
-    )
-
-    if 'ts' not in params:
-        params['ts'] = str(int(time.time()))
-
-    if 'hmac' in params:
-        params.pop('hmac')
-
-    sorted_data = []
-    for k, v in sort_params(params):
-        k = compat.encode_if_unicode(k)
-        value = compat.encode_if_unicode(v)
-        sorted_data.append((k, value))
-
-    encoded = urlencode(sorted_data)
-    hmac = sign(secret, params, url=url, method=method)
-
-    return "%s&hmac=%s" % (encoded, hmac)
-
-
-def sign_get_url(secret, url, signature_paramname="hmac"):  # pragma: no cover
-    """
-    Deprecated.
-
-    Sign a URL to be GET-ed.
-
-    This function takes a URL, parses it, sorts the URL parameters in
-    alphabetical order, concatenates them with the character "&" inbetween and
-    subsequently creates an HMAC using the secret key in ``hmac_key``.
-
-    It then appends the signature in hex encoding in its own URL parameter,
-    specified by ``signature_paramname`` and returns the resulting URL.
-
-    This function is used for redirecting back to the merchant's page after a
-    call to /identify or /gettoken
-
-    :param secret: the secret key used to sign the URL
-    :type secret: str
-    :param url: the URL to sign
-    :type url: str
-    :param signature_paramname: the parameter name to append to ``url`` that
-                                will contain the signature (default: "hmac")
-    :type signature_paramname: str
-    :returns: ``str`` -- the URL, including the signature as an URL parameter
-    """
-    warnings.warn(
-        "sign_get_url is deprecated. It will be removed in a future release. "
-        "It wasn't intended for public use. It's recommended to use the core "
-        "signing API which is sign() and verify().",
-        DeprecationWarning,
-    )
-
-    parsed = urlparse(url)
-
-    if parsed.query != "":
-        # use parse_qsl, because .parse_qs seems to create problems
-        # with urlencode()
-        qs = parse_qsl(parsed.query, keep_blank_values=True)
-
-        # create string to sign
-
-        # .sort() will sort in alphabetical order
-        qs.append(("ts", str(int(time.time()))))
-        qs.sort()
-
-        hmac = sign(str(secret), qs, url, method="GET")
-
-        qs.append((signature_paramname, hmac))
-        return parsed.scheme + "://" + parsed.netloc + parsed.path + \
-            parsed.params + "?" + urlencode(qs) + parsed.fragment
-
-    return None

@@ -16,7 +16,6 @@ import random
 import re
 import string
 import time
-import warnings
 
 import requests
 
@@ -64,7 +63,7 @@ class ItemDefinition(object):
     For Single item purchases: http://docs.laterpay.net/platform/dialogs/buy/
     """
 
-    def __init__(self, item_id, pricing, url, title, cp=None, expiry=None):
+    def __init__(self, item_id, pricing, url, title, expiry=None):
 
         for price in pricing.split(','):
             if not re.match('[A-Z]{3}\d+', price):
@@ -73,9 +72,6 @@ class ItemDefinition(object):
         if expiry is not None and not re.match('^(\+?\d+)$', expiry):
             raise InvalidItemDefinition("Invalid expiry value %s, it should be '+3600' or UTC-based "
                                         "epoch timestamp in seconds of type int" % expiry)
-
-        if cp is not None:  # pragma: no cover
-            warnings.warn("ItemDefinition's cp parameter is deprecated and will be ignored.", DeprecationWarning)
 
         self.data = {
             'article_id': item_id,
@@ -126,43 +122,6 @@ class LaterPayClient(object):
         }
         return utils.signed_url(self.shared_secret, data, url, method='GET')
 
-    def get_identify_url(self, identify_callback=None):  # pragma: no cover
-        """
-        Deprecated.
-        """
-        warnings.warn(
-            "LaterPayClient.get_identify_url() is deprecated "
-            "and will be removed in a future release.",
-            DeprecationWarning,
-        )
-
-        base_url = self._identify_url
-        data = {'cp': self.cp_key}
-
-        if identify_callback is not None:
-            data['callback_url'] = identify_callback
-
-        params = self._sign_and_encode(data, url=base_url, method="GET")
-        url = '%s?%s' % (base_url, params)
-
-        return url
-
-    def get_iframeapi_links_url(self,
-                                next_url,
-                                css_url=None,
-                                forcelang=None,
-                                show_greeting=False,
-                                show_long_greeting=False,
-                                show_login=False,
-                                show_signup=False,
-                                show_long_signup=False,
-                                use_jsevents=False):  # pragma: no cover
-        """Deprecated, see get_controls_links_url."""
-        warnings.warn("get_iframe_links_url is deprecated. Please use get_controls_links_url. "
-                      "It will be removed on a future release.", DeprecationWarning)
-        return self.get_controls_links_url(next_url, css_url, forcelang, show_greeting, show_long_greeting,
-                                           show_login, show_signup, show_long_signup, use_jsevents)
-
     def get_controls_links_url(self,
                                next_url,
                                css_url=None,
@@ -203,12 +162,6 @@ class LaterPayClient(object):
 
         return utils.signed_url(self.shared_secret, data, url, method='GET')
 
-    def get_iframeapi_balance_url(self, forcelang=None):  # pragma: no cover
-        """Deprecated, see get_controls_balance_url."""
-        warnings.warn("get_iframe_balance_url is deprecated. Please use get_controls_balance_url. "
-                      "It will be removed on a future release.", DeprecationWarning)
-        return self.get_controls_balance_url(forcelang)
-
     def get_controls_balance_url(self, forcelang=None):
         """
         Get the URL for an iframe showing the user's invoice balance.
@@ -224,49 +177,34 @@ class LaterPayClient(object):
 
         return utils.signed_url(self.shared_secret, data, base_url, method='GET')
 
-    def _get_dialog_api_url(self, url):
-        return '%s/dialog-api?url=%s' % (self.web_root, quote_plus(url))
-
-    def get_login_dialog_url(self, next_url, use_jsevents=False, use_dialog_api=True):
+    def get_login_dialog_url(self, next_url, use_jsevents=False):
         """Get the URL for a login page."""
-        url = '%s/account/dialog/login?next=%s%s%s' % (self.web_root, quote_plus(next_url),
-                                                       "&jsevents=1" if use_jsevents else "",
-                                                       "&cp=%s" % self.cp_key)
-        if use_dialog_api:
-            warnings.warn("The Dialog API Wrapper is deprecated and no longer recommended. "
-                          "Please set use_dialog_api to False when calling get_login_dialog_url. "
-                          "Future releases will not use the Dialog API Wrapper by default. "
-                          "See http://docs.laterpay.net/platform/dialogs/third_party_cookies/",
-                          DeprecationWarning)
-            return self._get_dialog_api_url(url)
+        url = '%s/account/dialog/login?next=%s%s%s' % (
+            self.web_root,
+            quote_plus(next_url),
+            "&jsevents=1" if use_jsevents else "",
+            "&cp=%s" % self.cp_key,
+        )
         return url
 
-    def get_signup_dialog_url(self, next_url, use_jsevents=False, use_dialog_api=True):
+    def get_signup_dialog_url(self, next_url, use_jsevents=False):
         """Get the URL for a signup page."""
-        url = '%s/account/dialog/signup?next=%s%s%s' % (self.web_root, quote_plus(next_url),
-                                                        "&jsevents=1" if use_jsevents else "",
-                                                        "&cp=%s" % self.cp_key)
-        if use_dialog_api:
-            warnings.warn("The Dialog API Wrapper is deprecated and no longer recommended. "
-                          "Please set use_dialog_api to False when calling get_signup_dialog_url. "
-                          "Future releases will not use the Dialog API Wrapper by default. "
-                          "See http://docs.laterpay.net/platform/dialogs/third_party_cookies/",
-                          DeprecationWarning)
-            return self._get_dialog_api_url(url)
+        url = '%s/account/dialog/signup?next=%s%s%s' % (
+            self.web_root,
+            quote_plus(next_url),
+            "&jsevents=1" if use_jsevents else "",
+            "&cp=%s" % self.cp_key,
+        )
         return url
 
-    def get_logout_dialog_url(self, next_url, use_jsevents=False, use_dialog_api=True):
+    def get_logout_dialog_url(self, next_url, use_jsevents=False):
         """Get the URL for a logout page."""
-        url = '%s/account/dialog/logout?next=%s%s%s' % (self.web_root, quote_plus(next_url),
-                                                        "&jsevents=1" if use_jsevents else "",
-                                                        "&cp=%s" % self.cp_key)
-        if use_dialog_api:
-            warnings.warn("The Dialog API Wrapper is deprecated and no longer recommended. "
-                          "Please set use_dialog_api to False when calling get_logout_dialog_url. "
-                          "Future releases will not use the Dialog API Wrapper by default. "
-                          "See http://docs.laterpay.net/platform/dialogs/third_party_cookies/",
-                          DeprecationWarning)
-            return self._get_dialog_api_url(url)
+        url = '%s/account/dialog/logout?next=%s%s%s' % (
+            self.web_root,
+            quote_plus(next_url),
+            "&jsevents=1" if use_jsevents else "",
+            "&cp=%s" % self.cp_key,
+        )
         return url
 
     @property
@@ -291,12 +229,10 @@ class LaterPayClient(object):
                      product_key=None,
                      dialog=True,
                      use_jsevents=False,
-                     skip_add_to_invoice=False,
                      transaction_reference=None,
                      consumable=False,
                      return_url=None,
                      failure_url=None,
-                     use_dialog_api=True,
                      **kwargs):
 
         # filter out params with None value.
@@ -322,10 +258,6 @@ class LaterPayClient(object):
 
             data['tref'] = transaction_reference
 
-        if skip_add_to_invoice:
-            warnings.warn('The param skip_add_to_invoice is deprecated and it '
-                          'will be removed in a future release.', DeprecationWarning)
-
         if dialog:
             prefix = '%s/%s' % (self.web_root, 'dialog')
         else:
@@ -338,16 +270,7 @@ class LaterPayClient(object):
 
         data.update(kwargs)
 
-        url = utils.signed_url(self.shared_secret, data, base_url, method='GET')
-
-        if use_dialog_api:
-            warnings.warn("The Dialog API Wrapper is deprecated and no longer recommended. "
-                          "Please set use_dialog_api to False when calling get_buy_url or get_add_url. "
-                          "Future releases will not use the Dialog API Wrapper by default. "
-                          "See http://docs.laterpay.net/platform/dialogs/third_party_cookies/",
-                          DeprecationWarning)
-            return self._get_dialog_api_url(url)
-        return url
+        return utils.signed_url(self.shared_secret, data, base_url, method='GET')
 
     def get_buy_url(self,
                     item_definition,
@@ -359,7 +282,6 @@ class LaterPayClient(object):
                     consumable=False,
                     return_url=None,
                     failure_url=None,
-                    use_dialog_api=True,
                     **kwargs):
         """
         Get the URL at which a user can start the checkout process to buy a single item.
@@ -377,7 +299,6 @@ class LaterPayClient(object):
             consumable=consumable,
             return_url=return_url,
             failure_url=failure_url,
-            use_dialog_api=use_dialog_api,
             **kwargs)
 
     def get_add_url(self,
@@ -390,7 +311,6 @@ class LaterPayClient(object):
                     consumable=False,
                     return_url=None,
                     failure_url=None,
-                    use_dialog_api=True,
                     **kwargs):
         """
         Get the URL at which a user can add an item to their invoice to pay later.
@@ -408,7 +328,6 @@ class LaterPayClient(object):
             consumable=consumable,
             return_url=return_url,
             failure_url=failure_url,
-            use_dialog_api=use_dialog_api,
             **kwargs)
 
     def _sign_and_encode(self, params, url, method="GET"):
@@ -459,42 +378,6 @@ class LaterPayClient(object):
         http://docs.laterpay.net/platform/identification/gettoken/
         """
         return self.lptoken is not None
-
-    def get_access(self, article_ids, product_key=None):  # pragma: no cover
-        """
-        Deprecated. Consider using ``.get_access_data()`` instead.
-
-        Get access data for a set of article ids.
-
-        http://docs.laterpay.net/platform/access/access/
-        """
-        warnings.warn(
-            "LaterPayClient.get_access() is deprecated "
-            "and will be removed in a future release. "
-            "Consider using ``.get_access_data()`` instead.",
-            DeprecationWarning,
-        )
-
-        if not isinstance(article_ids, (list, tuple)):
-            article_ids = [article_ids]
-
-        params = {
-            'lptoken': self.lptoken,
-            'cp': self.cp_key,
-            'article_id': article_ids
-        }
-
-        if product_key is not None:
-            params['product'] = product_key
-
-        data = self._make_request(self._access_url, params)
-
-        allowed_statuses = ['ok', 'invalid_token', 'connection_error']
-
-        if data['status'] not in allowed_statuses:
-            raise Exception(data['status'])
-
-        return data
 
     def get_request_headers(self):
         """

@@ -47,18 +47,8 @@ class TestLaterPayClient(unittest.TestCase):
             'some-secret')
         self.item = ItemDefinition(1, 'EUR20', 'http://example.com/', 'title')
 
-    def get_qs_dict(self, url):
-        o = urlparse(url)
-        d = parse_qs(o.query)
-        o = urlparse(d['url'][0])
-        d = parse_qs(o.query)
-        return d
-
-    def get_dialog_api_furl(self, url):
-        return furl(furl(url).query.params['url'])
-
     def assertQueryString(self, url, key, value=None):
-        d = self.get_qs_dict(url)
+        d = parse_qs(urlparse(url).query)
         if not value:
             return (key in d)
         return d.get(key, None) == value
@@ -84,7 +74,7 @@ class TestLaterPayClient(unittest.TestCase):
             dialog=True,
             use_jsevents=True)
 
-        d = self.get_qs_dict(url)
+        d = parse_qs(urlparse(url).query)
         self.assertFalse('tref' in d)
 
         with self.assertRaises(APIException):
@@ -123,16 +113,6 @@ class TestLaterPayClient(unittest.TestCase):
         qd = parse_qs(urlparse(url).query)
         self.assertEqual(qd['something_more'], ['x', 'y'])
 
-    @mock.patch('laterpay.warnings.warn')
-    def test_log_warning_for_skip_add_to_invoice_deprecation(self, warning_mock):
-        item = ItemDefinition(1, 'EUR20', 'http://help.me/', 'title')
-        self.lp.get_add_url(item, skip_add_to_invoice=True,
-                            use_dialog_api=False)
-        warning_mock.assert_called_once_with("The param skip_add_to_invoice is "
-                                             "deprecated and it will be removed "
-                                             "in a future release.",
-                                             DeprecationWarning)
-
     def test_failure_url_param(self):
         item = ItemDefinition(1, 'EUR20', 'http://help.me/', 'title')
         url = self.lp.get_add_url(item, failure_url="http://example.com")
@@ -147,10 +127,10 @@ class TestLaterPayClient(unittest.TestCase):
         `product_key` "product" query param.
         """
         url = self.lp.get_add_url(self.item, product_key="hopes")
-        data = self.get_qs_dict(url)
+        data = parse_qs(urlparse(url).query)
         self.assertEqual(data['product'], ['hopes'])
         self.assertEqual(
-            str(self.get_dialog_api_furl(url).path),
+            str(furl(url).path),
             '/dialog/add',
         )
 
@@ -160,10 +140,10 @@ class TestLaterPayClient(unittest.TestCase):
         `product_key` "product" query param.
         """
         url = self.lp.get_buy_url(self.item, product_key="hopes")
-        data = self.get_qs_dict(url)
+        data = parse_qs(urlparse(url).query)
         self.assertEqual(data['product'], ['hopes'])
         self.assertEqual(
-            str(self.get_dialog_api_furl(url).path),
+            str(furl(url).path),
             '/dialog/buy',
         )
 
@@ -173,10 +153,10 @@ class TestLaterPayClient(unittest.TestCase):
         "product" query param when no `product_key` method param is used.
         """
         url = self.lp.get_add_url(self.item)
-        data = self.get_qs_dict(url)
+        data = parse_qs(urlparse(url).query)
         self.assertNotIn('product', data)
         self.assertEqual(
-            str(self.get_dialog_api_furl(url).path),
+            str(furl(url).path),
             '/dialog/add',
         )
 
@@ -186,79 +166,32 @@ class TestLaterPayClient(unittest.TestCase):
         "product" query param when no `product_key` method param is used.
         """
         url = self.lp.get_buy_url(self.item)
-        data = self.get_qs_dict(url)
+        data = parse_qs(urlparse(url).query)
         self.assertNotIn('product', data)
         self.assertEqual(
-            str(self.get_dialog_api_furl(url).path),
+            str(furl(url).path),
             '/dialog/buy',
         )
 
-    def test_get_buy_url_with_use_dialog_api_false(self):
-        """
-        Assert that `.get_buy_url()` returns a direct buy url, with no
-        dialog-api iframe, when `use_dialog_api=False`
-        """
-        url = self.lp.get_buy_url(self.item, use_dialog_api=False)
+    def test_get_buy_url(self):
+        url = self.lp.get_buy_url(self.item)
         self.assertEqual(str(furl(url).path), '/dialog/buy')
 
-    def test_get_add_url_with_use_dialog_api_false(self):
-        """
-        Assert that `.get_add_url()` returns a direct add url, with no
-        dialog-api iframe, when `use_dialog_api=False`
-        """
-        url = self.lp.get_add_url(self.item, use_dialog_api=False)
+    def test_get_add_url(self):
+        url = self.lp.get_add_url(self.item)
         self.assertEqual(str(furl(url).path), '/dialog/add')
 
     def test_get_login_dialog_url_with_use_dialog_api_false(self):
-        """
-        Assert that `.get_login_dialog_url()` returns a url with no
-        dialog-api iframe, when `use_dialog_api=False`
-        """
-        url = self.lp.get_login_dialog_url('http://example.org',
-                                           use_dialog_api=False)
+        url = self.lp.get_login_dialog_url('http://example.org')
         self.assertEqual(str(furl(url).path), '/account/dialog/login')
 
-    def test_get_login_dialog_url_without_use_dialog_api(self):
-        """
-        Assert that `.get_login_dialog_url()` returns a url with no
-        dialog-api iframe, when `use_dialog_api` is not set (default)
-        """
-        url = self.lp.get_login_dialog_url('http://example.org')
-        self.assertEqual(str(furl(url).path), '/dialog-api')
-
     def test_get_logout_dialog_url_with_use_dialog_api_false(self):
-        """
-        Assert that `.get_logout_dialog_url()` returns a url with no
-        dialog-api iframe, when `use_dialog_api=False`
-        """
-        url = self.lp.get_logout_dialog_url('http://example.org',
-                                            use_dialog_api=False)
+        url = self.lp.get_logout_dialog_url('http://example.org')
         self.assertEqual(str(furl(url).path), '/account/dialog/logout')
 
-    def test_get_logout_dialog_url_without_use_dialog_api(self):
-        """
-        Assert that `.get_logout_dialog_url()` returns a url with no
-        dialog-api iframe, when `use_dialog_api` is not set (default)
-        """
-        url = self.lp.get_logout_dialog_url('http://example.org')
-        self.assertEqual(str(furl(url).path), '/dialog-api')
-
-    def test_get_signup_dialog_url_with_use_dialog_api_false(self):
-        """
-        Assert that `.get_signup_dialog_url()` returns a url with no
-        dialog-api iframe, when `use_dialog_api=False`
-        """
-        url = self.lp.get_signup_dialog_url('http://example.org',
-                                            use_dialog_api=False)
-        self.assertEqual(str(furl(url).path), '/account/dialog/signup')
-
-    def test_get_signup_dialog_url_without_use_dialog_api(self):
-        """
-        Assert that `.get_signup_dialog_url()` returns a url with no
-        dialog-api iframe, when `use_dialog_api` is not set (default)
-        """
+    def test_get_signup_dialog_url(self):
         url = self.lp.get_signup_dialog_url('http://example.org')
-        self.assertEqual(str(furl(url).path), '/dialog-api')
+        self.assertEqual(str(furl(url).path), '/account/dialog/signup')
 
     @mock.patch('laterpay.signing.sign')
     @mock.patch('time.time')
