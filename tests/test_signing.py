@@ -5,6 +5,8 @@ from __future__ import absolute_import, print_function
 import hashlib
 import unittest
 
+import furl
+
 from laterpay import signing
 
 
@@ -40,6 +42,27 @@ class TestSigningHelper(unittest.TestCase):
             'param2': ['value3', 'value2'],
             u'param3': u'with a space'
         }
+        url = 'https://endpoint.com/api'
+
+        msg = signing.create_base_message(params, url)
+
+        self.assertEqual(
+            msg,
+            'POST&'
+            'https%3A%2F%2Fendpoint.com%2Fapi&'
+            'par%25C4%2584m1%3Dvalu%25C4%2598'
+            '%26param2%3Dvalue2'
+            '%26param2%3Dvalue3'
+            '%26param3%3Dwith%2520a%2520space',
+        )
+
+    def test_create_message_sorting_and_combining_params_omdict(self):
+        params = furl.furl(
+            '?par%C4%84m1=valu%C4%98'
+            '&param2=value3'
+            '&param2=value2'
+            '&param3=with+a+space'
+        ).query.params
         url = 'https://endpoint.com/api'
 
         msg = signing.create_base_message(params, url)
@@ -192,7 +215,7 @@ class TestSigningHelper(unittest.TestCase):
         self.assertEqual(signing.normalise_param_structure(params), {
             'key1': ['value1'],
             'key2': ['value21', 'value22'],
-            'key3': ('value31', 'value32'),  # Do we want a list here?
+            'key3': ['value31', 'value32'],  # Converted from tuple to list
         })
 
         params = [
@@ -204,8 +227,11 @@ class TestSigningHelper(unittest.TestCase):
         self.assertEqual(signing.normalise_param_structure(params), {
             'key1': ['value11', 'value12'],
             'key2': ['value21', 'value22'],
-            'key3': ('value31', 'value32'),  # Do we want a list here?
+            'key3': ['value31', 'value32'],  # Converted from tuple to list
         })
+
+        with self.assertRaises(TypeError):
+            signing.normalise_param_structure('not a dict, list or tuple')
 
     def test_sort_params(self):
         params = {

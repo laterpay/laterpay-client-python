@@ -6,6 +6,11 @@ import hmac
 
 import six
 from six.moves.urllib.parse import quote, urlparse
+try:
+    from furl.omdict1D import omdict
+    HAS_FURL = True
+except ImportError:  # pragma: no cover
+    HAS_FURL = False
 
 from . import compat
 
@@ -61,33 +66,52 @@ def normalise_param_structure(params):
     """
     Canonicalise representation of key-value data with non-unique keys.
 
-    Request parameter dictionaries are handled in different ways in different libraries,
-    this function is required to ensure we always have something of the format:
+    Request parameter dictionaries are handled in different ways in different
+    libraries. This function is required to ensure we always have something of
+    the format::
 
-       {  key:  [ value1, value2... ] }
+        {
+            'key1': ['value1', 'value2'],
+            'key2': ['value3'],
+        }
+
+    :param dict, list, tuple, furl.omdict1D.omdict params: The parameter
+        structure to normalize. Can be either a ``dict``, ``list``, ``tuple``
+        or ``furl.omdict1D.omdict``. The following formats are allowed::
+
+            # A dictionary with key-value or key-values mappings
+            {
+                'key1': 'value',
+                'key2': ['value1', 'value2'],
+                'key3': ('value1', 'value2'),
+            }
+
+            # A list (or tuple, can be used interchangeably)
+            [
+                ['key1', 'value1'],
+                ['key1', 'value2'],
+                ['key2', ['value1', 'value2']],
+            ]
 
     """
+    if isinstance(params, dict):
+        iterator = six.iteritems(params)
+    elif isinstance(params, (list, tuple)):
+        iterator = params
+    elif HAS_FURL and isinstance(params, omdict):
+        iterator = params.iterallitems()
+    else:
+        raise TypeError('params needs to be dict, list or tuple. It is a %r' % type(params))
+
     out = {}
-
-    if isinstance(params, (list, tuple)):
-        # this is tricky - either we have (a, b), (a, c) or we have (a, (b, c))
-        for param_name, param_value in params:
-            if isinstance(param_value, (list, tuple)):
-                # this is (a, (b, c))
-                out[param_name] = param_value
-            else:
-                # this is (a, b), (a, c)
-                if param_name not in out:
-                    out[param_name] = []
-                out[param_name].append(param_value)
-        return out
-
-    # otherwise this is a dictionary, so either it is { a => b } or { a => (b,c) }
-    for key, value in six.iteritems(params):
-        if not isinstance(value, (list, tuple)):
-            out[key] = [value]
+    for param_name, param_value in iterator:
+        out.setdefault(param_name, [])
+        if isinstance(param_value, (list, tuple)):
+            # this is (a, (b, c)) or { a => (b, c) }
+            out[param_name].extend(param_value)
         else:
-            out[key] = value
+            # this is ((a, b), (a, c)) or { a => b }
+            out[param_name].append(param_value)
 
     return out
 
