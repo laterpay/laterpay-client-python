@@ -207,6 +207,20 @@ class TestSigningHelper(unittest.TestCase):
             'key3': ('value31', 'value32'),  # Do we want a list here?
         })
 
+    def test_sort_params(self):
+        params = {
+            'key1': 'value1',
+            'key2': ['value22', 'value21'],
+            'key3': ('value32', 'value31'),
+        }
+        self.assertEqual(signing.sort_params(params), [
+            ('key1', 'value1'),
+            ('key2', 'value21'),
+            ('key2', 'value22'),
+            ('key3', 'value31'),
+            ('key3', 'value32'),
+        ])
+
 
 if __name__ == '__main__':
     unittest.main()

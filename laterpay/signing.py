@@ -50,8 +50,7 @@ def sort_params(param_dict):
     param_list = []
     for name, value_list in six.iteritems(param_dict):
         if isinstance(value_list, (list, tuple)):
-            for value in value_list:
-                param_list.append((name, value))
+            param_list.extend((name, value) for value in value_list)
         else:
             param_list.append((name, value_list))
 
