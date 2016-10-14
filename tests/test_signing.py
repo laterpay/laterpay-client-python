@@ -86,44 +86,50 @@ class TestSigningHelper(unittest.TestCase):
             signing.create_base_message(params, url, method='WRONG')
 
     def test_sign(self):
+        signature = '5b341f4321476715ab1ae252794783c6dffa32dbdcc94512193ea3cf'
         params = {
             u'parĄm1': u'valuĘ',
-            'param2': ['value2', 'value3'],
-            'hmac': 'to-be-removed',
-            'gettoken': 'to-be-removed-too',
+            b'par\xc4\x84m1': ['value2', 'value3'],
+            b'hmac': 'will-be-removed',
+            u'gettoken': 'will-be-removed-too',
         }
-        url = u'https://endpoint.com/api'
-
-        secret = u'secret'  # unicode is what we usually get from api/db..
-
-        mac = signing.sign(secret, params, url)
-        self.assertNotIn('hmac', params)
-        self.assertNotIn('gettoken', params)
+        url = b'https://endpoint.com/api'
+        secret = b'secret'
 
         # sha224 hmac
-        self.assertEqual(
-            mac,
-            '346f3d53ad762f3ed3fb7f2427dec2bbfaf0338bb7f91f0460aff15c',
-        )
+        self.assertEqual(signing.sign(secret, params, url), signature)
+
+        # Test that `hmac` and `gettoken` are not being removed from the
+        # original arguments passed to the function
+        self.assertIn(b'hmac', params)
+        self.assertIn(u'gettoken', params)
+
+        del params[b'hmac']
+        del params[u'gettoken']
+        self.assertEqual(signing.sign(secret, params, url), signature)
 
     def test_sign_unicode_secret(self):
+        signature = '635cef6498fc5f1a829275cc1b24a191d5267d6023034e3e0953e4c6'
         params = {
             u'parĄm1': u'valuĘ',
             'param2': ['value2', 'value3'],
-            'hmac': 'will-be-removed',
-            'gettoken': 'will-be-removed-too',
+            u'hmac': 'to-be-removed',
+            b'gettoken': 'to-be-removed-too',
         }
         url = u'https://endpoint.com/api'
-
         secret = u'☃🐍'  # unicode is what we usually get from api/db..
 
-        mac = signing.sign(secret, params, url)
-
         # sha224 hmac
-        self.assertEqual(
-            mac,
-            '635cef6498fc5f1a829275cc1b24a191d5267d6023034e3e0953e4c6',
-        )
+        self.assertEqual(signing.sign(secret, params, url), signature)
+
+        # Test that `hmac` and `gettoken` are not being removed from the
+        # original arguments passed to the function
+        self.assertIn(u'hmac', params)
+        self.assertIn(b'gettoken', params)
+
+        del params[u'hmac']
+        del params[b'gettoken']
+        self.assertEqual(signing.sign(secret, params, url), signature)
 
     def test_verify_byte_signature(self):
         params = {

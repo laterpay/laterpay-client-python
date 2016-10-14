@@ -16,6 +16,7 @@ except ImportError:  # pragma: no cover
 from . import compat
 
 ALLOWED_METHODS = ('GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD')
+MESSAGE_FORMAT = '{method}&{url}&{params}'
 
 
 def time_independent_HMAC_compare(a, b):
@@ -145,29 +146,34 @@ def create_base_message(params, url, method='POST'):
 
     http://docs.laterpay.net/platform/intro/signing_urls/
     """
-    msg = '{method}&{url}&{params}'
-
-    method = compat.encode_if_unicode(method).upper()
-
-    url = quote(compat.encode_if_unicode(url), safe='')
-
+    # Process method
+    method = compat.stringify(method).upper()
     if method not in ALLOWED_METHODS:
         raise ValueError('method should be one of: {}'.format(ALLOWED_METHODS))
 
+    # Process params
     params = normalise_param_structure(params)
-
+    if 'hmac' in params:
+        params.pop('hmac')
+    if 'gettoken' in params:
+        params.pop('gettoken')
     params = {
+        # urlquote all keys and values
         quote(key, safe=''): [quote(value, safe='') for value in values]
         for key, values
         in six.iteritems(params)
     }
-
     params = _sort_params(params)
-
     param_str = '&'.join('{}={}'.format(k, v) for k, v in params)
     param_str = quote(param_str, safe='')
 
-    return msg.format(method=method, url=url, params=param_str)
+    # Process url
+    url = compat.stringify(url)
+    url_parsed = urlparse(url)
+    url = url_parsed.scheme + "://" + url_parsed.netloc + url_parsed.path
+    url = quote(url, safe='')
+
+    return MESSAGE_FORMAT.format(method=method, url=url, params=param_str)
 
 
 def sign(secret, params, url, method='POST'):
@@ -182,21 +188,8 @@ def sign(secret, params, url, method='POST'):
     :param method: HTTP method used to transport the signed data
                    ('POST' is default)
     """
-    if 'hmac' in params:
-        params.pop('hmac')
-
-    if 'gettoken' in params:
-        params.pop('gettoken')
-
-    secret = compat.encode_if_unicode(secret)
-
-    url_parsed = urlparse(url)
-    base_url = url_parsed.scheme + "://" + url_parsed.netloc + url_parsed.path
-
-    msg = create_base_message(params, base_url, method=method)
-
-    mac = create_HMAC(secret, msg)
-
+    message = create_base_message(params, url, method=method)
+    mac = create_HMAC(secret, message)
     return mac
 
 

@@ -25,6 +25,13 @@
 
 * Removed the deprecated `cp` argument from `laterpay.ItemDefinition`
 
+* Reliably ignore `hmac` and `gettoken` parameters when creating the signature
+  message. In the past `signing.sign()` and `signing.verify()` stripped those
+  keys when a `dict()` was passed from the passed function arguments but not
+  for lists or tuples. Note that as a result the provided parameters are not
+  touched anymore and calling either function will not have side-effects on
+  the provided arguments.
+
 
 ## 4.6.0
 
