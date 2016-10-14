@@ -1,15 +1,26 @@
 # -*- coding: utf-8 -*-
+import warnings
 
 import six
 
 
-def encode_if_unicode(value, encoding='utf-8'):
+def encode_if_unicode(value, encoding='utf-8'):  # pragma: no cover
     """
     Encode and return a ``value`` using specified ``encoding``.
 
     Encoding is done only if ``value`` is a ``unicode`` instance
     (utf-8 encoding is used as default).
+
+    .. deprecated:: 5.0.0
+
+        Use :func:`laterpay.compat.stringify` instead.
     """
+    warnings.warn(
+        'laterpay.compat.encode_if_unicode is deprecated and will be removed '
+        'in future versions. Use laterpay.compat.stringify instead',
+        DeprecationWarning
+    )
+
     if six.PY2 and isinstance(value, six.text_type):
         value = value.encode(encoding)
     return value
