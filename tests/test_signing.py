@@ -125,7 +125,7 @@ class TestSigningHelper(unittest.TestCase):
             '635cef6498fc5f1a829275cc1b24a191d5267d6023034e3e0953e4c6',
         )
 
-    def test_verify_str_signature(self):
+    def test_verify_byte_signature(self):
         params = {
             u'parĄm1': u'valuĘ',
             'param2': ['value2', 'value3'],
@@ -135,7 +135,7 @@ class TestSigningHelper(unittest.TestCase):
         secret = 'secret'
 
         verified = signing.verify(
-            '346f3d53ad762f3ed3fb7f2427dec2bbfaf0338bb7f91f0460aff15c',
+            b'346f3d53ad762f3ed3fb7f2427dec2bbfaf0338bb7f91f0460aff15c',
             secret,
             params,
             url,

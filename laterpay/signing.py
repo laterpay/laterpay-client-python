@@ -214,6 +214,7 @@ def verify(signature, secret, params, url, method):
     """
     if isinstance(signature, (list, tuple)):
         signature = signature[0]
+    signature = compat.stringify(signature)
 
     mac = sign(secret, params, url, method)
 
