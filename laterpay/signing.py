@@ -131,8 +131,6 @@ def create_base_message(params, url, method='POST'):
 
     method = compat.encode_if_unicode(method).upper()
 
-    data = {}
-
     url = quote(compat.encode_if_unicode(url), safe='')
 
     if method not in ALLOWED_METHODS:
@@ -140,25 +138,15 @@ def create_base_message(params, url, method='POST'):
 
     params = normalise_param_structure(params)
 
-    for key, values in six.iteritems(params):
-        key = quote(compat.encode_if_unicode(key), safe='')
+    params = {
+        quote(key, safe=''): [quote(value, safe='') for value in values]
+        for key, values
+        in six.iteritems(params)
+    }
 
-        values_str = []
+    params = _sort_params(params)
 
-        for value in values:
-            if not isinstance(value, (six.string_types, six.binary_type)):
-                # If any non-string or non-bytes like objects, ``str()`` them.
-                value = str(value)
-            if six.PY3 and isinstance(value, six.binary_type):
-                # Issue #84, decode byte strings before using them on Python 3
-                value = value.decode()
-            values_str.append(value)
-
-        data[key] = [quote(compat.encode_if_unicode(value_str), safe='') for value_str in values_str]
-
-    sorted_params = sort_params(data)
-
-    param_str = '&'.join('{}={}'.format(k, v) for k, v in sorted_params)
+    param_str = '&'.join('{}={}'.format(k, v) for k, v in params)
     param_str = quote(param_str, safe='')
 
     return msg.format(method=method, url=url, params=param_str)
