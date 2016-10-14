@@ -9,7 +9,6 @@ http://docs.laterpay.net/
 
 from __future__ import absolute_import, print_function
 
-import json
 import logging
 import pkg_resources
 import random
@@ -21,7 +20,6 @@ import requests
 
 import six
 from six.moves.urllib.parse import quote_plus
-from six.moves.urllib.request import Request, urlopen
 
 from . import signing, utils
 
@@ -212,14 +210,6 @@ class LaterPayClient(object):
         return '%s/access' % self.api_root
 
     @property
-    def _add_url(self):
-        return '%s/add' % self.api_root
-
-    @property
-    def _identify_url(self):
-        return '%s/identify' % self.api_root
-
-    @property
     def _gettoken_url(self):
         return '%s/gettoken' % self.api_root
 
@@ -329,47 +319,6 @@ class LaterPayClient(object):
             return_url=return_url,
             failure_url=failure_url,
             **kwargs)
-
-    def _sign_and_encode(self, params, url, method="GET"):
-        return utils.signed_query(self.shared_secret, params, url=url, method=method)
-
-    def _make_request(self, url, params, method='GET'):  # pragma: no cover
-        """
-        Deprecated.
-
-        Used by deprecated ``get_access()`` only.
-        """
-        params = self._sign_and_encode(params=params, url=url, method=method)
-
-        headers = self.get_request_headers()
-
-        if method == 'POST':
-            req = Request(url, data=params, headers=headers)
-        else:
-            url = "%s?%s" % (url, params)
-            req = Request(url, headers=headers)
-
-        _logger.debug("Making request to %s", url)
-
-        try:
-            response = urlopen(req, timeout=self.timeout_seconds).read()
-        except:
-            # TODO: Add proper or no exception handling.
-            # Pretending there was a response even if there was none
-            # (can't connect / timeout) seems like a wrong idea.
-            _logger.exception("Unexpected error with request")
-            resp = {'status': 'unexpected error'}
-        else:
-            _logger.debug("Received response %s", response)
-            resp = json.loads(response.decode())
-
-        if 'new_token' in resp:
-            self.lptoken = resp['new_token']
-
-        if resp.get('status', None) == 'invalid_token':
-            self.lptoken = None
-
-        return resp
 
     def has_token(self):
         """
