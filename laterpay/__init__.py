@@ -226,11 +226,29 @@ class LaterPayClient(object):
                      **kwargs):
 
         # filter out params with None value.
-        data = {k: v for k, v in six.iteritems(item_definition.data) if v is not None}
+        data = {
+            k: v
+            for k, v
+            in six.iteritems(item_definition.data)
+            if v is not None
+        }
         data['cp'] = self.cp_key
+
+        if product_key is not None:
+            data['product'] = product_key
+
+        if dialog:
+            prefix = '%s/%s' % (self.web_root, 'dialog')
+        else:
+            prefix = self.web_root
 
         if use_jsevents:
             data['jsevents'] = 1
+
+        if transaction_reference:
+            if len(transaction_reference) < 6:
+                raise APIException('Transaction reference is not unique enough')
+            data['tref'] = transaction_reference
 
         if consumable:
             data['consumable'] = 1
@@ -241,84 +259,27 @@ class LaterPayClient(object):
         if failure_url:
             data['failure_url'] = failure_url
 
-        if transaction_reference:
-
-            if len(transaction_reference) < 6:
-                raise APIException('Transaction reference is not unique enough')
-
-            data['tref'] = transaction_reference
-
-        if dialog:
-            prefix = '%s/%s' % (self.web_root, 'dialog')
-        else:
-            prefix = self.web_root
-
-        if product_key is not None:
-            data['product'] = product_key
+        data.update(kwargs)
 
         base_url = "%s/%s" % (prefix, page_type)
 
-        data.update(kwargs)
-
         return utils.signed_url(self.shared_secret, data, base_url, method='GET')
 
-    def get_buy_url(self,
-                    item_definition,
-                    product_key=None,
-                    dialog=True,
-                    use_jsevents=False,
-                    skip_add_to_invoice=False,
-                    transaction_reference=None,
-                    consumable=False,
-                    return_url=None,
-                    failure_url=None,
-                    **kwargs):
+    def get_buy_url(self, item_definition, *args, **kwargs):
         """
         Get the URL at which a user can start the checkout process to buy a single item.
 
         http://docs.laterpay.net/platform/dialogs/buy/
         """
-        return self._get_web_url(
-            item_definition,
-            'buy',
-            product_key=product_key,
-            dialog=dialog,
-            use_jsevents=use_jsevents,
-            skip_add_to_invoice=skip_add_to_invoice,
-            transaction_reference=transaction_reference,
-            consumable=consumable,
-            return_url=return_url,
-            failure_url=failure_url,
-            **kwargs)
+        return self._get_web_url(item_definition, 'buy', *args, **kwargs)
 
-    def get_add_url(self,
-                    item_definition,
-                    product_key=None,
-                    dialog=True,
-                    use_jsevents=False,
-                    skip_add_to_invoice=False,
-                    transaction_reference=None,
-                    consumable=False,
-                    return_url=None,
-                    failure_url=None,
-                    **kwargs):
+    def get_add_url(self, item_definition, *args, **kwargs):
         """
         Get the URL at which a user can add an item to their invoice to pay later.
 
         http://docs.laterpay.net/platform/dialogs/add/
         """
-        return self._get_web_url(
-            item_definition,
-            'add',
-            product_key=product_key,
-            dialog=dialog,
-            use_jsevents=use_jsevents,
-            skip_add_to_invoice=skip_add_to_invoice,
-            transaction_reference=transaction_reference,
-            consumable=consumable,
-            return_url=return_url,
-            failure_url=failure_url,
-            **kwargs)
+        return self._get_web_url(item_definition, 'add', *args, **kwargs)
 
     def has_token(self):
         """
