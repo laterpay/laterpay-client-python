@@ -38,3 +38,12 @@ def stringify(value):
     elif six.PY2 and isinstance(value, six.text_type):
         value = value.encode('utf-8')
     return value
+
+
+def byteify(value):
+    """
+    Convert ``value`` into a byte-string.
+    """
+    if isinstance(value, six.text_type):
+        return value.encode('utf-8')
+    return value
