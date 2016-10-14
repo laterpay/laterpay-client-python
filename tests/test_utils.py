@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, print_function, unicode_literals
+from __future__ import absolute_import, print_function
 
 import unittest
 
@@ -8,14 +8,14 @@ import mock
 from six.moves.urllib.parse import parse_qs
 
 from laterpay import utils
-from laterpay.compat import encode_if_unicode
+from laterpay.compat import stringify
 
 
 class UtilsTest(unittest.TestCase):
 
     def test_signed_query_correct_signature(self):
         params = {
-            'parĄm1': 'valuĘ',
+            b'par\xc4\x84m1': u'valuĘ',
             'param2': ['value2', 'value3'],
             'ts': '1330088810',
         }
@@ -28,14 +28,14 @@ class UtilsTest(unittest.TestCase):
 
         self.assertEqual(
             set(qd.keys()),
-            set(['ts', encode_if_unicode('parĄm1'), 'param2', 'hmac']),
+            set(['ts', 'parĄm1', 'param2', 'hmac']),
         )
 
         self.assertEqual(qd['ts'], [params['ts']])
         self.assertEqual(qd['param2'], params['param2'])
         self.assertEqual(
-            qd[encode_if_unicode('parĄm1')],
-            [encode_if_unicode(params['parĄm1'])],
+            qd['parĄm1'],
+            [stringify(params[b'par\xc4\x84m1'])],
         )
         self.assertEqual(
             qd['hmac'],

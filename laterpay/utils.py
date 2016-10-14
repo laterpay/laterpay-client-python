@@ -7,7 +7,7 @@ import six
 from six.moves.urllib.parse import urlencode
 
 from laterpay import signing
-from laterpay.compat import encode_if_unicode
+from laterpay.compat import stringify
 
 
 def signed_query(secret,
@@ -44,9 +44,11 @@ def signed_query(secret,
         params["ts"] = str(int(time.time()))
 
     param_list = [
-        (encode_if_unicode(key),
-         [encode_if_unicode(v) for v in val]
-         if isinstance(val, (list, tuple)) else encode_if_unicode(val))
+        (
+            stringify(key), [stringify(v) for v in val]
+            if isinstance(val, (list, tuple))
+            else stringify(val)
+        )
         for key, val in six.iteritems(params)
     ]
 
