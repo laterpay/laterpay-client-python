@@ -56,6 +56,20 @@ class UtilsTest(unittest.TestCase):
         self.assertEqual(qsd['ts'], ['123'])
         self.assertEqual(qsd['foo'], ['bar'])
 
+    @mock.patch('time.time')
+    def test_signed_query_added_timestamp_params_not_dict(self, time_time_mock):
+        time_time_mock.return_value = 123
+
+        params = [('foo', 'bar')]
+        url = 'https://endpoint.com/api'
+        secret = 'secret'
+
+        qs = utils.signed_query(secret, params, url)
+        qsd = parse_qs(qs)
+
+        self.assertEqual(qsd['ts'], ['123'])
+        self.assertEqual(qsd['foo'], ['bar'])
+
     def test_signed_url(self):
         params = {'foo': 'bar'}
         url = utils.signed_url(
