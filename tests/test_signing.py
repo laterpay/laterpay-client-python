@@ -4,6 +4,7 @@ from __future__ import absolute_import, print_function
 
 import hashlib
 import unittest
+import warnings
 
 import furl
 
@@ -239,13 +240,23 @@ class TestSigningHelper(unittest.TestCase):
             'key2': ['value22', 'value21'],
             'key3': ('value32', 'value31'),
         }
-        self.assertEqual(signing.sort_params(params), [
+        self.assertEqual(signing._sort_params(params), [
             ('key1', 'value1'),
             ('key2', 'value21'),
             ('key2', 'value22'),
             ('key3', 'value31'),
             ('key3', 'value32'),
         ])
+
+    def test_sort_params_public_deprecation(self):
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            signing.sort_params({})
+        self.assertEqual(
+            w[0].message.args[0],
+            'laterpay.signing.sort_params is deprecated and will be removed in future '
+            'versions. Use laterpay.signing.normalise_param_structure instead.'
+        )
 
 
 if __name__ == '__main__':

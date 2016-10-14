@@ -3,6 +3,7 @@ from __future__ import absolute_import, print_function
 
 import hashlib
 import hmac
+import warnings
 
 import six
 from six.moves.urllib.parse import quote, urlparse
@@ -51,6 +52,23 @@ def sort_params(param_dict):
 
     This function should probably not be part of the public API, and thus will
     be deprecated in a future release to be replaced with a internal function.
+
+    .. deprecated:: 5.0.0
+
+        Use :func:`laterpay.signing.normalise_param_structure` instead.
+    """
+    warnings.warn(
+        'laterpay.signing.sort_params is deprecated and will be removed in '
+        'future versions. Use laterpay.signing.normalise_param_structure '
+        'instead.',
+        DeprecationWarning
+    )
+    return _sort_params(param_dict)
+
+
+def _sort_params(param_dict):
+    """
+    Sort a key-value mapping with non-unique keys.
     """
     param_list = []
     for name, value_list in six.iteritems(param_dict):
