@@ -105,13 +105,14 @@ def normalise_param_structure(params):
 
     out = {}
     for param_name, param_value in iterator:
+        param_name = compat.stringify(param_name)
         out.setdefault(param_name, [])
         if isinstance(param_value, (list, tuple)):
             # this is (a, (b, c)) or { a => (b, c) }
-            out[param_name].extend(param_value)
+            out[param_name].extend(compat.stringify(v) for v in param_value)
         else:
             # this is ((a, b), (a, c)) or { a => b }
-            out[param_name].append(param_value)
+            out[param_name].append(compat.stringify(param_value))
 
     return out
 

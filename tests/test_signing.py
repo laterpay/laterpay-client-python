@@ -219,8 +219,8 @@ class TestSigningHelper(unittest.TestCase):
         })
 
         params = [
-            ['key1', 'value11'],
-            ['key1', 'value12'],
+            [b'key1', 'value11'],
+            [u'key1', 'value12'],
             ('key2', ['value21', 'value22']),
             ('key3', ('value31', 'value32')),
         ]
