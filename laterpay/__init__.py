@@ -7,8 +7,6 @@ The LaterPay API Python client.
 http://docs.laterpay.net/
 """
 
-from __future__ import absolute_import, print_function
-
 import logging
 import pkg_resources
 import random
