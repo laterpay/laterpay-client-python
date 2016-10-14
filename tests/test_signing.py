@@ -65,12 +65,16 @@ class TestSigningHelper(unittest.TestCase):
         params = {
             u'parĄm1': u'valuĘ',
             'param2': ['value2', 'value3'],
+            'hmac': 'to-be-removed',
+            'gettoken': 'to-be-removed-too',
         }
         url = u'https://endpoint.com/api'
 
         secret = u'secret'  # unicode is what we usually get from api/db..
 
         mac = signing.sign(secret, params, url)
+        self.assertNotIn('hmac', params)
+        self.assertNotIn('gettoken', params)
 
         # sha224 hmac
         self.assertEqual(
@@ -105,6 +109,33 @@ class TestSigningHelper(unittest.TestCase):
         verified = signing.verify(
             u'346f3d53ad762f3ed3fb7f2427dec2bbfaf0338bb7f91f0460aff15c',
             u'secret',
+            params,
+            url,
+            'POST',
+        )
+        self.assertTrue(verified)
+
+    def test_verify_iterable_signature(self):
+        params = {
+            u'parĄm1': u'valuĘ',
+            'param2': ['value2', 'value3'],
+        }
+        url = u'https://endpoint.com/api'
+
+        secret = 'secret'
+
+        verified = signing.verify(
+            ['346f3d53ad762f3ed3fb7f2427dec2bbfaf0338bb7f91f0460aff15c', 'blub'],
+            secret,
+            params,
+            url,
+            'POST',
+        )
+        self.assertTrue(verified)
+
+        verified = signing.verify(
+            ('346f3d53ad762f3ed3fb7f2427dec2bbfaf0338bb7f91f0460aff15c', 'blub'),
+            secret,
             params,
             url,
             'POST',
