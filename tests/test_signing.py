@@ -25,7 +25,7 @@ class TestSigningHelper(unittest.TestCase):
         )
 
     def test_create_message_bytestrings(self):
-        params = {'parĄm1': 'valuĘ'}
+        params = {b'par\xc4\x84m1': b'valu\xc4\x98'}
         url = 'https://endpoint.com/ąpi'
 
         msg = signing.create_base_message(params, url)

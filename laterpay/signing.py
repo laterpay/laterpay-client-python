@@ -53,12 +53,8 @@ def sort_params(param_dict):
     for name, value_list in six.iteritems(param_dict):
         if isinstance(value_list, (list, tuple)):
             for value in value_list:
-                if not isinstance(value, six.string_types):
-                    value = str(value)
                 param_list.append((name, value))
         else:
-            if not isinstance(value_list, six.string_types):
-                value_list = str(value_list)
             param_list.append((name, value_list))
 
     return sorted(param_list)
@@ -127,10 +123,13 @@ def create_base_message(params, url, method='POST'):
 
         values_str = []
 
-        # If any non six.string_types objects, ``str()`` them.
         for value in values:
-            if not isinstance(value, six.string_types):
+            if not isinstance(value, (six.string_types, six.binary_type)):
+                # If any non-string or non-bytes like objects, ``str()`` them.
                 value = str(value)
+            if six.PY3 and isinstance(value, six.binary_type):
+                # Issue #84, decode byte strings before using them on Python 3
+                value = value.decode()
             values_str.append(value)
 
         data[key] = [quote(compat.encode_if_unicode(value_str), safe='') for value_str in values_str]
