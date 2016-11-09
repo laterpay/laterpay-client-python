@@ -1,7 +1,11 @@
 # Changelog
 
 
-## Unreleased
+## 4.6.0
+
+* Fixed encoding issues when passing byte string parameters on Python 3
+  ([#84](https://github.com/laterpay/laterpay-client-python/issues/84))
+
 
 ## 4.5.0
 
