@@ -70,6 +70,18 @@ class UtilsTest(unittest.TestCase):
         self.assertEqual(qsd['ts'], ['123'])
         self.assertEqual(qsd['foo'], ['bar'])
 
+    def test_signed_query_keep_duplicate_signature(self):
+        params = {'foo': 'bar', 'ts': 123, 'hmac': 'blub'}
+        url = 'https://endpoint.com/api'
+        secret = 'secret'
+
+        qs = utils.signed_query(secret, params, url)
+        qsd = parse_qs(qs)
+
+        self.assertEqual(qsd['ts'], ['123'])
+        self.assertEqual(qsd['foo'], ['bar'])
+        self.assertEqual(qsd['hmac'], ['blub', 'af319e7ec1b7f50e054ed934f22b05bd9ff58d7783da2549efba86c1'])
+
     def test_signed_url(self):
         params = {'foo': 'bar'}
         url = utils.signed_url(

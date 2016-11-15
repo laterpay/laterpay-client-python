@@ -23,6 +23,11 @@
   * `sign_and_encode()` in favor of `laterpay.utils.signed_query()`
   * `sign_get_url()` in favor of `laterpay.utils.signed_url()`
 
+  Note that `sign_and_encode()` and `sign_get_url()` used to remove existing
+  `'hmac'` parameters before signing query strings. This is different to
+  `signed_query()` as that function also allows other names for the hmac query
+  argument. Please remove the parameter yourself if need be.
+
 * Removed the deprecated `cp` argument from `laterpay.ItemDefinition`
 
 * Reliably ignore `hmac` and `gettoken` parameters when creating the signature
