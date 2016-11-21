@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, print_function
-
 import json
-import uuid
 import unittest
 
 import mock
@@ -47,218 +44,179 @@ class TestLaterPayClient(unittest.TestCase):
             'some-secret')
         self.item = ItemDefinition(1, 'EUR20', 'http://example.com/', 'title')
 
-    def get_qs_dict(self, url):
-        o = urlparse(url)
-        d = parse_qs(o.query)
-        o = urlparse(d['url'][0])
-        d = parse_qs(o.query)
-        return d
-
-    def get_dialog_api_furl(self, url):
-        return furl(furl(url).query.params['url'])
-
     def assertQueryString(self, url, key, value=None):
-        d = self.get_qs_dict(url)
+        d = parse_qs(urlparse(url).query)
         if not value:
             return (key in d)
         return d.get(key, None) == value
 
-    def test_transaction_reference(self):
-
-        item = ItemDefinition(1, 'EUR20', 'http://foo.invalid', 'title')
-
-        _u = str(uuid.uuid4())
-
-        url = self.lp.get_add_url(
-            item,
-            product_key=123,
-            dialog=True,
-            use_jsevents=True,
-            transaction_reference=_u)
-
-        self.assertQueryString(url, 'tref', value=_u)
-
-        url = self.lp.get_add_url(
-            item,
-            product_key=123,
-            dialog=True,
-            use_jsevents=True)
-
-        d = self.get_qs_dict(url)
-        self.assertFalse('tref' in d)
-
-        with self.assertRaises(APIException):
-
-            self.lp.get_add_url(
-                item,
-                product_key=123,
-                dialog=True,
-                use_jsevents=True,
-                transaction_reference='123')
-
-    def test_get_web_url_has_no_none_params(self):
+    def test_get_web_url_itemdefinition_value_none(self):
         # item with expiry not set.
         item = ItemDefinition(1, 'EUR20', 'http://help.me/', 'title')
-        url = self.lp.get_add_url(item)
+        url = self.lp._get_web_url(item, 'PAGE_TYPE')
         self.assertFalse(
-            'expiry%3DNone' in url,
-            'expiry url param is "None". Should be omitted.',
+            self.assertQueryString(url, 'expiry'),
+            'expiry url param is "None". Should be omitted.'
         )
 
-    def test_get_web_url_extra_kwargs(self):
+    def test_web_url_product_key(self):
+        # Default
+        url = self.lp._get_web_url(self.item, 'PAGE_TYPE')
+        self.assertFalse(self.assertQueryString(url, 'product_key'))
+
+        # Enabled
+        url = self.lp._get_web_url(self.item, 'PAGE_TYPE', product_key='foobar')
+        self.assertQueryString(url, 'product_key', value='foobar')
+
+        # Disabled
+        url = self.lp._get_web_url(self.item, 'PAGE_TYPE', product_key=None)
+        self.assertFalse(self.assertQueryString(url, 'product_key'))
+
+    def test_web_url_dialog(self):
+        # Default
+        url = self.lp._get_web_url(self.item, 'PAGE_TYPE')
+        self.assertTrue(url.startswith('https://web.laterpay.net/dialog/PAGE_TYPE?'))
+
+        # Enabled
+        url = self.lp._get_web_url(self.item, 'PAGE_TYPE', dialog=True)
+        self.assertTrue(url.startswith('https://web.laterpay.net/dialog/PAGE_TYPE?'))
+
+        # Disabled
+        url = self.lp._get_web_url(self.item, 'PAGE_TYPE', dialog=False)
+        self.assertTrue(url.startswith('https://web.laterpay.net/PAGE_TYPE?'))
+
+    def test_web_url_jsevents(self):
+        # Default
+        url = self.lp._get_web_url(self.item, 'PAGE_TYPE')
+        self.assertFalse(self.assertQueryString(url, 'jsevents'))
+
+        # Enabled
+        url = self.lp._get_web_url(self.item, 'PAGE_TYPE', use_jsevents=True)
+        self.assertQueryString(url, 'jsevents', value='1')
+
+        # Disabled
+        url = self.lp._get_web_url(self.item, 'PAGE_TYPE', use_jsevents=False)
+        self.assertFalse(self.assertQueryString(url, 'jsevents'))
+
+    def test_transaction_reference(self):
+        # Default
+        url = self.lp._get_web_url(self.item, 'PAGE_TYPE')
+        self.assertFalse(self.assertQueryString(url, 'transaction_reference'))
+
+        # Valid
+        url = self.lp._get_web_url(self.item, 'PAGE_TYPE', transaction_reference='loremipsum')
+        self.assertQueryString(url, 'transaction_reference', value='loremipsum')
+
+        # Invalid
+        with self.assertRaises(APIException):
+            self.lp._get_web_url(self.item, 'PAGE_TYPE', transaction_reference='foo')
+
+    def test_web_url_consumable(self):
+        # Default
+        url = self.lp._get_web_url(self.item, 'PAGE_TYPE')
+        self.assertFalse(self.assertQueryString(url, 'consumable'))
+
+        # Enabled
+        url = self.lp._get_web_url(self.item, 'PAGE_TYPE', consumable=True)
+        self.assertQueryString(url, 'consumable', value='1')
+
+        # Disabled
+        url = self.lp._get_web_url(self.item, 'PAGE_TYPE', consumable=False)
+        self.assertFalse(self.assertQueryString(url, 'consumable'))
+
+    def test_web_url_return_url(self):
+        # Default
+        url = self.lp._get_web_url(self.item, 'PAGE_TYPE')
+        self.assertFalse(self.assertQueryString(url, 'return_url'))
+
+        # Given
+        url = self.lp._get_web_url(self.item, 'PAGE_TYPE', return_url='http://example.com/foo?foo=bar&lorem=ipsum')
+        self.assertQueryString(url, 'return_url', value='http://example.com/foo?foo=bar&lorem=ipsum')
+
+        # Omitted
+        url = self.lp._get_web_url(self.item, 'PAGE_TYPE', return_url=None)
+        self.assertFalse(self.assertQueryString(url, 'return_url'))
+
+    def test_web_url_failure_url(self):
+        # Default
+        url = self.lp._get_web_url(self.item, 'PAGE_TYPE')
+        self.assertFalse(self.assertQueryString(url, 'failure_url'))
+
+        # Given
+        url = self.lp._get_web_url(self.item, 'PAGE_TYPE', failure_url='http://example.com/foo?foo=bar&lorem=ipsum')
+        self.assertQueryString(url, 'failure_url', value='http://example.com/foo?foo=bar&lorem=ipsum')
+
+        # Omitted
+        url = self.lp._get_web_url(self.item, 'PAGE_TYPE', failure_url=None)
+        self.assertFalse(self.assertQueryString(url, 'failure_url'))
+
+    def test_get_add_url(self):
         item = ItemDefinition(1, 'EUR20', 'http://example.net/t', 'title')
         url = self.lp.get_add_url(
             item,
-            use_dialog_api=False,
-            something_more=['x', 'y']
+            product_key='some-product-key',
+            dialog=False,
+            use_jsevents=True,
+            transaction_reference='TX-REF',
+            consumable=True,
+            return_url='http://return.url/foo?bar=buz&lorem=ipsum',
+            failure_url='http://failure.url/FOO?BAR=BUZ&LOREM=IPSUM',
+            something='else',
+            BLUB=[u'u2', b'b1', b'b2', u'u1'],
         )
-        qd = parse_qs(urlparse(url).query)
-        self.assertEqual(qd['something_more'], ['x', 'y'])
+        self.assertFalse(
+            self.assertQueryString(url, 'expiry'),
+            'expiry url param is "None". Should be omitted.'
+        )
+        self.assertQueryString(url, 'product_key', value='some-product-key')
+        self.assertTrue(url.startswith('https://web.laterpay.net/add?'))
+        self.assertQueryString(url, 'use_jsevents', value='1')
+        self.assertQueryString(url, 'transaction_reference', value='TX-REF')
+        self.assertQueryString(url, 'consumable', value='1')
+        self.assertQueryString(url, 'return_url', value='http://return.url/foo?bar=buz&lorem=ipsum')
+        self.assertQueryString(url, 'failure_url', value='http://failure.url/FOO?BAR=BUZ&LOREM=IPSUM')
+        self.assertQueryString(url, 'something', value='else')
+        self.assertQueryString(url, 'BLUB', value=[b'b1', 'b2', u'u1', 'u2'])
 
+    def test_get_buy_url(self):
+        item = ItemDefinition(1, 'EUR20', 'http://example.net/t', 'title')
         url = self.lp.get_buy_url(
             item,
-            use_dialog_api=False,
-            something_more=['x', 'y']
+            product_key='some-product-key',
+            dialog=False,
+            use_jsevents=True,
+            transaction_reference='TX-REF',
+            consumable=True,
+            return_url='http://return.url/foo?bar=buz&lorem=ipsum',
+            failure_url='http://failure.url/FOO?BAR=BUZ&LOREM=IPSUM',
+            something='else',
+            BLUB=[u'u2', b'b1', b'b2', u'u1'],
         )
-        qd = parse_qs(urlparse(url).query)
-        self.assertEqual(qd['something_more'], ['x', 'y'])
-
-    @mock.patch('laterpay.warnings.warn')
-    def test_log_warning_for_skip_add_to_invoice_deprecation(self, warning_mock):
-        item = ItemDefinition(1, 'EUR20', 'http://help.me/', 'title')
-        self.lp.get_add_url(item, skip_add_to_invoice=True,
-                            use_dialog_api=False)
-        warning_mock.assert_called_once_with("The param skip_add_to_invoice is "
-                                             "deprecated and it will be removed "
-                                             "in a future release.",
-                                             DeprecationWarning)
-
-    def test_failure_url_param(self):
-        item = ItemDefinition(1, 'EUR20', 'http://help.me/', 'title')
-        url = self.lp.get_add_url(item, failure_url="http://example.com")
-        self.assertTrue('failure_url' in url)
-
-        url = self.lp.get_buy_url(item, failure_url="http://example.com")
-        self.assertTrue('failure_url' in url)
-
-    def test_get_add_url_product_key_param(self):
-        """
-        Assert that `.get_add_url()` produces a "/dialog/add" url with
-        `product_key` "product" query param.
-        """
-        url = self.lp.get_add_url(self.item, product_key="hopes")
-        data = self.get_qs_dict(url)
-        self.assertEqual(data['product'], ['hopes'])
-        self.assertEqual(
-            str(self.get_dialog_api_furl(url).path),
-            '/dialog/add',
+        self.assertFalse(
+            self.assertQueryString(url, 'expiry'),
+            'expiry url param is "None". Should be omitted.'
         )
-
-    def test_get_buy_url_product_key_param(self):
-        """
-        Assert that `.get_buy_url()` produces a "/dialog/buy" url with
-        `product_key` "product" query param.
-        """
-        url = self.lp.get_buy_url(self.item, product_key="hopes")
-        data = self.get_qs_dict(url)
-        self.assertEqual(data['product'], ['hopes'])
-        self.assertEqual(
-            str(self.get_dialog_api_furl(url).path),
-            '/dialog/buy',
-        )
-
-    def test_get_add_url_no_product_key_param(self):
-        """
-        Assert that `.get_add_url()` produces a "/dialog/buy" url without
-        "product" query param when no `product_key` method param is used.
-        """
-        url = self.lp.get_add_url(self.item)
-        data = self.get_qs_dict(url)
-        self.assertNotIn('product', data)
-        self.assertEqual(
-            str(self.get_dialog_api_furl(url).path),
-            '/dialog/add',
-        )
-
-    def test_get_buy_url_no_product_key_param(self):
-        """
-        Assert that `.get_buy_url()` produces a "/dialog/buy" url without
-        "product" query param when no `product_key` method param is used.
-        """
-        url = self.lp.get_buy_url(self.item)
-        data = self.get_qs_dict(url)
-        self.assertNotIn('product', data)
-        self.assertEqual(
-            str(self.get_dialog_api_furl(url).path),
-            '/dialog/buy',
-        )
-
-    def test_get_buy_url_with_use_dialog_api_false(self):
-        """
-        Assert that `.get_buy_url()` returns a direct buy url, with no
-        dialog-api iframe, when `use_dialog_api=False`
-        """
-        url = self.lp.get_buy_url(self.item, use_dialog_api=False)
-        self.assertEqual(str(furl(url).path), '/dialog/buy')
-
-    def test_get_add_url_with_use_dialog_api_false(self):
-        """
-        Assert that `.get_add_url()` returns a direct add url, with no
-        dialog-api iframe, when `use_dialog_api=False`
-        """
-        url = self.lp.get_add_url(self.item, use_dialog_api=False)
-        self.assertEqual(str(furl(url).path), '/dialog/add')
+        self.assertQueryString(url, 'product_key', value='some-product-key')
+        self.assertTrue(url.startswith('https://web.laterpay.net/buy?'))
+        self.assertQueryString(url, 'use_jsevents', value='1')
+        self.assertQueryString(url, 'transaction_reference', value='TX-REF')
+        self.assertQueryString(url, 'consumable', value='1')
+        self.assertQueryString(url, 'return_url', value='http://return.url/foo?bar=buz&lorem=ipsum')
+        self.assertQueryString(url, 'failure_url', value='http://failure.url/FOO?BAR=BUZ&LOREM=IPSUM')
+        self.assertQueryString(url, 'something', value='else')
+        self.assertQueryString(url, 'BLUB', value=[b'b1', 'b2', u'u1', 'u2'])
 
     def test_get_login_dialog_url_with_use_dialog_api_false(self):
-        """
-        Assert that `.get_login_dialog_url()` returns a url with no
-        dialog-api iframe, when `use_dialog_api=False`
-        """
-        url = self.lp.get_login_dialog_url('http://example.org',
-                                           use_dialog_api=False)
+        url = self.lp.get_login_dialog_url('http://example.org')
         self.assertEqual(str(furl(url).path), '/account/dialog/login')
 
-    def test_get_login_dialog_url_without_use_dialog_api(self):
-        """
-        Assert that `.get_login_dialog_url()` returns a url with no
-        dialog-api iframe, when `use_dialog_api` is not set (default)
-        """
-        url = self.lp.get_login_dialog_url('http://example.org')
-        self.assertEqual(str(furl(url).path), '/dialog-api')
-
     def test_get_logout_dialog_url_with_use_dialog_api_false(self):
-        """
-        Assert that `.get_logout_dialog_url()` returns a url with no
-        dialog-api iframe, when `use_dialog_api=False`
-        """
-        url = self.lp.get_logout_dialog_url('http://example.org',
-                                            use_dialog_api=False)
+        url = self.lp.get_logout_dialog_url('http://example.org')
         self.assertEqual(str(furl(url).path), '/account/dialog/logout')
 
-    def test_get_logout_dialog_url_without_use_dialog_api(self):
-        """
-        Assert that `.get_logout_dialog_url()` returns a url with no
-        dialog-api iframe, when `use_dialog_api` is not set (default)
-        """
-        url = self.lp.get_logout_dialog_url('http://example.org')
-        self.assertEqual(str(furl(url).path), '/dialog-api')
-
-    def test_get_signup_dialog_url_with_use_dialog_api_false(self):
-        """
-        Assert that `.get_signup_dialog_url()` returns a url with no
-        dialog-api iframe, when `use_dialog_api=False`
-        """
-        url = self.lp.get_signup_dialog_url('http://example.org',
-                                            use_dialog_api=False)
-        self.assertEqual(str(furl(url).path), '/account/dialog/signup')
-
-    def test_get_signup_dialog_url_without_use_dialog_api(self):
-        """
-        Assert that `.get_signup_dialog_url()` returns a url with no
-        dialog-api iframe, when `use_dialog_api` is not set (default)
-        """
+    def test_get_signup_dialog_url(self):
         url = self.lp.get_signup_dialog_url('http://example.org')
-        self.assertEqual(str(furl(url).path), '/dialog-api')
+        self.assertEqual(str(furl(url).path), '/account/dialog/signup')
 
     @mock.patch('laterpay.signing.sign')
     @mock.patch('time.time')

@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, print_function
-
 import hashlib
 import unittest
+import warnings
 
-from six.moves.urllib.parse import parse_qs
+import furl
 
 from laterpay import signing
 
@@ -56,6 +55,27 @@ class TestSigningHelper(unittest.TestCase):
             '%26param3%3Dwith%2520a%2520space',
         )
 
+    def test_create_message_sorting_and_combining_params_omdict(self):
+        params = furl.furl(
+            '?par%C4%84m1=valu%C4%98'
+            '&param2=value3'
+            '&param2=value2'
+            '&param3=with+a+space'
+        ).query.params
+        url = 'https://endpoint.com/api'
+
+        msg = signing.create_base_message(params, url)
+
+        self.assertEqual(
+            msg,
+            'POST&'
+            'https%3A%2F%2Fendpoint.com%2Fapi&'
+            'par%25C4%2584m1%3Dvalu%25C4%2598'
+            '%26param2%3Dvalue2'
+            '%26param2%3Dvalue3'
+            '%26param3%3Dwith%2520a%2520space',
+        )
+
     def test_create_message_wrong_method(self):
         params = {u'parĄm1': u'valuĘ'}
         url = u'https://endpoint.com/ąpi'
@@ -64,41 +84,52 @@ class TestSigningHelper(unittest.TestCase):
             signing.create_base_message(params, url, method='WRONG')
 
     def test_sign(self):
+        signature = '5b341f4321476715ab1ae252794783c6dffa32dbdcc94512193ea3cf'
         params = {
             u'parĄm1': u'valuĘ',
-            'param2': ['value2', 'value3'],
+            b'par\xc4\x84m1': ['value2', 'value3'],
+            b'hmac': 'will-be-removed',
+            u'gettoken': 'will-be-removed-too',
         }
-        url = u'https://endpoint.com/api'
-
-        secret = u'secret'  # unicode is what we usually get from api/db..
-
-        mac = signing.sign(secret, params, url)
+        url = b'https://endpoint.com/api'
+        secret = b'secret'
 
         # sha224 hmac
-        self.assertEqual(
-            mac,
-            '346f3d53ad762f3ed3fb7f2427dec2bbfaf0338bb7f91f0460aff15c',
-        )
+        self.assertEqual(signing.sign(secret, params, url), signature)
 
-    def test_sign_and_encode(self):
+        # Test that `hmac` and `gettoken` are not being removed from the
+        # original arguments passed to the function
+        self.assertIn(b'hmac', params)
+        self.assertIn(u'gettoken', params)
+
+        del params[b'hmac']
+        del params[u'gettoken']
+        self.assertEqual(signing.sign(secret, params, url), signature)
+
+    def test_sign_unicode_secret(self):
+        signature = '635cef6498fc5f1a829275cc1b24a191d5267d6023034e3e0953e4c6'
         params = {
             u'parĄm1': u'valuĘ',
             'param2': ['value2', 'value3'],
-            'ts': '1330088810',
+            u'hmac': 'to-be-removed',
+            b'gettoken': 'to-be-removed-too',
         }
         url = u'https://endpoint.com/api'
+        secret = u'☃🐍'  # unicode is what we usually get from api/db..
 
-        secret = u'secret'  # unicode is what we usually get from api/db..
+        # sha224 hmac
+        self.assertEqual(signing.sign(secret, params, url), signature)
 
-        signed_and_encoded = signing.sign_and_encode(secret, params, url)
+        # Test that `hmac` and `gettoken` are not being removed from the
+        # original arguments passed to the function
+        self.assertIn(u'hmac', params)
+        self.assertIn(b'gettoken', params)
 
-        self.assertEqual(
-            signed_and_encoded,
-            'param2=value2&param2=value3&par%C4%84m1=valu%C4%98&'
-            'ts=1330088810&hmac=01c928dcdbbf4ba467969ec9607bfdec0563524d93e06df7d8d3c80d'
-        )
+        del params[u'hmac']
+        del params[b'gettoken']
+        self.assertEqual(signing.sign(secret, params, url), signature)
 
-    def test_verify_str_signature(self):
+    def test_verify_byte_signature(self):
         params = {
             u'parĄm1': u'valuĘ',
             'param2': ['value2', 'value3'],
@@ -108,7 +139,7 @@ class TestSigningHelper(unittest.TestCase):
         secret = 'secret'
 
         verified = signing.verify(
-            '346f3d53ad762f3ed3fb7f2427dec2bbfaf0338bb7f91f0460aff15c',
+            b'346f3d53ad762f3ed3fb7f2427dec2bbfaf0338bb7f91f0460aff15c',
             secret,
             params,
             url,
@@ -125,6 +156,33 @@ class TestSigningHelper(unittest.TestCase):
         verified = signing.verify(
             u'346f3d53ad762f3ed3fb7f2427dec2bbfaf0338bb7f91f0460aff15c',
             u'secret',
+            params,
+            url,
+            'POST',
+        )
+        self.assertTrue(verified)
+
+    def test_verify_iterable_signature(self):
+        params = {
+            u'parĄm1': u'valuĘ',
+            'param2': ['value2', 'value3'],
+        }
+        url = u'https://endpoint.com/api'
+
+        secret = 'secret'
+
+        verified = signing.verify(
+            ['346f3d53ad762f3ed3fb7f2427dec2bbfaf0338bb7f91f0460aff15c', 'blub'],
+            secret,
+            params,
+            url,
+            'POST',
+        )
+        self.assertTrue(verified)
+
+        verified = signing.verify(
+            ('346f3d53ad762f3ed3fb7f2427dec2bbfaf0338bb7f91f0460aff15c', 'blub'),
+            secret,
             params,
             url,
             'POST',
@@ -172,71 +230,6 @@ class TestSigningHelper(unittest.TestCase):
         false_params['ts'] = '1234567890'
         self.assertFalse(signing.verify(false_params['hmac'], secret, false_params, url, method))
 
-    def test_signing_with_item(self):
-        secret = '401e9a684fcc49578c1f23176a730abc'
-        base_url = 'http://local.laterpaytest.net:8005/dialog/mmss/buy'
-        method = 'GET'
-
-        # creating this data with ItemDefinition and copy.copy(item.data) doesn't work
-        # since it has a purchase_date based on now(), so the signature isn't the same..
-        data = {
-            'article_id': 154,
-            'cp': ['laternews'],
-            'jsevents': [1],
-            'pricing': ['EUR200'],
-            'purchase_date': [1398861228815],
-            'title': [u"VIDEO: Rwanda's genocide, 20 years on"],
-            'tref': ['4ebbf443-a12e-4ce9-89e4-999ba93ba1dc'],
-            'ts': ['1398861228'],
-            'url': ['http://local.laterpaytest.net:8003/mmss/154'],
-        }
-
-        params = signing.sign_and_encode(secret, data, base_url, method)
-        expected_string = (
-            'article_id=154&'
-            'cp=laternews&'
-            'jsevents=1&'
-            'pricing=EUR200&'
-            'purchase_date=1398861228815&'
-            'title=VIDEO%3A+Rwanda%27s+genocide%2C+20+years+on&'
-            'tref=4ebbf443-a12e-4ce9-89e4-999ba93ba1dc&'
-            'ts=1398861228&'
-            'url=http%3A%2F%2Flocal.laterpaytest.net%3A8003%2Fmmss%2F154&'
-            'hmac=d51564b41c2a8719fcdcfc6bad46109d3b6c6f78afea4020d5801a3c'
-        )
-
-        self.assertEqual(expected_string, params)
-
-        # expected signature based on params above
-        signature = 'd51564b41c2a8719fcdcfc6bad46109d3b6c6f78afea4020d5801a3c'
-
-        self.assertTrue(signing.verify(signature, secret, data, base_url, method))
-
-        # changing the price in the url
-        false_string = (
-            'article_id=154&'
-            'cp=laternews&'
-            'jsevents=1&'
-            'pricing=EUR150&'
-            'purchase_date=1398861228815&'
-            'title=VIDEO%3A+Rwanda%27s+genocide%2C+20+years+on&'
-            'tref=4ebbf443-a12e-4ce9-89e4-999ba93ba1dc&'
-            'ts=1398861228&'
-            'url=http%3A%2F%2Flocal.laterpaytest.net%3A8003%2Fmmss%2F154&'
-            'hmac=4d41f1adcb7c6bf6cf9c5eb15b179fdbec667d53f2749e2845c87315'
-        )
-        false_params = parse_qs(false_string)
-
-        self.assertFalse(signing.verify(signature, secret, false_params, base_url, method))
-
-        # changing the base_url
-        false_base_url = 'http://local.laterpaytest.net:8005/dialog/mmss/add'
-        self.assertFalse(signing.verify(signature, secret, data, false_base_url, method))
-
-        # changing http method
-        false_method = 'POST'
-        self.assertFalse(signing.verify(signature, secret, data, base_url, false_method))
-
     def test_normalise_param_structure(self):
         params = {
             'key1': 'value1',
@@ -246,20 +239,47 @@ class TestSigningHelper(unittest.TestCase):
         self.assertEqual(signing.normalise_param_structure(params), {
             'key1': ['value1'],
             'key2': ['value21', 'value22'],
-            'key3': ('value31', 'value32'),  # Do we want a list here?
+            'key3': ['value31', 'value32'],  # Converted from tuple to list
         })
 
         params = [
-            ['key1', 'value11'],
-            ['key1', 'value12'],
+            [b'key1', 'value11'],
+            [u'key1', 'value12'],
             ('key2', ['value21', 'value22']),
             ('key3', ('value31', 'value32')),
         ]
         self.assertEqual(signing.normalise_param_structure(params), {
             'key1': ['value11', 'value12'],
             'key2': ['value21', 'value22'],
-            'key3': ('value31', 'value32'),  # Do we want a list here?
+            'key3': ['value31', 'value32'],  # Converted from tuple to list
         })
+
+        with self.assertRaises(TypeError):
+            signing.normalise_param_structure('not a dict, list or tuple')
+
+    def test_sort_params(self):
+        params = {
+            'key1': 'value1',
+            'key2': ['value22', 'value21'],
+            'key3': ('value32', 'value31'),
+        }
+        self.assertEqual(signing._sort_params(params), [
+            ('key1', 'value1'),
+            ('key2', 'value21'),
+            ('key2', 'value22'),
+            ('key3', 'value31'),
+            ('key3', 'value32'),
+        ])
+
+    def test_sort_params_public_deprecation(self):
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            signing.sort_params({})
+        self.assertEqual(
+            w[0].message.args[0],
+            'laterpay.signing.sort_params is deprecated and will be removed in future '
+            'versions. Use laterpay.signing.normalise_param_structure instead.'
+        )
 
 
 if __name__ == '__main__':

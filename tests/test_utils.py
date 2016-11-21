@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, print_function, unicode_literals
+from __future__ import absolute_import, print_function
 
 import unittest
 
@@ -8,14 +8,14 @@ import mock
 from six.moves.urllib.parse import parse_qs
 
 from laterpay import utils
-from laterpay.compat import encode_if_unicode
+from laterpay.compat import stringify
 
 
 class UtilsTest(unittest.TestCase):
 
     def test_signed_query_correct_signature(self):
         params = {
-            'parĄm1': 'valuĘ',
+            b'par\xc4\x84m1': u'valuĘ',
             'param2': ['value2', 'value3'],
             'ts': '1330088810',
         }
@@ -28,14 +28,14 @@ class UtilsTest(unittest.TestCase):
 
         self.assertEqual(
             set(qd.keys()),
-            set(['ts', encode_if_unicode('parĄm1'), 'param2', 'hmac']),
+            set(['ts', 'parĄm1', 'param2', 'hmac']),
         )
 
         self.assertEqual(qd['ts'], [params['ts']])
         self.assertEqual(qd['param2'], params['param2'])
         self.assertEqual(
-            qd[encode_if_unicode('parĄm1')],
-            [encode_if_unicode(params['parĄm1'])],
+            qd['parĄm1'],
+            [stringify(params[b'par\xc4\x84m1'])],
         )
         self.assertEqual(
             qd['hmac'],
@@ -55,6 +55,32 @@ class UtilsTest(unittest.TestCase):
 
         self.assertEqual(qsd['ts'], ['123'])
         self.assertEqual(qsd['foo'], ['bar'])
+
+    @mock.patch('time.time')
+    def test_signed_query_added_timestamp_params_not_dict(self, time_time_mock):
+        time_time_mock.return_value = 123
+
+        params = [('foo', 'bar')]
+        url = 'https://endpoint.com/api'
+        secret = 'secret'
+
+        qs = utils.signed_query(secret, params, url)
+        qsd = parse_qs(qs)
+
+        self.assertEqual(qsd['ts'], ['123'])
+        self.assertEqual(qsd['foo'], ['bar'])
+
+    def test_signed_query_keep_duplicate_signature(self):
+        params = {'foo': 'bar', 'ts': 123, 'hmac': 'blub'}
+        url = 'https://endpoint.com/api'
+        secret = 'secret'
+
+        qs = utils.signed_query(secret, params, url)
+        qsd = parse_qs(qs)
+
+        self.assertEqual(qsd['ts'], ['123'])
+        self.assertEqual(qsd['foo'], ['bar'])
+        self.assertEqual(qsd['hmac'], ['blub', 'af319e7ec1b7f50e054ed934f22b05bd9ff58d7783da2549efba86c1'])
 
     def test_signed_url(self):
         params = {'foo': 'bar'}

@@ -1,5 +1,42 @@
 # Changelog
 
+## 5.0.0 (under development)
+
+* Removed the following long deprecated methods from the
+  `laterpay.LaterPayClient`:
+
+  * `get_access()`, use `get_access_data()` instead
+  * `get_iframeapi_balance_url()`, us `get_controls_balance_url()` instead
+  * `get_iframeapi_links_url()`, us `get_controls_links_url()` instead
+  * `get_identify_url()` is not needed following our modern access control
+    checks
+
+* Removed the following deprecated arguments from `laterpay.LaterPayClient`
+  methods:
+
+  * `use_dialog_api` from `get_login_dialog_url()`
+  * `use_dialog_api` from `get_signup_dialog_url()`
+  * `use_dialog_api` from `get_logout_dialog_url()`
+
+* Removed the following public methods from `laterpay.signing`:
+
+  * `sign_and_encode()` in favor of `laterpay.utils.signed_query()`
+  * `sign_get_url()` in favor of `laterpay.utils.signed_url()`
+
+  Note that `sign_and_encode()` and `sign_get_url()` used to remove existing
+  `'hmac'` parameters before signing query strings. This is different to
+  `signed_query()` as that function also allows other names for the hmac query
+  argument. Please remove the parameter yourself if need be.
+
+* Removed the deprecated `cp` argument from `laterpay.ItemDefinition`
+
+* Reliably ignore `hmac` and `gettoken` parameters when creating the signature
+  message. In the past `signing.sign()` and `signing.verify()` stripped those
+  keys when a `dict()` was passed from the passed function arguments but not
+  for lists or tuples. Note that as a result the provided parameters are not
+  touched anymore and calling either function will not have side-effects on
+  the provided arguments.
+
 
 ## 4.6.0
 

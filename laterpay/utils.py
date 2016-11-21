@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, print_function
-
 import time
 
-import six
 from six.moves.urllib.parse import urlencode
 
 from laterpay import signing
-from laterpay.compat import encode_if_unicode
 
 
 def signed_query(secret,
@@ -40,15 +36,12 @@ def signed_query(secret,
 
     :return: url-encoded and signed query string
     """
+    params = signing.normalise_param_structure(params)
+
     if "ts" not in params and add_timestamp:
         params["ts"] = str(int(time.time()))
 
-    param_list = [
-        (encode_if_unicode(key),
-         [encode_if_unicode(v) for v in val]
-         if isinstance(val, (list, tuple)) else encode_if_unicode(val))
-        for key, val in six.iteritems(params)
-    ]
+    param_list = list(params.items())
 
     qs = urlencode(param_list, doseq=True)
 

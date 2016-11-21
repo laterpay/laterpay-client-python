@@ -1,17 +1,20 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, print_function
-
 import hashlib
 import hmac
-import time
 import warnings
 
 import six
-from six.moves.urllib.parse import parse_qsl, quote, urlencode, urlparse
+from six.moves.urllib.parse import quote, urlparse
+try:
+    from furl.omdict1D import omdict
+    HAS_FURL = True
+except ImportError:  # pragma: no cover
+    HAS_FURL = False
 
 from . import compat
 
 ALLOWED_METHODS = ('GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD')
+MESSAGE_FORMAT = '{method}&{url}&{params}'
 
 
 def time_independent_HMAC_compare(a, b):
@@ -36,10 +39,10 @@ def create_HMAC(HMAC_secret, *parts):
     This function should probably not be part of the public API, and thus will
     be deprecated in a future release to be replaced with a internal function.
     """
-    authcode = hmac.new(six.b(HMAC_secret), digestmod=hashlib.sha224)
+    authcode = hmac.new(compat.byteify(HMAC_secret), digestmod=hashlib.sha224)
     for part in parts:
-        authcode.update(six.b(part))
-    return authcode.hexdigest()
+        authcode.update(compat.byteify(part))
+    return compat.stringify(authcode.hexdigest())
 
 
 def sort_params(param_dict):
@@ -48,12 +51,28 @@ def sort_params(param_dict):
 
     This function should probably not be part of the public API, and thus will
     be deprecated in a future release to be replaced with a internal function.
+
+    .. deprecated:: 5.0.0
+
+        Use :func:`laterpay.signing.normalise_param_structure` instead.
+    """
+    warnings.warn(
+        'laterpay.signing.sort_params is deprecated and will be removed in '
+        'future versions. Use laterpay.signing.normalise_param_structure '
+        'instead.',
+        DeprecationWarning
+    )
+    return _sort_params(param_dict)
+
+
+def _sort_params(param_dict):
+    """
+    Sort a key-value mapping with non-unique keys.
     """
     param_list = []
     for name, value_list in six.iteritems(param_dict):
         if isinstance(value_list, (list, tuple)):
-            for value in value_list:
-                param_list.append((name, value))
+            param_list.extend((name, value) for value in value_list)
         else:
             param_list.append((name, value_list))
 
@@ -64,33 +83,53 @@ def normalise_param_structure(params):
     """
     Canonicalise representation of key-value data with non-unique keys.
 
-    Request parameter dictionaries are handled in different ways in different libraries,
-    this function is required to ensure we always have something of the format:
+    Request parameter dictionaries are handled in different ways in different
+    libraries. This function is required to ensure we always have something of
+    the format::
 
-       {  key:  [ value1, value2... ] }
+        {
+            'key1': ['value1', 'value2'],
+            'key2': ['value3'],
+        }
+
+    :param dict, list, tuple, furl.omdict1D.omdict params: The parameter
+        structure to normalize. Can be either a ``dict``, ``list``, ``tuple``
+        or ``furl.omdict1D.omdict``. The following formats are allowed::
+
+            # A dictionary with key-value or key-values mappings
+            {
+                'key1': 'value',
+                'key2': ['value1', 'value2'],
+                'key3': ('value1', 'value2'),
+            }
+
+            # A list (or tuple, can be used interchangeably)
+            [
+                ['key1', 'value1'],
+                ['key1', 'value2'],
+                ['key2', ['value1', 'value2']],
+            ]
 
     """
+    if isinstance(params, dict):
+        iterator = six.iteritems(params)
+    elif isinstance(params, (list, tuple)):
+        iterator = params
+    elif HAS_FURL and isinstance(params, omdict):
+        iterator = params.iterallitems()
+    else:
+        raise TypeError('params needs to be dict, list or tuple. It is a %r' % type(params))
+
     out = {}
-
-    if isinstance(params, (list, tuple)):
-        # this is tricky - either we have (a, b), (a, c) or we have (a, (b, c))
-        for param_name, param_value in params:
-            if isinstance(param_value, (list, tuple)):
-                # this is (a, (b, c))
-                out[param_name] = param_value
-            else:
-                # this is (a, b), (a, c)
-                if param_name not in out:
-                    out[param_name] = []
-                out[param_name].append(param_value)
-        return out
-
-    # otherwise this is a dictionary, so either it is { a => b } or { a => (b,c) }
-    for key, value in six.iteritems(params):
-        if not isinstance(value, (list, tuple)):
-            out[key] = [value]
+    for param_name, param_value in iterator:
+        param_name = compat.stringify(param_name)
+        out.setdefault(param_name, [])
+        if isinstance(param_value, (list, tuple)):
+            # this is (a, (b, c)) or { a => (b, c) }
+            out[param_name].extend(compat.stringify(v) for v in param_value)
         else:
-            out[key] = value
+            # this is ((a, b), (a, c)) or { a => b }
+            out[param_name].append(compat.stringify(param_value))
 
     return out
 
@@ -105,41 +144,34 @@ def create_base_message(params, url, method='POST'):
 
     http://docs.laterpay.net/platform/intro/signing_urls/
     """
-    msg = '{method}&{url}&{params}'
-
-    method = compat.encode_if_unicode(method).upper()
-
-    data = {}
-
-    url = quote(compat.encode_if_unicode(url), safe='')
-
+    # Process method
+    method = compat.stringify(method).upper()
     if method not in ALLOWED_METHODS:
         raise ValueError('method should be one of: {}'.format(ALLOWED_METHODS))
 
+    # Process params
     params = normalise_param_structure(params)
-
-    for key, values in six.iteritems(params):
-        key = quote(compat.encode_if_unicode(key), safe='')
-
-        values_str = []
-
-        for value in values:
-            if not isinstance(value, (six.string_types, six.binary_type)):
-                # If any non-string or non-bytes like objects, ``str()`` them.
-                value = str(value)
-            if six.PY3 and isinstance(value, six.binary_type):
-                # Issue #84, decode byte strings before using them on Python 3
-                value = value.decode()
-            values_str.append(value)
-
-        data[key] = [quote(compat.encode_if_unicode(value_str), safe='') for value_str in values_str]
-
-    sorted_params = sort_params(data)
-
-    param_str = '&'.join('{}={}'.format(k, v) for k, v in sorted_params)
+    if 'hmac' in params:
+        params.pop('hmac')
+    if 'gettoken' in params:
+        params.pop('gettoken')
+    params = {
+        # urlquote all keys and values
+        quote(key, safe=''): [quote(value, safe='') for value in values]
+        for key, values
+        in six.iteritems(params)
+    }
+    params = _sort_params(params)
+    param_str = '&'.join('{}={}'.format(k, v) for k, v in params)
     param_str = quote(param_str, safe='')
 
-    return msg.format(method=method, url=url, params=param_str)
+    # Process url
+    url = compat.stringify(url)
+    url_parsed = urlparse(url)
+    url = url_parsed.scheme + "://" + url_parsed.netloc + url_parsed.path
+    url = quote(url, safe='')
+
+    return MESSAGE_FORMAT.format(method=method, url=url, params=param_str)
 
 
 def sign(secret, params, url, method='POST'):
@@ -154,21 +186,8 @@ def sign(secret, params, url, method='POST'):
     :param method: HTTP method used to transport the signed data
                    ('POST' is default)
     """
-    if 'hmac' in params:
-        params.pop('hmac')
-
-    if 'gettoken' in params:
-        params.pop('gettoken')
-
-    secret = compat.encode_if_unicode(secret)
-
-    url_parsed = urlparse(url)
-    base_url = url_parsed.scheme + "://" + url_parsed.netloc + url_parsed.path
-
-    msg = create_base_message(params, base_url, method=method)
-
-    mac = create_HMAC(secret, msg)
-
+    message = create_base_message(params, url, method=method)
+    mac = create_HMAC(secret, message)
     return mac
 
 
@@ -186,103 +205,8 @@ def verify(signature, secret, params, url, method):
     """
     if isinstance(signature, (list, tuple)):
         signature = signature[0]
+    signature = compat.stringify(signature)
 
     mac = sign(secret, params, url, method)
 
     return time_independent_HMAC_compare(signature, mac)
-
-
-def sign_and_encode(secret, params, url, method="GET"):  # pragma: no cover
-    """
-    Deprecated. Consider using ``laterpay.utils.signed_query()`` instead.
-
-    Sign and encode a URL ``url`` with a ``secret`` key called via an HTTP ``method``.
-
-    It adds the signature to the URL
-    as the URL parameter "hmac" and also adds the required timestamp parameter "ts" if it's not already
-    in the ``params`` dictionary. ``unicode()`` instances in params are handled correctly.
-
-    :param secret: The shared secret as a hex-encoded string
-    :param params: A dictionary of URL parameters. Each key can resolve to a
-                   single value string or a multi-string list.
-    :param url: The URL being called
-    :param method: An uppercase string representation of the HTTP method being
-                   used for the call (e.g. "GET", "POST")
-    :return: A signed and correctly encoded URL
-    """
-    warnings.warn(
-        "sign_and_encode is deprecated. It will be removed in a future release. "
-        "Consider using ``laterpay.utils.signed_query()`` instead.",
-        DeprecationWarning,
-    )
-
-    if 'ts' not in params:
-        params['ts'] = str(int(time.time()))
-
-    if 'hmac' in params:
-        params.pop('hmac')
-
-    sorted_data = []
-    for k, v in sort_params(params):
-        k = compat.encode_if_unicode(k)
-        value = compat.encode_if_unicode(v)
-        sorted_data.append((k, value))
-
-    encoded = urlencode(sorted_data)
-    hmac = sign(secret, params, url=url, method=method)
-
-    return "%s&hmac=%s" % (encoded, hmac)
-
-
-def sign_get_url(secret, url, signature_paramname="hmac"):  # pragma: no cover
-    """
-    Deprecated.
-
-    Sign a URL to be GET-ed.
-
-    This function takes a URL, parses it, sorts the URL parameters in
-    alphabetical order, concatenates them with the character "&" inbetween and
-    subsequently creates an HMAC using the secret key in ``hmac_key``.
-
-    It then appends the signature in hex encoding in its own URL parameter,
-    specified by ``signature_paramname`` and returns the resulting URL.
-
-    This function is used for redirecting back to the merchant's page after a
-    call to /identify or /gettoken
-
-    :param secret: the secret key used to sign the URL
-    :type secret: str
-    :param url: the URL to sign
-    :type url: str
-    :param signature_paramname: the parameter name to append to ``url`` that
-                                will contain the signature (default: "hmac")
-    :type signature_paramname: str
-    :returns: ``str`` -- the URL, including the signature as an URL parameter
-    """
-    warnings.warn(
-        "sign_get_url is deprecated. It will be removed in a future release. "
-        "It wasn't intended for public use. It's recommended to use the core "
-        "signing API which is sign() and verify().",
-        DeprecationWarning,
-    )
-
-    parsed = urlparse(url)
-
-    if parsed.query != "":
-        # use parse_qsl, because .parse_qs seems to create problems
-        # with urlencode()
-        qs = parse_qsl(parsed.query, keep_blank_values=True)
-
-        # create string to sign
-
-        # .sort() will sort in alphabetical order
-        qs.append(("ts", str(int(time.time()))))
-        qs.sort()
-
-        hmac = sign(str(secret), qs, url, method="GET")
-
-        qs.append((signature_paramname, hmac))
-        return parsed.scheme + "://" + parsed.netloc + parsed.path + \
-            parsed.params + "?" + urlencode(qs) + parsed.fragment
-
-    return None
