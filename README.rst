@@ -43,6 +43,7 @@ Release Checklist
 * ``git flow release start $newver``
 * Update the CHANGELOG with the new version
 * Update the version in ``setup.py``
+* Update `trove classifiers <https://pypi.python.org/pypi?%3Aaction=list_classifiers>`_ in ``setup.py``
 * ``git flow release finish $newver``
 * ``git push --tags origin develop master``
 * ``python setup.py sdist bdist_wheel``
