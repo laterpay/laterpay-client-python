@@ -27,6 +27,7 @@ def time_independent_HMAC_compare(a, b):
     if len(a) != len(b):
         return False
     result = 0
+    a, b = a.lower(), b.lower()
     for x, y in zip(a, b):
         result |= ord(x) ^ ord(y)
     return result == 0
