@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 import codecs
 import os
 
-_version = "5.0.0"
+_version = "5.1.0a1"
 _packages = find_packages('.', exclude=["*.tests", "*.tests.*", "tests.*", "tests"])
 
 if os.path.exists('README.rst'):
@@ -34,7 +34,8 @@ setup(
     ],
 
     classifiers=(
-        "Development Status :: 5 - Production/Stable",
+        "Development Status :: 3 - Alpha",
+        # "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
