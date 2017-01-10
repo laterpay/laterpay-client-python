@@ -24,6 +24,9 @@ from . import signing, utils
 
 _logger = logging.getLogger(__name__)
 
+_PRICING_RE = re.compile(r'[A-Z]{3}\d+')
+_EXPIRY_RE = re.compile(r'^(\+?\d+)$')
+
 
 class InvalidTokenException(Exception):
     """
@@ -62,10 +65,10 @@ class ItemDefinition(object):
     def __init__(self, item_id, pricing, url, title, expiry=None):
 
         for price in pricing.split(','):
-            if not re.match('[A-Z]{3}\d+', price):
+            if not _PRICING_RE.match(price):
                 raise InvalidItemDefinition('Pricing is not valid: %s' % pricing)
 
-        if expiry is not None and not re.match('^(\+?\d+)$', expiry):
+        if expiry is not None and not _EXPIRY_RE.match(expiry):
             raise InvalidItemDefinition("Invalid expiry value %s, it should be '+3600' or UTC-based "
                                         "epoch timestamp in seconds of type int" % expiry)
 
