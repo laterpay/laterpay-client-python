@@ -1,5 +1,9 @@
 # Changelog
 
+## 5.2.0 (under development)
+
+* ...
+
 ## 5.1.0
 
 * Ignored HMAC character capitalization
