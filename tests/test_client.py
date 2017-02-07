@@ -19,18 +19,52 @@ from laterpay import (
 
 class TestItemDefinition(unittest.TestCase):
 
-    def test_item_definition(self):
+    def test_invalid_pricing(self):
         with self.assertRaises(InvalidItemDefinition):
             ItemDefinition(1, '', '', 'title')
+
+    def test_invalid_expiry(self):
         with self.assertRaises(InvalidItemDefinition):
             ItemDefinition(1, 'EUR20', 'http://foo.invalid', 'title', expiry="illegal123")
 
-        it = ItemDefinition(1, 'EUR20', 'http://example.com/t', 'title', expiry='+100')
+    def test_invalid_sub_id(self):
+        with self.assertRaisesRegexp(InvalidItemDefinition, r'^Invalid sub_id value '):
+            ItemDefinition(1, 'EUR20', 'http://example.com', 'title', sub_id='', period=3600)
+        with self.assertRaisesRegexp(InvalidItemDefinition, r'^Invalid sub_id value '):
+            ItemDefinition(1, 'EUR20', 'http://example.com', 'title', sub_id='a' * 129, period=3600)
+        with self.assertRaisesRegexp(InvalidItemDefinition, r'^Invalid sub_id value '):
+            ItemDefinition(1, 'EUR20', 'http://example.com', 'title', sub_id='ä', period=3600)
 
+    def test_invalid_period(self):
+        with self.assertRaisesRegexp(InvalidItemDefinition, r'Period not set or invalid value'):
+            ItemDefinition(1, 'EUR20', 'http://example.com/t', 'title', sub_id='a', period=3599)
+        with self.assertRaisesRegexp(InvalidItemDefinition, r'Period not set or invalid value'):
+            ItemDefinition(1, 'EUR20', 'http://example.com/t', 'title', sub_id='a', period=31536001)
+        with self.assertRaisesRegexp(InvalidItemDefinition, r'Period not set or invalid value'):
+            ItemDefinition(1, 'EUR20', 'http://example.com/t', 'title', sub_id='a', period='12345')
+
+    def test_item_definition(self):
+        it = ItemDefinition(1, 'EUR20', 'http://example.com/t', 'title', expiry='+100')
         self.assertEqual(it.data, {
             'article_id': 1,
             'expiry': '+100',
             'pricing': 'EUR20',
+            'title': 'title',
+            'url': 'http://example.com/t',
+        })
+
+    def test_sub_id(self):
+        # Test sub_id_bounds
+        ItemDefinition(1, 'EUR20', 'http://example.com/t', 'title', sub_id='a', period=3600)
+        ItemDefinition(1, 'EUR20', 'http://example.com/t', 'title', sub_id='a' * 128, period=31536000)
+
+        it = ItemDefinition(1, 'EUR20', 'http://example.com/t', 'title', sub_id='abc', period=12345)
+        self.assertEqual(it.data, {
+            'article_id': 1,
+            'expiry': None,
+            'period': 12345,
+            'pricing': 'EUR20',
+            'sub_id': 'abc',
             'title': 'title',
             'url': 'http://example.com/t',
         })
@@ -204,6 +238,31 @@ class TestLaterPayClient(unittest.TestCase):
         self.assertQueryString(url, 'return_url', value='http://return.url/foo?bar=buz&lorem=ipsum')
         self.assertQueryString(url, 'failure_url', value='http://failure.url/FOO?BAR=BUZ&LOREM=IPSUM')
         self.assertQueryString(url, 'something', value='else')
+        self.assertQueryString(url, 'BLUB', value=[b'b1', 'b2', u'u1', 'u2'])
+
+    def test_get_subscribe_url(self):
+        item = ItemDefinition(1, 'EUR20', 'http://example.net/t', 'title', sub_id='a0_-9Z', period=12345)
+        url = self.lp.get_subscribe_url(
+            item,
+            product_key='some-product-key',
+            dialog=False,
+            return_url='http://return.url/foo?bar=buz&lorem=ipsum',
+            failure_url='http://failure.url/FOO?BAR=BUZ&LOREM=IPSUM',
+            something='else',
+            period=12345,
+            BLUB=[u'u2', b'b1', b'b2', u'u1'],
+        )
+        self.assertFalse(
+            self.assertQueryString(url, 'expiry'),
+            'expiry url param is "None". Should be omitted.'
+        )
+        self.assertQueryString(url, 'sub_id', value='a0_-9Z')
+        self.assertQueryString(url, 'product_key', value='some-product-key')
+        self.assertTrue(url.startswith('https://web.laterpay.net/subscribe?'))
+        self.assertQueryString(url, 'return_url', value='http://return.url/foo?bar=buz&lorem=ipsum')
+        self.assertQueryString(url, 'failure_url', value='http://failure.url/FOO?BAR=BUZ&LOREM=IPSUM')
+        self.assertQueryString(url, 'something', value='else')
+        self.assertQueryString(url, 'period', value='12345')
         self.assertQueryString(url, 'BLUB', value=[b'b1', 'b2', u'u1', 'u2'])
 
     def test_get_login_dialog_url_with_use_dialog_api_false(self):

@@ -138,8 +138,9 @@ class TestSigningHelper(unittest.TestCase):
 
         secret = 'secret'
 
+        # Use some upper case characters to test for issue #93
         verified = signing.verify(
-            b'346f3d53ad762f3ed3fb7f2427dec2bbfaf0338bb7f91f0460aff15c',
+            b'346f3d53ad762f3ed3fb7f2427deC2BBFAF0338BB7F91F0460AFF15C',
             secret,
             params,
             url,
@@ -153,8 +154,9 @@ class TestSigningHelper(unittest.TestCase):
             'param2': ['value2', 'value3'],
         }
         url = u'https://endpoint.com/api'
+        # Use some upper case characters to test for issue #93
         verified = signing.verify(
-            u'346f3d53ad762f3ed3fb7f2427dec2bbfaf0338bb7f91f0460aff15c',
+            u'346F3D53AD762F3ED3FB7F2427DEc2bbfaf0338bb7f91f0460aff15c',
             u'secret',
             params,
             url,

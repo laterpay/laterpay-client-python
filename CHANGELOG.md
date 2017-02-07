@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.1.0
+
+* Ignored HMAC character capitalization
+  ([#93](https://github.com/laterpay/laterpay-client-python/issues/93))
+* Added support for ``/dialog/subscribe`` and LaterPay's subscription system
+
 ## 5.0.0
 
 * Removed the following long deprecated methods from the

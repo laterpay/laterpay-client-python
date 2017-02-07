@@ -48,3 +48,6 @@ Release Checklist
 * ``git push --tags origin develop master``
 * ``python setup.py sdist bdist_wheel``
 * ``twine upload dist/laterpay*$newver*`` or optionally, for signed releases ``twine upload -s ...``
+* Bump version in ``setup.py`` to next likely version as ``Alpha 1`` (e.g. ``5.1.0a1``)
+* Alter trove classifiers in ``setup.py``
+* Add likely new version to ``CHANGELOG.md``

@@ -24,6 +24,10 @@ from . import signing, utils
 
 _logger = logging.getLogger(__name__)
 
+_PRICING_RE = re.compile(r'[A-Z]{3}\d+')
+_EXPIRY_RE = re.compile(r'^(\+?\d+)$')
+_SUB_ID_RE = re.compile(r'^[a-zA-Z0-9_-]{1,128}$')
+
 
 class InvalidTokenException(Exception):
     """
@@ -59,13 +63,13 @@ class ItemDefinition(object):
     For Single item purchases: http://docs.laterpay.net/platform/dialogs/buy/
     """
 
-    def __init__(self, item_id, pricing, url, title, expiry=None):
+    def __init__(self, item_id, pricing, url, title, expiry=None, sub_id=None, period=None):
 
         for price in pricing.split(','):
-            if not re.match('[A-Z]{3}\d+', price):
+            if not _PRICING_RE.match(price):
                 raise InvalidItemDefinition('Pricing is not valid: %s' % pricing)
 
-        if expiry is not None and not re.match('^(\+?\d+)$', expiry):
+        if expiry is not None and not _EXPIRY_RE.match(expiry):
             raise InvalidItemDefinition("Invalid expiry value %s, it should be '+3600' or UTC-based "
                                         "epoch timestamp in seconds of type int" % expiry)
 
@@ -76,6 +80,22 @@ class ItemDefinition(object):
             'title': title,
             'expiry': expiry,
         }
+        if sub_id is not None:
+            if _SUB_ID_RE.match(sub_id):
+                self.data['sub_id'] = sub_id
+            else:
+                raise InvalidItemDefinition(
+                    "Invalid sub_id value '%s'. It can be any string consisting of lowercase or "
+                    "uppercase ASCII characters, digits, underscore and hyphen, the length of "
+                    "which is between 1 and 128 characters." % sub_id
+                )
+            if isinstance(period, int) and 3600 <= period <= 31536000:
+                self.data['period'] = period
+            else:
+                raise InvalidItemDefinition(
+                    "Period not set or invalid value '%s' for period. The subscription period "
+                    "must be an int in the range [3600, 31536000] (including)." % period
+                )
 
 
 class LaterPayClient(object):
@@ -278,6 +298,14 @@ class LaterPayClient(object):
         http://docs.laterpay.net/platform/dialogs/add/
         """
         return self._get_web_url(item_definition, 'add', *args, **kwargs)
+
+    def get_subscribe_url(self, item_definition, *args, **kwargs):
+        """
+        Get the URL at which a user can subscribe to an item.
+
+        http://docs.laterpay.net/platform/dialogs/subscribe/
+        """
+        return self._get_web_url(item_definition, 'subscribe', *args, **kwargs)
 
     def has_token(self):
         """
