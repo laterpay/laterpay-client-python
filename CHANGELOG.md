@@ -1,6 +1,6 @@
 # Changelog
 
-## 5.1.0 (under development)
+## 5.1.0
 
 * Ignored HMAC character capitalization
   ([#93](https://github.com/laterpay/laterpay-client-python/issues/93))
