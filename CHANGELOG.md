@@ -1,5 +1,9 @@
 # Changelog
 
+## 5.3.0 (under development)
+
+* ...
+
 ## 5.2.0
 
 * Added constants outlining expiration and duration time bases for purchases
