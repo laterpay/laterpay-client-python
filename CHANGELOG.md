@@ -1,5 +1,9 @@
 # Changelog
 
+## 5.2.0
+
+* Added constants outlining expiration and duration time bases for purchases
+
 ## 5.1.0
 
 * Ignored HMAC character capitalization
