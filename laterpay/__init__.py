@@ -407,14 +407,14 @@ class LaterPayClient(object):
 
         return response.json()
 
-    def get_manual_ident_url(self, article_url, article_ids):
+    def get_manual_ident_url(self, article_url, article_ids, muid=None):
         """
         Return a URL to allow users to claim previous purchase content.
         """
-        token = self._get_manual_ident_token(article_url, article_ids)
+        token = self._get_manual_ident_token(article_url, article_ids, muid=muid)
         return '%s/ident/%s/%s/' % (self.web_root, self.cp_key, token)
 
-    def _get_manual_ident_token(self, article_url, article_ids):
+    def _get_manual_ident_token(self, article_url, article_ids, muid=None):
         """
         Return the token data for ``get_manual_ident_url()``.
         """
@@ -422,4 +422,6 @@ class LaterPayClient(object):
             'back': compat.stringify(article_url),
             'ids': [compat.stringify(article_id) for article_id in article_ids],
         }
+        if muid:
+            data['muid'] = compat.stringify(muid)
         return jwt.encode(data, self.shared_secret).decode()

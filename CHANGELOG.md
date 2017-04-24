@@ -12,6 +12,8 @@
   installation requirements as it's required for the added manual ident URLs
   feature.
 
+* Added support for `muid` when creating manual ident URLs.
+
 * Added support to check for access based on `muid` instead of `lptoken`.
 
 ## 5.2.0

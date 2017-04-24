@@ -526,7 +526,7 @@ class TestLaterPayClient(unittest.TestCase):
         article_url = u'http://example.com/news?id=10&emoji=😄'
         article_ids = ['aid≠1', b'aid\xe2\x89\xa02']
 
-        url = self.lp.get_manual_ident_url(article_url, article_ids)
+        url = self.lp.get_manual_ident_url(article_url, article_ids, muid='blụb')
 
         url_info = urlparse(url)
 
@@ -555,6 +555,7 @@ class TestLaterPayClient(unittest.TestCase):
         self.assertEqual(data, {
             'back': u'http://example.com/news?id=10&emoji=\U0001f604',
             'ids': [u'aid\u22601', u'aid\u22602'],
+            'muid': u'bl\u1ee5b'
         })
 
     def test_get_manual_ident_token(self):
@@ -567,6 +568,20 @@ class TestLaterPayClient(unittest.TestCase):
         self.assertEqual(data, {
             'back': u'http://example.com/news?id=10&emoji=\U0001f604',
             'ids': [u'aid\u22601', u'aid\u22602'],
+        })
+
+    def test_get_manual_ident_token_muid(self):
+        article_url = 'http://example.com/news'
+        article_ids = ['aid=1']
+        muid = u'😄'
+
+        token = self.lp._get_manual_ident_token(article_url, article_ids, muid=muid)
+        data = jwt.decode(token, self.lp.shared_secret)
+
+        self.assertEqual(data, {
+            'back': 'http://example.com/news',
+            'ids': ['aid=1'],
+            'muid': u'\U0001f604',
         })
 
 
