@@ -29,6 +29,7 @@ setup(
     packages=_packages,
 
     install_requires=[
+        'PyJWT>=1.4.2',
         'requests',
         'six',
     ],

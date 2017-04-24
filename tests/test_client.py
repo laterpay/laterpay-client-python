@@ -3,6 +3,7 @@
 import json
 import unittest
 
+import jwt
 import mock
 import responses
 
@@ -507,6 +508,53 @@ class TestLaterPayClient(unittest.TestCase):
             'cp': ['1'],
             'forcelang': ['de'],
             'ts': ['12345678'],
+        })
+
+    def test_get_manual_ident_url(self):
+        article_url = u'http://example.com/news?id=10&emoji=😄'
+        article_ids = ['aid≠1', b'aid\xe2\x89\xa02']
+
+        url = self.lp.get_manual_ident_url(article_url, article_ids)
+
+        url_info = urlparse(url)
+
+        self.assertEqual(url_info.scheme, 'https')
+        self.assertEqual(url_info.netloc, 'web.laterpay.net')
+        self.assertEqual(url_info.hostname, 'web.laterpay.net')
+        self.assertEqual(url_info.params, '')
+        self.assertEqual(url_info.query, '')
+        self.assertEqual(url_info.fragment, '')
+        self.assertIsNone(url_info.username)
+        self.assertIsNone(url_info.password)
+        self.assertIsNone(url_info.port)
+
+        path_segments = url_info.path.split('/')
+
+        self.assertEqual(len(path_segments), 5)
+        self.assertEqual(path_segments[0], '')
+        self.assertEqual(path_segments[1], 'ident')
+        self.assertEqual(path_segments[2], self.lp.cp_key)
+        self.assertEqual(path_segments[4], '')
+
+        token = path_segments[3]
+
+        data = jwt.decode(token, self.lp.shared_secret)
+
+        self.assertEqual(data, {
+            'back': u'http://example.com/news?id=10&emoji=\U0001f604',
+            'ids': [u'aid\u22601', u'aid\u22602'],
+        })
+
+    def test_get_manual_ident_token(self):
+        article_url = u'http://example.com/news?id=10&emoji=😄'
+        article_ids = ['aid≠1', b'aid\xe2\x89\xa02']
+
+        token = self.lp._get_manual_ident_token(article_url, article_ids)
+        data = jwt.decode(token, self.lp.shared_secret)
+
+        self.assertEqual(data, {
+            'back': u'http://example.com/news?id=10&emoji=\U0001f604',
+            'ids': [u'aid\u22601', u'aid\u22602'],
         })
 
 

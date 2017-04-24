@@ -5,6 +5,13 @@
 * Added explicit support for the `muid` argument to `get_add_url()`,
   `get_buy_url()` and `get_subscribe_url()`.
 
+* Added function to create manual ident URLs. A user can visit these URLs to
+  regain access to previous purchased or bought content.
+
+* Added [PyJWT](https://pyjwt.readthedocs.io/en/latest/) >= 1.4.2 to the
+  installation requirements as it's required for the added manual ident URLs
+  feature.
+
 ## 5.2.0
 
 * Added constants outlining expiration and duration time bases for purchases

@@ -14,12 +14,13 @@ import re
 import string
 import time
 
+import jwt
 import requests
 
 import six
 from six.moves.urllib.parse import quote_plus
 
-from . import constants, signing, utils
+from . import compat, constants, signing, utils
 
 
 _logger = logging.getLogger(__name__)
@@ -396,3 +397,20 @@ class LaterPayClient(object):
         response.raise_for_status()
 
         return response.json()
+
+    def get_manual_ident_url(self, article_url, article_ids):
+        """
+        Return a URL to allow users to claim previous purchase content.
+        """
+        token = self._get_manual_ident_token(article_url, article_ids)
+        return '%s/ident/%s/%s/' % (self.web_root, self.cp_key, token)
+
+    def _get_manual_ident_token(self, article_url, article_ids):
+        """
+        Return the token data for ``get_manual_ident_url()``.
+        """
+        data = {
+            'back': compat.stringify(article_url),
+            'ids': [compat.stringify(article_id) for article_id in article_ids],
+        }
+        return jwt.encode(data, self.shared_secret).decode()
