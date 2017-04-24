@@ -246,6 +246,7 @@ class LaterPayClient(object):
                      consumable=False,
                      return_url=None,
                      failure_url=None,
+                     muid=None,
                      **kwargs):
 
         # filter out params with None value.
@@ -281,6 +282,9 @@ class LaterPayClient(object):
 
         if failure_url:
             data['failure_url'] = failure_url
+
+        if muid:
+            data['muid'] = muid
 
         data.update(kwargs)
 

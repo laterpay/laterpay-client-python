@@ -184,6 +184,19 @@ class TestLaterPayClient(unittest.TestCase):
         url = self.lp._get_web_url(self.item, 'PAGE_TYPE', failure_url=None)
         self.assertFalse(self.assertQueryString(url, 'failure_url'))
 
+    def test_web_url_muid(self):
+        # Default
+        url = self.lp._get_web_url(self.item, 'PAGE_TYPE')
+        self.assertFalse(self.assertQueryString(url, 'muid'))
+
+        # Given
+        url = self.lp._get_web_url(self.item, 'PAGE_TYPE', muid='0zA9-aZ09-0A9z')
+        self.assertQueryString(url, 'muid', value='0zA9-aZ09-0A9z')
+
+        # Omitted
+        url = self.lp._get_web_url(self.item, 'PAGE_TYPE', muid=None)
+        self.assertFalse(self.assertQueryString(url, 'muid'))
+
     def test_get_add_url(self):
         item = ItemDefinition(1, 'EUR20', 'http://example.net/t', 'title')
         url = self.lp.get_add_url(
@@ -195,6 +208,7 @@ class TestLaterPayClient(unittest.TestCase):
             consumable=True,
             return_url='http://return.url/foo?bar=buz&lorem=ipsum',
             failure_url='http://failure.url/FOO?BAR=BUZ&LOREM=IPSUM',
+            muid='someone',
             something='else',
             BLUB=[u'u2', b'b1', b'b2', u'u1'],
         )
@@ -209,6 +223,7 @@ class TestLaterPayClient(unittest.TestCase):
         self.assertQueryString(url, 'consumable', value='1')
         self.assertQueryString(url, 'return_url', value='http://return.url/foo?bar=buz&lorem=ipsum')
         self.assertQueryString(url, 'failure_url', value='http://failure.url/FOO?BAR=BUZ&LOREM=IPSUM')
+        self.assertQueryString(url, 'muid', value='someone')
         self.assertQueryString(url, 'something', value='else')
         self.assertQueryString(url, 'BLUB', value=[b'b1', 'b2', u'u1', 'u2'])
 
@@ -223,6 +238,7 @@ class TestLaterPayClient(unittest.TestCase):
             consumable=True,
             return_url='http://return.url/foo?bar=buz&lorem=ipsum',
             failure_url='http://failure.url/FOO?BAR=BUZ&LOREM=IPSUM',
+            muid='someone',
             something='else',
             BLUB=[u'u2', b'b1', b'b2', u'u1'],
         )
@@ -237,6 +253,7 @@ class TestLaterPayClient(unittest.TestCase):
         self.assertQueryString(url, 'consumable', value='1')
         self.assertQueryString(url, 'return_url', value='http://return.url/foo?bar=buz&lorem=ipsum')
         self.assertQueryString(url, 'failure_url', value='http://failure.url/FOO?BAR=BUZ&LOREM=IPSUM')
+        self.assertQueryString(url, 'muid', value='someone')
         self.assertQueryString(url, 'something', value='else')
         self.assertQueryString(url, 'BLUB', value=[b'b1', 'b2', u'u1', 'u2'])
 
@@ -248,6 +265,7 @@ class TestLaterPayClient(unittest.TestCase):
             dialog=False,
             return_url='http://return.url/foo?bar=buz&lorem=ipsum',
             failure_url='http://failure.url/FOO?BAR=BUZ&LOREM=IPSUM',
+            muid='someone',
             something='else',
             period=12345,
             BLUB=[u'u2', b'b1', b'b2', u'u1'],
@@ -261,6 +279,7 @@ class TestLaterPayClient(unittest.TestCase):
         self.assertTrue(url.startswith('https://web.laterpay.net/subscribe?'))
         self.assertQueryString(url, 'return_url', value='http://return.url/foo?bar=buz&lorem=ipsum')
         self.assertQueryString(url, 'failure_url', value='http://failure.url/FOO?BAR=BUZ&LOREM=IPSUM')
+        self.assertQueryString(url, 'muid', value='someone')
         self.assertQueryString(url, 'something', value='else')
         self.assertQueryString(url, 'period', value='12345')
         self.assertQueryString(url, 'BLUB', value=[b'b1', 'b2', u'u1', 'u2'])

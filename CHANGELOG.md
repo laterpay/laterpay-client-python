@@ -2,7 +2,8 @@
 
 ## 5.3.0 (under development)
 
-* ...
+* Added explicit support for the `muid` argument to `get_add_url()`,
+  `get_buy_url()` and `get_subscribe_url()`.
 
 ## 5.2.0
 
