@@ -343,7 +343,7 @@ class LaterPayClient(object):
         """
         return self._access_url
 
-    def get_access_params(self, article_ids, lptoken=None):
+    def get_access_params(self, article_ids, lptoken=None, muid=None):
         """
         Return a params ``dict`` for /access call.
 
@@ -352,6 +352,7 @@ class LaterPayClient(object):
         :param article_ids: list of article ids or a single article id as a
                             string
         :param lptoken: optional lptoken as `str`
+        :param str muid: merchant defined user ID. Optional.
         """
         if not isinstance(article_ids, (list, tuple)):
             article_ids = [article_ids]
@@ -363,6 +364,13 @@ class LaterPayClient(object):
             'article_id': article_ids,
         }
 
+        if muid:
+            # TODO: The behavior when lptoken and muid are given is not yet
+            # defined. Thus we'll allow both at the same time for now. It might
+            # be that in the end only one is allowed or one is prefered over
+            # the other.
+            params['muid'] = muid
+
         params['hmac'] = signing.sign(
             secret=self.shared_secret,
             params=params.copy(),
@@ -372,7 +380,7 @@ class LaterPayClient(object):
 
         return params
 
-    def get_access_data(self, article_ids, lptoken=None):
+    def get_access_data(self, article_ids, lptoken=None, muid=None):
         """
         Perform a request to /access API and return obtained data.
 
@@ -383,8 +391,9 @@ class LaterPayClient(object):
         :param article_ids: list of article ids or a single article id as a
                             string
         :param lptoken: optional lptoken as `str`
+        :param str muid: merchant defined user ID. Optional.
         """
-        params = self.get_access_params(article_ids=article_ids, lptoken=lptoken)
+        params = self.get_access_params(article_ids=article_ids, lptoken=lptoken, muid=muid)
         url = self.get_access_url()
         headers = self.get_request_headers()
 

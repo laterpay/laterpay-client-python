@@ -326,6 +326,7 @@ class TestLaterPayClient(unittest.TestCase):
         data = client.get_access_data(
             ['article-1', 'article-2'],
             lptoken='fake-lptoken',
+            muid='some-user',
         )
 
         self.assertEqual(data, {
@@ -348,6 +349,7 @@ class TestLaterPayClient(unittest.TestCase):
         self.assertEqual(qd['cp'], ['fake-cp-key'])
         self.assertEqual(qd['article_id'], ['article-1', 'article-2'])
         self.assertEqual(qd['hmac'], ['fake-signature'])
+        self.assertEqual(qd['muid'], ['some-user'])
 
         sign_mock.assert_called_once_with(
             secret='fake-shared-secret',
@@ -356,6 +358,7 @@ class TestLaterPayClient(unittest.TestCase):
                 'article_id': ['article-1', 'article-2'],
                 'ts': '123',
                 'lptoken': 'fake-lptoken',
+                'muid': 'some-user',
             },
             url='http://example.net/access',
             method='GET',
@@ -368,13 +371,22 @@ class TestLaterPayClient(unittest.TestCase):
         sign_mock.return_value = 'fake-signature'
 
         params = self.lp.get_access_params('article-1', lptoken='fake-lptoken')
+        self.assertEqual(params, {
+            'cp': 1,
+            'ts': '123',
+            'lptoken': 'fake-lptoken',
+            'article_id': ['article-1'],
+            'hmac': 'fake-signature',
+        })
 
+        params = self.lp.get_access_params('article-1', lptoken='fake-lptoken', muid='some-user')
         self.assertEqual(params, {
             'cp': '1',
             'ts': '123',
             'lptoken': 'fake-lptoken',
             'article_id': ['article-1'],
             'hmac': 'fake-signature',
+            'muid': 'some-user',
         })
 
     @mock.patch('time.time')
