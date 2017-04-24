@@ -132,7 +132,7 @@ class TestLaterPayClient(unittest.TestCase):
         url = self.lp._get_web_url(self.item, 'PAGE_TYPE', use_jsevents=False)
         self.assertFalse(self.assertQueryString(url, 'jsevents'))
 
-    def test_transaction_reference(self):
+    def test_web_url_transaction_reference(self):
         # Default
         url = self.lp._get_web_url(self.item, 'PAGE_TYPE')
         self.assertFalse(self.assertQueryString(url, 'transaction_reference'))
