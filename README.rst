@@ -39,9 +39,9 @@ Release Checklist
 
 * Install ``twine`` with ``$ pipsi install twine``
 * Ensure ``CHANGELOG.md`` is representative
-* Determine next version number from the CHANGELOG (ensuring we follow `SemVer <http://semver.org/>`_)
+* Determine next version number from the ``CHANGELOG.md`` (ensuring we follow `SemVer <http://semver.org/>`_)
 * ``git flow release start $newver``
-* Update the CHANGELOG with the new version
+* Update the ``CHANGELOG.md`` with the new version
 * Update the version in ``setup.py``
 * Update `trove classifiers <https://pypi.python.org/pypi?%3Aaction=list_classifiers>`_ in ``setup.py``
 * ``git flow release finish $newver``
