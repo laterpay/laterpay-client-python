@@ -372,7 +372,7 @@ class TestLaterPayClient(unittest.TestCase):
 
         params = self.lp.get_access_params('article-1', lptoken='fake-lptoken')
         self.assertEqual(params, {
-            'cp': 1,
+            'cp': '1',
             'ts': '123',
             'lptoken': 'fake-lptoken',
             'article_id': ['article-1'],
