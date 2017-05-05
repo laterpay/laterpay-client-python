@@ -3,6 +3,7 @@
 import json
 import unittest
 
+import jwt
 import mock
 import responses
 
@@ -74,7 +75,7 @@ class TestLaterPayClient(unittest.TestCase):
 
     def setUp(self):
         self.lp = LaterPayClient(
-            1,
+            '1',
             'some-secret')
         self.item = ItemDefinition(1, 'EUR20', 'http://example.com/', 'title')
 
@@ -132,7 +133,7 @@ class TestLaterPayClient(unittest.TestCase):
         url = self.lp._get_web_url(self.item, 'PAGE_TYPE', use_jsevents=False)
         self.assertFalse(self.assertQueryString(url, 'jsevents'))
 
-    def test_transaction_reference(self):
+    def test_web_url_transaction_reference(self):
         # Default
         url = self.lp._get_web_url(self.item, 'PAGE_TYPE')
         self.assertFalse(self.assertQueryString(url, 'transaction_reference'))
@@ -184,6 +185,19 @@ class TestLaterPayClient(unittest.TestCase):
         url = self.lp._get_web_url(self.item, 'PAGE_TYPE', failure_url=None)
         self.assertFalse(self.assertQueryString(url, 'failure_url'))
 
+    def test_web_url_muid(self):
+        # Default
+        url = self.lp._get_web_url(self.item, 'PAGE_TYPE')
+        self.assertFalse(self.assertQueryString(url, 'muid'))
+
+        # Given
+        url = self.lp._get_web_url(self.item, 'PAGE_TYPE', muid='0zA9-aZ09-0A9z')
+        self.assertQueryString(url, 'muid', value='0zA9-aZ09-0A9z')
+
+        # Omitted
+        url = self.lp._get_web_url(self.item, 'PAGE_TYPE', muid=None)
+        self.assertFalse(self.assertQueryString(url, 'muid'))
+
     def test_get_add_url(self):
         item = ItemDefinition(1, 'EUR20', 'http://example.net/t', 'title')
         url = self.lp.get_add_url(
@@ -195,6 +209,7 @@ class TestLaterPayClient(unittest.TestCase):
             consumable=True,
             return_url='http://return.url/foo?bar=buz&lorem=ipsum',
             failure_url='http://failure.url/FOO?BAR=BUZ&LOREM=IPSUM',
+            muid='someone',
             something='else',
             BLUB=[u'u2', b'b1', b'b2', u'u1'],
         )
@@ -209,6 +224,7 @@ class TestLaterPayClient(unittest.TestCase):
         self.assertQueryString(url, 'consumable', value='1')
         self.assertQueryString(url, 'return_url', value='http://return.url/foo?bar=buz&lorem=ipsum')
         self.assertQueryString(url, 'failure_url', value='http://failure.url/FOO?BAR=BUZ&LOREM=IPSUM')
+        self.assertQueryString(url, 'muid', value='someone')
         self.assertQueryString(url, 'something', value='else')
         self.assertQueryString(url, 'BLUB', value=[b'b1', 'b2', u'u1', 'u2'])
 
@@ -223,6 +239,7 @@ class TestLaterPayClient(unittest.TestCase):
             consumable=True,
             return_url='http://return.url/foo?bar=buz&lorem=ipsum',
             failure_url='http://failure.url/FOO?BAR=BUZ&LOREM=IPSUM',
+            muid='someone',
             something='else',
             BLUB=[u'u2', b'b1', b'b2', u'u1'],
         )
@@ -237,6 +254,7 @@ class TestLaterPayClient(unittest.TestCase):
         self.assertQueryString(url, 'consumable', value='1')
         self.assertQueryString(url, 'return_url', value='http://return.url/foo?bar=buz&lorem=ipsum')
         self.assertQueryString(url, 'failure_url', value='http://failure.url/FOO?BAR=BUZ&LOREM=IPSUM')
+        self.assertQueryString(url, 'muid', value='someone')
         self.assertQueryString(url, 'something', value='else')
         self.assertQueryString(url, 'BLUB', value=[b'b1', 'b2', u'u1', 'u2'])
 
@@ -248,6 +266,7 @@ class TestLaterPayClient(unittest.TestCase):
             dialog=False,
             return_url='http://return.url/foo?bar=buz&lorem=ipsum',
             failure_url='http://failure.url/FOO?BAR=BUZ&LOREM=IPSUM',
+            muid='someone',
             something='else',
             period=12345,
             BLUB=[u'u2', b'b1', b'b2', u'u1'],
@@ -261,6 +280,7 @@ class TestLaterPayClient(unittest.TestCase):
         self.assertTrue(url.startswith('https://web.laterpay.net/subscribe?'))
         self.assertQueryString(url, 'return_url', value='http://return.url/foo?bar=buz&lorem=ipsum')
         self.assertQueryString(url, 'failure_url', value='http://failure.url/FOO?BAR=BUZ&LOREM=IPSUM')
+        self.assertQueryString(url, 'muid', value='someone')
         self.assertQueryString(url, 'something', value='else')
         self.assertQueryString(url, 'period', value='12345')
         self.assertQueryString(url, 'BLUB', value=[b'b1', 'b2', u'u1', 'u2'])
@@ -306,6 +326,7 @@ class TestLaterPayClient(unittest.TestCase):
         data = client.get_access_data(
             ['article-1', 'article-2'],
             lptoken='fake-lptoken',
+            muid='some-user',
         )
 
         self.assertEqual(data, {
@@ -328,6 +349,7 @@ class TestLaterPayClient(unittest.TestCase):
         self.assertEqual(qd['cp'], ['fake-cp-key'])
         self.assertEqual(qd['article_id'], ['article-1', 'article-2'])
         self.assertEqual(qd['hmac'], ['fake-signature'])
+        self.assertEqual(qd['muid'], ['some-user'])
 
         sign_mock.assert_called_once_with(
             secret='fake-shared-secret',
@@ -336,6 +358,7 @@ class TestLaterPayClient(unittest.TestCase):
                 'article_id': ['article-1', 'article-2'],
                 'ts': '123',
                 'lptoken': 'fake-lptoken',
+                'muid': 'some-user',
             },
             url='http://example.net/access',
             method='GET',
@@ -348,13 +371,22 @@ class TestLaterPayClient(unittest.TestCase):
         sign_mock.return_value = 'fake-signature'
 
         params = self.lp.get_access_params('article-1', lptoken='fake-lptoken')
-
         self.assertEqual(params, {
-            'cp': 1,
+            'cp': '1',
             'ts': '123',
             'lptoken': 'fake-lptoken',
             'article_id': ['article-1'],
             'hmac': 'fake-signature',
+        })
+
+        params = self.lp.get_access_params('article-1', lptoken='fake-lptoken', muid='some-user')
+        self.assertEqual(params, {
+            'cp': '1',
+            'ts': '123',
+            'lptoken': 'fake-lptoken',
+            'article_id': ['article-1'],
+            'hmac': 'fake-signature',
+            'muid': 'some-user',
         })
 
     @mock.patch('time.time')
@@ -488,6 +520,68 @@ class TestLaterPayClient(unittest.TestCase):
             'cp': ['1'],
             'forcelang': ['de'],
             'ts': ['12345678'],
+        })
+
+    def test_get_manual_ident_url(self):
+        article_url = u'http://example.com/news?id=10&emoji=😄'
+        article_ids = ['aid≠1', b'aid\xe2\x89\xa02']
+
+        url = self.lp.get_manual_ident_url(article_url, article_ids, muid='blụb')
+
+        url_info = urlparse(url)
+
+        self.assertEqual(url_info.scheme, 'https')
+        self.assertEqual(url_info.netloc, 'web.laterpay.net')
+        self.assertEqual(url_info.hostname, 'web.laterpay.net')
+        self.assertEqual(url_info.params, '')
+        self.assertEqual(url_info.query, '')
+        self.assertEqual(url_info.fragment, '')
+        self.assertIsNone(url_info.username)
+        self.assertIsNone(url_info.password)
+        self.assertIsNone(url_info.port)
+
+        path_segments = url_info.path.split('/')
+
+        self.assertEqual(len(path_segments), 5)
+        self.assertEqual(path_segments[0], '')
+        self.assertEqual(path_segments[1], 'ident')
+        self.assertEqual(path_segments[2], self.lp.cp_key)
+        self.assertEqual(path_segments[4], '')
+
+        token = path_segments[3]
+
+        data = jwt.decode(token, self.lp.shared_secret)
+
+        self.assertEqual(data, {
+            'back': u'http://example.com/news?id=10&emoji=\U0001f604',
+            'ids': [u'aid\u22601', u'aid\u22602'],
+            'muid': u'bl\u1ee5b'
+        })
+
+    def test_get_manual_ident_token(self):
+        article_url = u'http://example.com/news?id=10&emoji=😄'
+        article_ids = ['aid≠1', b'aid\xe2\x89\xa02']
+
+        token = self.lp._get_manual_ident_token(article_url, article_ids)
+        data = jwt.decode(token, self.lp.shared_secret)
+
+        self.assertEqual(data, {
+            'back': u'http://example.com/news?id=10&emoji=\U0001f604',
+            'ids': [u'aid\u22601', u'aid\u22602'],
+        })
+
+    def test_get_manual_ident_token_muid(self):
+        article_url = 'http://example.com/news'
+        article_ids = ['aid=1']
+        muid = u'😄'
+
+        token = self.lp._get_manual_ident_token(article_url, article_ids, muid=muid)
+        data = jwt.decode(token, self.lp.shared_secret)
+
+        self.assertEqual(data, {
+            'back': 'http://example.com/news',
+            'ids': ['aid=1'],
+            'muid': u'\U0001f604',
         })
 
 

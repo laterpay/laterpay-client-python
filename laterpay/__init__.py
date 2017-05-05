@@ -14,12 +14,13 @@ import re
 import string
 import time
 
+import jwt
 import requests
 
 import six
 from six.moves.urllib.parse import quote_plus
 
-from . import constants, signing, utils
+from . import compat, constants, signing, utils
 
 
 _logger = logging.getLogger(__name__)
@@ -246,6 +247,7 @@ class LaterPayClient(object):
                      consumable=False,
                      return_url=None,
                      failure_url=None,
+                     muid=None,
                      **kwargs):
 
         # filter out params with None value.
@@ -281,6 +283,9 @@ class LaterPayClient(object):
 
         if failure_url:
             data['failure_url'] = failure_url
+
+        if muid:
+            data['muid'] = muid
 
         data.update(kwargs)
 
@@ -338,7 +343,7 @@ class LaterPayClient(object):
         """
         return self._access_url
 
-    def get_access_params(self, article_ids, lptoken=None):
+    def get_access_params(self, article_ids, lptoken=None, muid=None):
         """
         Return a params ``dict`` for /access call.
 
@@ -347,6 +352,7 @@ class LaterPayClient(object):
         :param article_ids: list of article ids or a single article id as a
                             string
         :param lptoken: optional lptoken as `str`
+        :param str muid: merchant defined user ID. Optional.
         """
         if not isinstance(article_ids, (list, tuple)):
             article_ids = [article_ids]
@@ -358,6 +364,13 @@ class LaterPayClient(object):
             'article_id': article_ids,
         }
 
+        if muid:
+            # TODO: The behavior when lptoken and muid are given is not yet
+            # defined. Thus we'll allow both at the same time for now. It might
+            # be that in the end only one is allowed or one is prefered over
+            # the other.
+            params['muid'] = muid
+
         params['hmac'] = signing.sign(
             secret=self.shared_secret,
             params=params.copy(),
@@ -367,7 +380,7 @@ class LaterPayClient(object):
 
         return params
 
-    def get_access_data(self, article_ids, lptoken=None):
+    def get_access_data(self, article_ids, lptoken=None, muid=None):
         """
         Perform a request to /access API and return obtained data.
 
@@ -378,8 +391,9 @@ class LaterPayClient(object):
         :param article_ids: list of article ids or a single article id as a
                             string
         :param lptoken: optional lptoken as `str`
+        :param str muid: merchant defined user ID. Optional.
         """
-        params = self.get_access_params(article_ids=article_ids, lptoken=lptoken)
+        params = self.get_access_params(article_ids=article_ids, lptoken=lptoken, muid=muid)
         url = self.get_access_url()
         headers = self.get_request_headers()
 
@@ -392,3 +406,22 @@ class LaterPayClient(object):
         response.raise_for_status()
 
         return response.json()
+
+    def get_manual_ident_url(self, article_url, article_ids, muid=None):
+        """
+        Return a URL to allow users to claim previous purchase content.
+        """
+        token = self._get_manual_ident_token(article_url, article_ids, muid=muid)
+        return '%s/ident/%s/%s/' % (self.web_root, self.cp_key, token)
+
+    def _get_manual_ident_token(self, article_url, article_ids, muid=None):
+        """
+        Return the token data for ``get_manual_ident_url()``.
+        """
+        data = {
+            'back': compat.stringify(article_url),
+            'ids': [compat.stringify(article_id) for article_id in article_ids],
+        }
+        if muid:
+            data['muid'] = compat.stringify(muid)
+        return jwt.encode(data, self.shared_secret).decode()

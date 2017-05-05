@@ -6,7 +6,7 @@ python:
   - 3.5
 sudo: false
 install:
-  - pip install tox==2.1.1 coveralls
+  - pip install tox coveralls
 script:
   - tox -e py${TRAVIS_PYTHON_VERSION//./},flake8,pydocstyle
   - coveralls
