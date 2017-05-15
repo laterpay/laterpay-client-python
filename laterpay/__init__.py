@@ -360,16 +360,34 @@ class LaterPayClient(object):
         params = {
             'cp': self.cp_key,
             'ts': str(int(time.time())),
-            'lptoken': str(lptoken or self.lptoken),
             'article_id': article_ids,
         }
 
-        if muid:
-            # TODO: The behavior when lptoken and muid are given is not yet
-            # defined. Thus we'll allow both at the same time for now. It might
-            # be that in the end only one is allowed or one is prefered over
-            # the other.
+        """
+        l = lptoken
+        s = self.lptoken
+        m = muid
+        x = error
+
+               |   L   | not L |   L   | not L
+        -------+-------+-------+-------+-------
+           l   |   x   |   x   |   l   |   l
+        -------+-------+-------+-------+-------
+         not l |   m   |   m   |   s   |   x
+        -------+-------+-------+-------+-------
+               |   m   |   m   | not m | not m
+        """
+        if lptoken is None and muid is not None:
             params['muid'] = muid
+        elif lptoken is not None and muid is None:
+            params['lptoken'] = lptoken
+        elif lptoken is None and muid is None and self.lptoken is not None:
+            params['lptoken'] = self.lptoken
+        else:
+            raise AssertionError(
+                'Either lptoken, self.lptoken or muid has to be passed. '
+                'Passing neither or both lptoken and muid is not allowed.',
+            )
 
         params['hmac'] = signing.sign(
             secret=self.shared_secret,

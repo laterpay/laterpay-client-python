@@ -2,6 +2,9 @@
 
 ## 5.3.1 (under development)
 
+* Only passed one of `lptoken` and `muid` to `/access` calls. Passing both is
+  not supported.
+
 ## 5.3.0
 
 * Added explicit support for the `muid` argument to `get_add_url()`,
