@@ -1,6 +1,6 @@
 # Changelog
 
-## 5.3.1 (under development)
+## 5.3.1
 
 * Only passed one of `lptoken` and `muid` to `/access` calls. Passing both is
   not supported.
