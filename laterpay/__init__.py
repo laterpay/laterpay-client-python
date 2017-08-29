@@ -364,12 +364,18 @@ class LaterPayClient(object):
         }
 
         """
+        Matrix on which combinations of `lptoken`, `muid`, and `self.lptoken`
+        are allowed. In words:
+
+            * Exactly one of `lptoken` and `muid`
+            * If neither is given, but `self.lptoken` exists, use that
+
         l = lptoken
         s = self.lptoken
         m = muid
         x = error
 
-               |   L   | not L |   L   | not L
+               |   s   | not s |   s   | not s
         -------+-------+-------+-------+-------
            l   |   x   |   x   |   l   |   l
         -------+-------+-------+-------+-------
