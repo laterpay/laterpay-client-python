@@ -5,6 +5,8 @@
 * Added the `connection_handler` to `LaterPayClient` to simplify connection
   pooling.
 
+* Updated test dependencies.
+
 ## 5.3.1
 
 * Only passed one of `lptoken` and `muid` to `/access` calls. Passing both is

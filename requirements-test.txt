@@ -1,6 +1,6 @@
-flake8==2.6.0
-coverage==4.1
-pydocstyle==1.0.0
-furl==0.4.95
+coverage==4.4.1
+flake8==3.4.1
+furl==1.0.1
 mock==2.0.0
-responses==0.5.1
+pydocstyle==2.0.0
+responses==0.7.0
