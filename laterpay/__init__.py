@@ -112,7 +112,8 @@ class LaterPayClient(object):
                  api_root='https://api.laterpay.net',
                  web_root='https://web.laterpay.net',
                  lptoken=None,
-                 timeout_seconds=10):
+                 timeout_seconds=10,
+                 connection_handler=None):
         """
         Instantiate a LaterPay API client.
 
@@ -122,6 +123,9 @@ class LaterPayClient(object):
 
         :param timeout_seconds: number of seconds after which backend api
             requests (e.g. /access) will time out (10 by default).
+        :param connection_handler: Defaults to Python requests. Set it to
+            ``requests.Session()`` to use a `Python requests Session object
+            <http://docs.python-requests.org/en/master/user/advanced/#session-objects>`_.
 
         """
         self.cp_key = cp_key
@@ -130,6 +134,7 @@ class LaterPayClient(object):
         self.shared_secret = shared_secret
         self.lptoken = lptoken
         self.timeout_seconds = timeout_seconds
+        self.connection_handler = connection_handler or requests
 
     def get_gettoken_redirect(self, return_to):
         """
@@ -364,12 +369,18 @@ class LaterPayClient(object):
         }
 
         """
+        Matrix on which combinations of `lptoken`, `muid`, and `self.lptoken`
+        are allowed. In words:
+
+            * Exactly one of `lptoken` and `muid`
+            * If neither is given, but `self.lptoken` exists, use that
+
         l = lptoken
         s = self.lptoken
         m = muid
         x = error
 
-               |   L   | not L |   L   | not L
+               |   s   | not s |   s   | not s
         -------+-------+-------+-------+-------
            l   |   x   |   x   |   l   |   l
         -------+-------+-------+-------+-------
@@ -402,9 +413,9 @@ class LaterPayClient(object):
         """
         Perform a request to /access API and return obtained data.
 
-        This method uses ``requests.get`` to fetch the data and then calls
-        ``.raise_for_status()`` on the response. It does not handle any errors
-        raised by ``requests`` API.
+        This method uses ``requests.get`` or ``requests.Session().get`` to
+        fetch the data and then calls ``.raise_for_status()`` on the response.
+        It does not handle any errors raised by ``requests`` API.
 
         :param article_ids: list of article ids or a single article id as a
                             string
@@ -415,7 +426,7 @@ class LaterPayClient(object):
         url = self.get_access_url()
         headers = self.get_request_headers()
 
-        response = requests.get(
+        response = self.connection_handler.get(
             url,
             params=params,
             headers=headers,

@@ -52,7 +52,7 @@ def signed_query(secret,
 
 def signed_url(secret, params, url, **kwargs):
     """
-    Same as ``signed_query`` but returns the base url with appended query.
+    Return the same as ``signed_query`` but including the base URL.
     """
     qs = signed_query(secret, params, url, **kwargs)
     return "{}?{}".format(url, qs)
