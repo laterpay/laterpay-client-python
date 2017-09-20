@@ -1,6 +1,6 @@
 # Changelog
 
-## 5.4.0 (under development)
+## 5.4.0
 
 * Added the `connection_handler` to `LaterPayClient` to simplify connection
   pooling.
