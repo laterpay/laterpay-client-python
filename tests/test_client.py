@@ -427,6 +427,34 @@ class TestLaterPayClient(unittest.TestCase):
             method='GET',
         )
 
+    @mock.patch('time.time')
+    def test_get_access_data_connection_handler(self, time_time_mock):
+        time_time_mock.return_value = 123
+        connection_handler = mock.Mock()
+        client = LaterPayClient(
+            'fake-cp-key',
+            'fake-shared-secret',
+            connection_handler=connection_handler,
+        )
+
+        client.get_access_data(
+            ['article-1', 'article-2'],
+            lptoken='fake-lptoken',
+        )
+
+        connection_handler.get.assert_called_once_with(
+            'https://api.laterpay.net/access',
+            headers=client.get_request_headers(),
+            params={
+                'article_id': ['article-1', 'article-2'],
+                'ts': '123',
+                'hmac': '198717d5c98b89ec3b509784758a98323f167ca6d42c363672169cfc',
+                'cp': 'fake-cp-key',
+                'lptoken': 'fake-lptoken',
+            },
+            timeout=10,
+        )
+
     @mock.patch('laterpay.signing.sign')
     @mock.patch('time.time')
     def test_get_access_params(self, time_time_mock, sign_mock):
