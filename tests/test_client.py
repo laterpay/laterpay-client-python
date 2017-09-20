@@ -656,7 +656,7 @@ class TestLaterPayClient(unittest.TestCase):
 
         token = path_segments[3]
 
-        data = jwt.decode(token, self.lp.shared_secret)
+        data = jwt.decode(token, self.lp.shared_secret, algorithms=['HS256'])
 
         self.assertEqual(data, {
             'back': u'http://example.com/news?id=10&emoji=\U0001f604',
@@ -669,7 +669,7 @@ class TestLaterPayClient(unittest.TestCase):
         article_ids = ['aid≠1', b'aid\xe2\x89\xa02']
 
         token = self.lp._get_manual_ident_token(article_url, article_ids)
-        data = jwt.decode(token, self.lp.shared_secret)
+        data = jwt.decode(token, self.lp.shared_secret, algorithms=['HS256'])
 
         self.assertEqual(data, {
             'back': u'http://example.com/news?id=10&emoji=\U0001f604',
@@ -682,7 +682,7 @@ class TestLaterPayClient(unittest.TestCase):
         muid = u'😄'
 
         token = self.lp._get_manual_ident_token(article_url, article_ids, muid=muid)
-        data = jwt.decode(token, self.lp.shared_secret)
+        data = jwt.decode(token, self.lp.shared_secret, algorithms=['HS256'])
 
         self.assertEqual(data, {
             'back': 'http://example.com/news',
