@@ -2,6 +2,8 @@
 
 ## 5.5.0 (under development)
 
+* Added support for Python 3.6
+
 ## 5.4.0
 
 * Added the `connection_handler` to `LaterPayClient` to simplify connection
@@ -109,7 +111,7 @@
 * `LaterPayClient.get_add_url()` and `LaterPayClient.get_buy_url()` accept
   `**kwargs`.
 
-* The parameter `skip_add_to_invoice` in `LaterPayClient.get_add_url()` and 
+* The parameter `skip_add_to_invoice` in `LaterPayClient.get_add_url()` and
   `LaterPayClient.get_buy_url()` is deprecated and will be removed in a future
   release.
 
