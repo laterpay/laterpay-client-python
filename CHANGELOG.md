@@ -1,6 +1,6 @@
 # Changelog
 
-## 5.5.0 (under development)
+## 5.5.0
 
 * Added support for Python 3.6
 
