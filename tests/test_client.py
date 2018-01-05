@@ -461,24 +461,62 @@ class TestLaterPayClient(unittest.TestCase):
         time_time_mock.return_value = 123
         sign_mock.return_value = 'fake-signature'
 
-        params = self.lp.get_access_params('article-1', lptoken='fake-lptoken')
+        # lptoken given, muid not given, article_ids is a binay string
+        params = self.lp.get_access_params(b'article-1', lptoken='fake-lptoken')
         self.assertEqual(params, {
             'cp': '1',
             'ts': '123',
             'lptoken': 'fake-lptoken',
-            'article_id': ['article-1'],
+            'article_id': [b'article-1'],
             'hmac': 'fake-signature',
         })
 
-        params = self.lp.get_access_params('article-1', muid='some-user')
+        # muid given, lptoken not given, article_ids is a unicode string
+        params = self.lp.get_access_params(u'article-1', muid='some-user')
         self.assertEqual(params, {
             'cp': '1',
             'ts': '123',
-            'article_id': ['article-1'],
+            'article_id': [u'article-1'],
             'hmac': 'fake-signature',
             'muid': 'some-user',
         })
 
+        # article_ids is a tuple
+        params = self.lp.get_access_params(('article-2', 'article-1'), muid='some-user')
+        self.assertEqual(params, {
+            'cp': '1',
+            'ts': '123',
+            'article_id': ['article-1', 'article-2'],
+            'hmac': 'fake-signature',
+            'muid': 'some-user',
+        })
+
+        # article_ids is a set
+        params = self.lp.get_access_params({'article-1', 'article-2'}, muid='some-user')
+        self.assertEqual(params, {
+            'cp': '1',
+            'ts': '123',
+            'article_id': ['article-1', 'article-2'],
+            'hmac': 'fake-signature',
+            'muid': 'some-user',
+        })
+
+        # article_ids is a random object
+        class AID(object):
+            def __str__(self):
+                return 'blub'
+
+        aid = AID()
+        params = self.lp.get_access_params(aid, muid='some-user')
+        self.assertEqual(params, {
+            'cp': '1',
+            'ts': '123',
+            'article_id': [aid],
+            'hmac': 'fake-signature',
+            'muid': 'some-user',
+        })
+
+        # lptoken from LaterPayClient instance
         lpclient = LaterPayClient('1', 'some-secret', lptoken='instance-lptoken')
         params = lpclient.get_access_params('article-1')
         self.assertEqual(params, {
@@ -489,9 +527,11 @@ class TestLaterPayClient(unittest.TestCase):
             'hmac': 'fake-signature',
         })
 
+        # lptoken and muid given
         with self.assertRaises(AssertionError):
             self.lp.get_access_params('article-1', lptoken='fake-lptoken', muid='some-user')
 
+        # lptoken and muid not given
         with self.assertRaises(AssertionError):
             self.lp.get_access_params('article-1')
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## 5.5.0
+
+* Added support for Python 3.6
+
+* Allowed ``article_ids`` when fetching access data to be a
+  ``collections.Iterable`` and not just a string, list or tuple. Passing
+  anything else will raise a ``DeprecationWarning``.
+
 ## 5.4.0
 
 * Added the `connection_handler` to `LaterPayClient` to simplify connection
@@ -107,7 +115,7 @@
 * `LaterPayClient.get_add_url()` and `LaterPayClient.get_buy_url()` accept
   `**kwargs`.
 
-* The parameter `skip_add_to_invoice` in `LaterPayClient.get_add_url()` and 
+* The parameter `skip_add_to_invoice` in `LaterPayClient.get_add_url()` and
   `LaterPayClient.get_buy_url()` is deprecated and will be removed in a future
   release.
 

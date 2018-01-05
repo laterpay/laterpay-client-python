@@ -7,12 +7,14 @@ The LaterPay API Python client.
 http://docs.laterpay.net/
 """
 
+import collections
 import logging
 import pkg_resources
 import random
 import re
 import string
 import time
+import warnings
 
 import jwt
 import requests
@@ -354,12 +356,22 @@ class LaterPayClient(object):
 
         A correct signature is included in the dict as the "hmac" param.
 
-        :param article_ids: list of article ids or a single article id as a
+        :param article_ids: Iterable of article ids or a single article id as a
                             string
         :param lptoken: optional lptoken as `str`
         :param str muid: merchant defined user ID. Optional.
         """
-        if not isinstance(article_ids, (list, tuple)):
+        if isinstance(article_ids, (six.text_type, six.binary_type)):
+            article_ids = [article_ids]
+        elif isinstance(article_ids, collections.Iterable):
+            article_ids = list(sorted(article_ids))
+        else:
+            warnings.warn(
+                'laterpay.LaterPayClient.get_access_params expects a string or '
+                'a subclass of collections.Iterable as `article_ids`. Received '
+                'a %r instead.' % type(article_ids),
+                DeprecationWarning
+            )
             article_ids = [article_ids]
 
         params = {
@@ -417,7 +429,7 @@ class LaterPayClient(object):
         fetch the data and then calls ``.raise_for_status()`` on the response.
         It does not handle any errors raised by ``requests`` API.
 
-        :param article_ids: list of article ids or a single article id as a
+        :param article_ids: Iterable of article ids or a single article id as a
                             string
         :param lptoken: optional lptoken as `str`
         :param str muid: merchant defined user ID. Optional.

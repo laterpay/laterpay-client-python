@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 import codecs
 import os
 
-_version = "5.4.0"
+_version = "5.5.0"
 _packages = find_packages('.', exclude=["*.tests", "*.tests.*", "tests.*", "tests"])
 
 if os.path.exists('README.rst'):
@@ -47,6 +47,7 @@ setup(
         "Programming Language :: Python :: 3.3",
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ),
 )
