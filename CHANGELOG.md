@@ -4,6 +4,10 @@
 
 * Added support for Python 3.6
 
+* Allowed ``article_ids`` when fetching access data to be a
+  ``collections.Iterable`` and not just a string, list or tuple. Passing
+  anything else will raise a ``DeprecationWarning``.
+
 ## 5.4.0
 
 * Added the `connection_handler` to `LaterPayClient` to simplify connection
