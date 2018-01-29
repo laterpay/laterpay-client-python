@@ -15,6 +15,7 @@ from laterpay import (
     InvalidItemDefinition,
     ItemDefinition,
     LaterPayClient,
+    constants,
 )
 
 
@@ -53,6 +54,7 @@ class TestItemDefinition(unittest.TestCase):
             'title': 'title',
             'url': 'http://example.com/t',
         })
+        self.assertIsNone(it.item_type)
 
     def test_sub_id(self):
         # Test sub_id_bounds
@@ -69,6 +71,39 @@ class TestItemDefinition(unittest.TestCase):
             'title': 'title',
             'url': 'http://example.com/t',
         })
+
+    def test_item_type_contribution(self):
+        it = ItemDefinition(1, 'EUR20', 'http://example.com/t', 'title', item_type=constants.ITEM_TYPE_CONTRIBUTION)
+        self.assertEqual(it.data, {
+            'campaign_id': 1,
+            'expiry': None,
+            'pricing': 'EUR20',
+            'title': 'title',
+            'url': 'http://example.com/t',
+        })
+        self.assertEqual(it.item_type, 'contribution')
+
+    def test_item_type_donation(self):
+        it = ItemDefinition(1, 'EUR20', 'http://example.com/t', 'title', item_type=constants.ITEM_TYPE_DONATION)
+        self.assertEqual(it.data, {
+            'campaign_id': 1,
+            'expiry': None,
+            'pricing': 'EUR20',
+            'title': 'title',
+            'url': 'http://example.com/t',
+        })
+        self.assertEqual(it.item_type, 'donation')
+
+    def test_item_type_unknown(self):
+        it = ItemDefinition(1, 'EUR20', 'http://example.com/t', 'title', item_type='whatever')
+        self.assertEqual(it.data, {
+            'article_id': 1,
+            'expiry': None,
+            'pricing': 'EUR20',
+            'title': 'title',
+            'url': 'http://example.com/t',
+        })
+        self.assertIsNone(it.item_type)
 
 
 class TestLaterPayClient(unittest.TestCase):
@@ -228,6 +263,28 @@ class TestLaterPayClient(unittest.TestCase):
         self.assertQueryString(url, 'something', value='else')
         self.assertQueryString(url, 'BLUB', value=[b'b1', 'b2', u'u1', 'u2'])
 
+    def test_get_add_url_contribution(self):
+        item = ItemDefinition(
+            2, 'EUR20', 'http://example.net/t', 'Save the World!', item_type=constants.ITEM_TYPE_CONTRIBUTION,
+        )
+        url = self.lp.get_add_url(item, item_type='contribution')
+        self.assertTrue(url.startswith('https://web.laterpay.net/dialog/contribute/pay_later?'))
+        self.assertQueryString(url, 'campaign_id', value='2')
+        self.assertQueryString(url, 'pricing', value='EUR20')
+        self.assertQueryString(url, 'url', value='http://example.net/t')
+        self.assertQueryString(url, 'title', value='Save the World!')
+
+    def test_get_add_url_donation(self):
+        item = ItemDefinition(
+            '2', 'EUR20', 'http://example.net/t', 'Save the World!', item_type=constants.ITEM_TYPE_DONATION,
+        )
+        url = self.lp.get_add_url(item, item_type='donation')
+        self.assertTrue(url.startswith('https://web.laterpay.net/dialog/donate/pay_later?'))
+        self.assertQueryString(url, 'campaign_id', value='2')
+        self.assertQueryString(url, 'pricing', value='EUR20')
+        self.assertQueryString(url, 'url', value='http://example.net/t')
+        self.assertQueryString(url, 'title', value='Save the World!')
+
     def test_get_buy_url(self):
         item = ItemDefinition(1, 'EUR20', 'http://example.net/t', 'title')
         url = self.lp.get_buy_url(
@@ -257,6 +314,30 @@ class TestLaterPayClient(unittest.TestCase):
         self.assertQueryString(url, 'muid', value='someone')
         self.assertQueryString(url, 'something', value='else')
         self.assertQueryString(url, 'BLUB', value=[b'b1', 'b2', u'u1', 'u2'])
+
+    def test_get_buy_url_contribution(self):
+        item = ItemDefinition(
+            'save-the-world', 'EUR20', 'http://example.net/t', 'Save the World!',
+            item_type=constants.ITEM_TYPE_CONTRIBUTION,
+        )
+        url = self.lp.get_buy_url(item)
+        self.assertTrue(url.startswith('https://web.laterpay.net/dialog/contribute/pay_now?'))
+        self.assertQueryString(url, 'campaign_id', value='2')
+        self.assertQueryString(url, 'pricing', value='EUR20')
+        self.assertQueryString(url, 'url', value='http://example.net/t')
+        self.assertQueryString(url, 'title', value='Save the World!')
+
+    def test_get_buy_url_donation(self):
+        item = ItemDefinition(
+            'save-the-world', 'EUR20', 'http://example.net/t', 'Save the World!',
+            item_type=constants.ITEM_TYPE_DONATION,
+        )
+        url = self.lp.get_buy_url(item)
+        self.assertTrue(url.startswith('https://web.laterpay.net/dialog/donate/pay_now?'))
+        self.assertQueryString(url, 'campaign_id', value='2')
+        self.assertQueryString(url, 'pricing', value='EUR20')
+        self.assertQueryString(url, 'url', value='http://example.net/t')
+        self.assertQueryString(url, 'title', value='Save the World!')
 
     def test_get_subscribe_url(self):
         item = ItemDefinition(1, 'EUR20', 'http://example.net/t', 'title', sub_id='a0_-9Z', period=12345)
