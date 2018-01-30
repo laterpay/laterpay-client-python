@@ -1,5 +1,7 @@
 # Changelog
 
+## 5.7.0 (under development)
+
 ## 5.6.0
 
 * The `ItemDefinition` gained a new key-word argument `item_type` that must
