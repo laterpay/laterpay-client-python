@@ -308,36 +308,39 @@ class LaterPayClient(object):
 
     def get_buy_url(self, item_definition, *args, **kwargs):
         """
-        Get the URL at which a user can start the checkout process to buy a
-        single item or contribute/donate to a campaign.
+        Get the URL at which a user can start the checkout process.
+
+        The created URL is a "pay_now" link for a single item, timepass,
+        contribution, or donations.
 
         http://docs.laterpay.net/platform/dialogs/buy/
         """
-        page_type = 'buy'
         item_type = item_definition.item_type
-        if not item_type:
-            pass
-        elif item_type == constants.ITEM_TYPE_CONTRIBUTION:
+        if item_type == constants.ITEM_TYPE_CONTRIBUTION:
             page_type = 'contribute/pay_now'
         elif item_type == constants.ITEM_TYPE_DONATION:
             page_type = 'donate/pay_now'
+        else:
+            page_type = 'buy'
 
         return self._get_web_url(item_definition, page_type, *args, **kwargs)
 
     def get_add_url(self, item_definition, *args, **kwargs):
         """
-        Get the URL at which a user can add an item to their invoice to pay later.
+        Get the URL at which a user can start the checkout process.
+
+        The created URL is a "pay_later" link for a single item, timepass,
+        contribution, or donations.
 
         http://docs.laterpay.net/platform/dialogs/add/
         """
-        page_type = 'add'
         item_type = item_definition.item_type
-        if not item_type:
-            pass
-        elif item_type == constants.ITEM_TYPE_CONTRIBUTION:
+        if item_type == constants.ITEM_TYPE_CONTRIBUTION:
             page_type = 'contribute/pay_later'
         elif item_type == constants.ITEM_TYPE_DONATION:
             page_type = 'donate/pay_later'
+        else:
+            page_type = 'add'
 
         return self._get_web_url(item_definition, page_type, *args, **kwargs)
 
