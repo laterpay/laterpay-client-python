@@ -1,12 +1,22 @@
 # Changelog
 
+## 5.6.0
+
+* The `ItemDefinition` gained a new key-word argument `item_type` that must
+  be set to `'contribution'` or `'donation'` when creating purchase URLs for
+  contributions or donations.
+
+* Two new constants were added to the `constants` module:
+  `ITEM_TYPE_CONTRIBUTION` and `ITEM_TYPE_DONATION` to be used in conjuction
+  with the new `item_type` attribute on an `ItemDefinition`.
+
 ## 5.5.0
 
 * Added support for Python 3.6
 
-* Allowed ``article_ids`` when fetching access data to be a
-  ``collections.Iterable`` and not just a string, list or tuple. Passing
-  anything else will raise a ``DeprecationWarning``.
+* Allowed `article_ids` when fetching access data to be a
+  `collections.Iterable` and not just a string, list or tuple. Passing
+  anything else will raise a `DeprecationWarning`.
 
 ## 5.4.0
 
@@ -44,7 +54,7 @@
 
 * Ignored HMAC character capitalization
   ([#93](https://github.com/laterpay/laterpay-client-python/issues/93))
-* Added support for ``/dialog/subscribe`` and LaterPay's subscription system
+* Added support for `/dialog/subscribe` and LaterPay's subscription system
 
 ## 5.0.0
 

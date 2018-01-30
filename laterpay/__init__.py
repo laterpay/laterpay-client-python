@@ -66,8 +66,7 @@ class ItemDefinition(object):
     For Single item purchases: http://docs.laterpay.net/platform/dialogs/buy/
     """
 
-    def __init__(self, item_id, pricing, url, title, expiry=None, sub_id=None, period=None):
-
+    def __init__(self, item_id, pricing, url, title, expiry=None, sub_id=None, period=None, item_type=None):
         for price in pricing.split(','):
             if not _PRICING_RE.match(price):
                 raise InvalidItemDefinition('Pricing is not valid: %s' % pricing)
@@ -77,12 +76,19 @@ class ItemDefinition(object):
                                         "epoch timestamp in seconds of type int" % expiry)
 
         self.data = {
-            'article_id': item_id,
             'pricing': pricing,
             'url': url,
             'title': title,
             'expiry': expiry,
         }
+
+        if item_type in {constants.ITEM_TYPE_CONTRIBUTION, constants.ITEM_TYPE_DONATION}:
+            self.data['campaign_id'] = item_id
+            self.item_type = item_type
+        else:
+            self.data['article_id'] = item_id
+            self.item_type = None
+
         if sub_id is not None:
             if _SUB_ID_RE.match(sub_id):
                 self.data['sub_id'] = sub_id
@@ -302,19 +308,41 @@ class LaterPayClient(object):
 
     def get_buy_url(self, item_definition, *args, **kwargs):
         """
-        Get the URL at which a user can start the checkout process to buy a single item.
+        Get the URL at which a user can start the checkout process.
+
+        The created URL is a "pay_now" link for a single item, timepass,
+        contribution, or donations.
 
         http://docs.laterpay.net/platform/dialogs/buy/
         """
-        return self._get_web_url(item_definition, 'buy', *args, **kwargs)
+        item_type = item_definition.item_type
+        if item_type == constants.ITEM_TYPE_CONTRIBUTION:
+            page_type = 'contribute/pay_now'
+        elif item_type == constants.ITEM_TYPE_DONATION:
+            page_type = 'donate/pay_now'
+        else:
+            page_type = 'buy'
+
+        return self._get_web_url(item_definition, page_type, *args, **kwargs)
 
     def get_add_url(self, item_definition, *args, **kwargs):
         """
-        Get the URL at which a user can add an item to their invoice to pay later.
+        Get the URL at which a user can start the checkout process.
+
+        The created URL is a "pay_later" link for a single item, timepass,
+        contribution, or donations.
 
         http://docs.laterpay.net/platform/dialogs/add/
         """
-        return self._get_web_url(item_definition, 'add', *args, **kwargs)
+        item_type = item_definition.item_type
+        if item_type == constants.ITEM_TYPE_CONTRIBUTION:
+            page_type = 'contribute/pay_later'
+        elif item_type == constants.ITEM_TYPE_DONATION:
+            page_type = 'donate/pay_later'
+        else:
+            page_type = 'add'
+
+        return self._get_web_url(item_definition, page_type, *args, **kwargs)
 
     def get_subscribe_url(self, item_definition, *args, **kwargs):
         """
