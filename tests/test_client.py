@@ -114,33 +114,36 @@ class TestLaterPayClient(unittest.TestCase):
             'some-secret')
         self.item = ItemDefinition(1, 'EUR20', 'http://example.com/', 'title')
 
-    def assertQueryString(self, url, key, value=None):
+    def assertQueryString(self, url, key, value, msg=None):
         d = parse_qs(urlparse(url).query)
-        if not value:
-            return (key in d)
-        return d.get(key, None) == value
+        self.assertIn(key, d, msg=msg)
+
+        if not isinstance(value, list):
+            value = [value]
+        self.assertEqual(d[key], value, msg=msg)
+
+    def assertNotQueryString(self, url, key, msg=None):
+        d = parse_qs(urlparse(url).query)
+        self.assertNotIn(key, d, msg=msg)
 
     def test_get_web_url_itemdefinition_value_none(self):
         # item with expiry not set.
         item = ItemDefinition(1, 'EUR20', 'http://help.me/', 'title')
         url = self.lp._get_web_url(item, 'PAGE_TYPE')
-        self.assertFalse(
-            self.assertQueryString(url, 'expiry'),
-            'expiry url param is "None". Should be omitted.'
-        )
+        self.assertNotQueryString(url, 'expiry', msg='expiry url param is "None". Should be omitted.')
 
     def test_web_url_product_key(self):
         # Default
         url = self.lp._get_web_url(self.item, 'PAGE_TYPE')
-        self.assertFalse(self.assertQueryString(url, 'product_key'))
+        self.assertNotQueryString(url, 'product')
 
         # Enabled
         url = self.lp._get_web_url(self.item, 'PAGE_TYPE', product_key='foobar')
-        self.assertQueryString(url, 'product_key', value='foobar')
+        self.assertQueryString(url, 'product', 'foobar')
 
         # Disabled
         url = self.lp._get_web_url(self.item, 'PAGE_TYPE', product_key=None)
-        self.assertFalse(self.assertQueryString(url, 'product_key'))
+        self.assertNotQueryString(url, 'product')
 
     def test_web_url_dialog(self):
         # Default
@@ -158,24 +161,24 @@ class TestLaterPayClient(unittest.TestCase):
     def test_web_url_jsevents(self):
         # Default
         url = self.lp._get_web_url(self.item, 'PAGE_TYPE')
-        self.assertFalse(self.assertQueryString(url, 'jsevents'))
+        self.assertNotQueryString(url, 'jsevents')
 
         # Enabled
         url = self.lp._get_web_url(self.item, 'PAGE_TYPE', use_jsevents=True)
-        self.assertQueryString(url, 'jsevents', value='1')
+        self.assertQueryString(url, 'jsevents', '1')
 
         # Disabled
         url = self.lp._get_web_url(self.item, 'PAGE_TYPE', use_jsevents=False)
-        self.assertFalse(self.assertQueryString(url, 'jsevents'))
+        self.assertNotQueryString(url, 'jsevents')
 
     def test_web_url_transaction_reference(self):
         # Default
         url = self.lp._get_web_url(self.item, 'PAGE_TYPE')
-        self.assertFalse(self.assertQueryString(url, 'transaction_reference'))
+        self.assertNotQueryString(url, 'tref')
 
         # Valid
         url = self.lp._get_web_url(self.item, 'PAGE_TYPE', transaction_reference='loremipsum')
-        self.assertQueryString(url, 'transaction_reference', value='loremipsum')
+        self.assertQueryString(url, 'tref', 'loremipsum')
 
         # Invalid
         with self.assertRaises(APIException):
@@ -184,54 +187,54 @@ class TestLaterPayClient(unittest.TestCase):
     def test_web_url_consumable(self):
         # Default
         url = self.lp._get_web_url(self.item, 'PAGE_TYPE')
-        self.assertFalse(self.assertQueryString(url, 'consumable'))
+        self.assertNotQueryString(url, 'consumable')
 
         # Enabled
         url = self.lp._get_web_url(self.item, 'PAGE_TYPE', consumable=True)
-        self.assertQueryString(url, 'consumable', value='1')
+        self.assertQueryString(url, 'consumable', '1')
 
         # Disabled
         url = self.lp._get_web_url(self.item, 'PAGE_TYPE', consumable=False)
-        self.assertFalse(self.assertQueryString(url, 'consumable'))
+        self.assertNotQueryString(url, 'consumable')
 
     def test_web_url_return_url(self):
         # Default
         url = self.lp._get_web_url(self.item, 'PAGE_TYPE')
-        self.assertFalse(self.assertQueryString(url, 'return_url'))
+        self.assertNotQueryString(url, 'return_url')
 
         # Given
         url = self.lp._get_web_url(self.item, 'PAGE_TYPE', return_url='http://example.com/foo?foo=bar&lorem=ipsum')
-        self.assertQueryString(url, 'return_url', value='http://example.com/foo?foo=bar&lorem=ipsum')
+        self.assertQueryString(url, 'return_url', 'http://example.com/foo?foo=bar&lorem=ipsum')
 
         # Omitted
         url = self.lp._get_web_url(self.item, 'PAGE_TYPE', return_url=None)
-        self.assertFalse(self.assertQueryString(url, 'return_url'))
+        self.assertNotQueryString(url, 'return_url')
 
     def test_web_url_failure_url(self):
         # Default
         url = self.lp._get_web_url(self.item, 'PAGE_TYPE')
-        self.assertFalse(self.assertQueryString(url, 'failure_url'))
+        self.assertNotQueryString(url, 'failure_url')
 
         # Given
         url = self.lp._get_web_url(self.item, 'PAGE_TYPE', failure_url='http://example.com/foo?foo=bar&lorem=ipsum')
-        self.assertQueryString(url, 'failure_url', value='http://example.com/foo?foo=bar&lorem=ipsum')
+        self.assertQueryString(url, 'failure_url', 'http://example.com/foo?foo=bar&lorem=ipsum')
 
         # Omitted
         url = self.lp._get_web_url(self.item, 'PAGE_TYPE', failure_url=None)
-        self.assertFalse(self.assertQueryString(url, 'failure_url'))
+        self.assertNotQueryString(url, 'failure_url')
 
     def test_web_url_muid(self):
         # Default
         url = self.lp._get_web_url(self.item, 'PAGE_TYPE')
-        self.assertFalse(self.assertQueryString(url, 'muid'))
+        self.assertNotQueryString(url, 'muid')
 
         # Given
         url = self.lp._get_web_url(self.item, 'PAGE_TYPE', muid='0zA9-aZ09-0A9z')
-        self.assertQueryString(url, 'muid', value='0zA9-aZ09-0A9z')
+        self.assertQueryString(url, 'muid', '0zA9-aZ09-0A9z')
 
         # Omitted
         url = self.lp._get_web_url(self.item, 'PAGE_TYPE', muid=None)
-        self.assertFalse(self.assertQueryString(url, 'muid'))
+        self.assertNotQueryString(url, 'muid')
 
     def test_get_add_url(self):
         item = ItemDefinition(1, 'EUR20', 'http://example.net/t', 'title')
@@ -248,20 +251,17 @@ class TestLaterPayClient(unittest.TestCase):
             something='else',
             BLUB=[u'u2', b'b1', b'b2', u'u1'],
         )
-        self.assertFalse(
-            self.assertQueryString(url, 'expiry'),
-            'expiry url param is "None". Should be omitted.'
-        )
-        self.assertQueryString(url, 'product_key', value='some-product-key')
+        self.assertNotQueryString(url, 'expiry', msg='expiry url param is "None". Should be omitted.')
+        self.assertQueryString(url, 'product', 'some-product-key')
         self.assertTrue(url.startswith('https://web.laterpay.net/add?'))
-        self.assertQueryString(url, 'use_jsevents', value='1')
-        self.assertQueryString(url, 'transaction_reference', value='TX-REF')
-        self.assertQueryString(url, 'consumable', value='1')
-        self.assertQueryString(url, 'return_url', value='http://return.url/foo?bar=buz&lorem=ipsum')
-        self.assertQueryString(url, 'failure_url', value='http://failure.url/FOO?BAR=BUZ&LOREM=IPSUM')
-        self.assertQueryString(url, 'muid', value='someone')
-        self.assertQueryString(url, 'something', value='else')
-        self.assertQueryString(url, 'BLUB', value=[b'b1', 'b2', u'u1', 'u2'])
+        self.assertQueryString(url, 'jsevents', '1')
+        self.assertQueryString(url, 'tref', 'TX-REF')
+        self.assertQueryString(url, 'consumable', '1')
+        self.assertQueryString(url, 'return_url', 'http://return.url/foo?bar=buz&lorem=ipsum')
+        self.assertQueryString(url, 'failure_url', 'http://failure.url/FOO?BAR=BUZ&LOREM=IPSUM')
+        self.assertQueryString(url, 'muid', 'someone')
+        self.assertQueryString(url, 'something', 'else')
+        self.assertQueryString(url, 'BLUB', ['u2', 'b1', 'b2', 'u1'])
 
     def test_get_add_url_contribution(self):
         item = ItemDefinition(
@@ -269,10 +269,10 @@ class TestLaterPayClient(unittest.TestCase):
         )
         url = self.lp.get_add_url(item, item_type='contribution')
         self.assertTrue(url.startswith('https://web.laterpay.net/dialog/contribute/pay_later?'))
-        self.assertQueryString(url, 'campaign_id', value='2')
-        self.assertQueryString(url, 'pricing', value='EUR20')
-        self.assertQueryString(url, 'url', value='http://example.net/t')
-        self.assertQueryString(url, 'title', value='Save the World!')
+        self.assertQueryString(url, 'campaign_id', '2')
+        self.assertQueryString(url, 'pricing', 'EUR20')
+        self.assertQueryString(url, 'url', 'http://example.net/t')
+        self.assertQueryString(url, 'title', 'Save the World!')
 
     def test_get_add_url_donation(self):
         item = ItemDefinition(
@@ -280,10 +280,10 @@ class TestLaterPayClient(unittest.TestCase):
         )
         url = self.lp.get_add_url(item, item_type='donation')
         self.assertTrue(url.startswith('https://web.laterpay.net/dialog/donate/pay_later?'))
-        self.assertQueryString(url, 'campaign_id', value='2')
-        self.assertQueryString(url, 'pricing', value='EUR20')
-        self.assertQueryString(url, 'url', value='http://example.net/t')
-        self.assertQueryString(url, 'title', value='Save the World!')
+        self.assertQueryString(url, 'campaign_id', '2')
+        self.assertQueryString(url, 'pricing', 'EUR20')
+        self.assertQueryString(url, 'url', 'http://example.net/t')
+        self.assertQueryString(url, 'title', 'Save the World!')
 
     def test_get_buy_url(self):
         item = ItemDefinition(1, 'EUR20', 'http://example.net/t', 'title')
@@ -300,20 +300,17 @@ class TestLaterPayClient(unittest.TestCase):
             something='else',
             BLUB=[u'u2', b'b1', b'b2', u'u1'],
         )
-        self.assertFalse(
-            self.assertQueryString(url, 'expiry'),
-            'expiry url param is "None". Should be omitted.'
-        )
-        self.assertQueryString(url, 'product_key', value='some-product-key')
+        self.assertNotQueryString(url, 'expiry', msg='expiry url param is "None". Should be omitted.')
+        self.assertQueryString(url, 'product', 'some-product-key')
         self.assertTrue(url.startswith('https://web.laterpay.net/buy?'))
-        self.assertQueryString(url, 'use_jsevents', value='1')
-        self.assertQueryString(url, 'transaction_reference', value='TX-REF')
-        self.assertQueryString(url, 'consumable', value='1')
-        self.assertQueryString(url, 'return_url', value='http://return.url/foo?bar=buz&lorem=ipsum')
-        self.assertQueryString(url, 'failure_url', value='http://failure.url/FOO?BAR=BUZ&LOREM=IPSUM')
-        self.assertQueryString(url, 'muid', value='someone')
-        self.assertQueryString(url, 'something', value='else')
-        self.assertQueryString(url, 'BLUB', value=[b'b1', 'b2', u'u1', 'u2'])
+        self.assertQueryString(url, 'jsevents', '1')
+        self.assertQueryString(url, 'tref', 'TX-REF')
+        self.assertQueryString(url, 'consumable', '1')
+        self.assertQueryString(url, 'return_url', 'http://return.url/foo?bar=buz&lorem=ipsum')
+        self.assertQueryString(url, 'failure_url', 'http://failure.url/FOO?BAR=BUZ&LOREM=IPSUM')
+        self.assertQueryString(url, 'muid', 'someone')
+        self.assertQueryString(url, 'something', 'else')
+        self.assertQueryString(url, 'BLUB', ['u2', 'b1', 'b2', 'u1'])
 
     def test_get_buy_url_contribution(self):
         item = ItemDefinition(
@@ -322,10 +319,10 @@ class TestLaterPayClient(unittest.TestCase):
         )
         url = self.lp.get_buy_url(item)
         self.assertTrue(url.startswith('https://web.laterpay.net/dialog/contribute/pay_now?'))
-        self.assertQueryString(url, 'campaign_id', value='2')
-        self.assertQueryString(url, 'pricing', value='EUR20')
-        self.assertQueryString(url, 'url', value='http://example.net/t')
-        self.assertQueryString(url, 'title', value='Save the World!')
+        self.assertQueryString(url, 'campaign_id', 'save-the-world')
+        self.assertQueryString(url, 'pricing', 'EUR20')
+        self.assertQueryString(url, 'url', 'http://example.net/t')
+        self.assertQueryString(url, 'title', 'Save the World!')
 
     def test_get_buy_url_donation(self):
         item = ItemDefinition(
@@ -334,10 +331,10 @@ class TestLaterPayClient(unittest.TestCase):
         )
         url = self.lp.get_buy_url(item)
         self.assertTrue(url.startswith('https://web.laterpay.net/dialog/donate/pay_now?'))
-        self.assertQueryString(url, 'campaign_id', value='2')
-        self.assertQueryString(url, 'pricing', value='EUR20')
-        self.assertQueryString(url, 'url', value='http://example.net/t')
-        self.assertQueryString(url, 'title', value='Save the World!')
+        self.assertQueryString(url, 'campaign_id', 'save-the-world')
+        self.assertQueryString(url, 'pricing', 'EUR20')
+        self.assertQueryString(url, 'url', 'http://example.net/t')
+        self.assertQueryString(url, 'title', 'Save the World!')
 
     def test_get_subscribe_url(self):
         item = ItemDefinition(1, 'EUR20', 'http://example.net/t', 'title', sub_id='a0_-9Z', period=12345)
@@ -352,19 +349,16 @@ class TestLaterPayClient(unittest.TestCase):
             period=12345,
             BLUB=[u'u2', b'b1', b'b2', u'u1'],
         )
-        self.assertFalse(
-            self.assertQueryString(url, 'expiry'),
-            'expiry url param is "None". Should be omitted.'
-        )
-        self.assertQueryString(url, 'sub_id', value='a0_-9Z')
-        self.assertQueryString(url, 'product_key', value='some-product-key')
+        self.assertNotQueryString(url, 'expiry', msg='expiry url param is "None". Should be omitted.')
+        self.assertQueryString(url, 'sub_id', 'a0_-9Z')
+        self.assertQueryString(url, 'product', 'some-product-key')
         self.assertTrue(url.startswith('https://web.laterpay.net/subscribe?'))
-        self.assertQueryString(url, 'return_url', value='http://return.url/foo?bar=buz&lorem=ipsum')
-        self.assertQueryString(url, 'failure_url', value='http://failure.url/FOO?BAR=BUZ&LOREM=IPSUM')
-        self.assertQueryString(url, 'muid', value='someone')
-        self.assertQueryString(url, 'something', value='else')
-        self.assertQueryString(url, 'period', value='12345')
-        self.assertQueryString(url, 'BLUB', value=[b'b1', 'b2', u'u1', 'u2'])
+        self.assertQueryString(url, 'return_url', 'http://return.url/foo?bar=buz&lorem=ipsum')
+        self.assertQueryString(url, 'failure_url', 'http://failure.url/FOO?BAR=BUZ&LOREM=IPSUM')
+        self.assertQueryString(url, 'muid', 'someone')
+        self.assertQueryString(url, 'something', 'else')
+        self.assertQueryString(url, 'period', '12345')
+        self.assertQueryString(url, 'BLUB', ['u2', 'b1', 'b2', 'u1'])
 
     def test_get_login_dialog_url_with_use_dialog_api_false(self):
         url = self.lp.get_login_dialog_url('http://example.org')

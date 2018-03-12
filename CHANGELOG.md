@@ -1,5 +1,15 @@
 # Changelog
 
+## 5.7.0
+
+* The `ITEM_TYPE_POLITICAL_CONTRIBUTION` constant was added to the `constants`
+  module. It's to be used in conjuction with the `item_type` attribute on an
+  `ItemDefinition`.
+
+* The `ItemDefinition` gained a new key-word argument `election_id` that must
+  be set when `item_type` is `ITEM_TYPE_POLITICAL_CONTRIBUTION` when creating
+  purchase URLs for political contributions.
+
 ## 5.6.0
 
 * The `ItemDefinition` gained a new key-word argument `item_type` that must
