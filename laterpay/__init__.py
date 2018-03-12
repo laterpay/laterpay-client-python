@@ -66,7 +66,8 @@ class ItemDefinition(object):
     For Single item purchases: http://docs.laterpay.net/platform/dialogs/buy/
     """
 
-    def __init__(self, item_id, pricing, url, title, expiry=None, sub_id=None, period=None, item_type=None):
+    def __init__(self, item_id, pricing, url, title, expiry=None, sub_id=None,
+                 period=None, item_type=None, election_id=None):
         for price in pricing.split(','):
             if not _PRICING_RE.match(price):
                 raise InvalidItemDefinition('Pricing is not valid: %s' % pricing)
@@ -82,9 +83,16 @@ class ItemDefinition(object):
             'expiry': expiry,
         }
 
-        if item_type in {constants.ITEM_TYPE_CONTRIBUTION, constants.ITEM_TYPE_DONATION}:
+        if item_type in {
+            constants.ITEM_TYPE_CONTRIBUTION,
+            constants.ITEM_TYPE_DONATION,
+            constants.ITEM_TYPE_POLITICAL_CONTRIBUTION,
+        }:
             self.data['campaign_id'] = item_id
             self.item_type = item_type
+
+            if item_type == constants.ITEM_TYPE_POLITICAL_CONTRIBUTION:
+                self.data['election_id'] = election_id
         else:
             self.data['article_id'] = item_id
             self.item_type = None
@@ -320,6 +328,8 @@ class LaterPayClient(object):
             page_type = 'contribute/pay_now'
         elif item_type == constants.ITEM_TYPE_DONATION:
             page_type = 'donate/pay_now'
+        elif item_type == constants.ITEM_TYPE_POLITICAL_CONTRIBUTION:
+            page_type = 'political_contribution/pay_now'
         else:
             page_type = 'buy'
 
@@ -339,6 +349,8 @@ class LaterPayClient(object):
             page_type = 'contribute/pay_later'
         elif item_type == constants.ITEM_TYPE_DONATION:
             page_type = 'donate/pay_later'
+        elif item_type == constants.ITEM_TYPE_POLITICAL_CONTRIBUTION:
+            page_type = 'political_contribution/pay_later'
         else:
             page_type = 'add'
 
