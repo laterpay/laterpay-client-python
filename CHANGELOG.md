@@ -1,5 +1,7 @@
 # Changelog
 
+## 5.8.0 (under development)
+
 ## 5.7.0
 
 * The `ITEM_TYPE_POLITICAL_CONTRIBUTION` constant was added to the `constants`
