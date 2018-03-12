@@ -72,6 +72,19 @@ class TestItemDefinition(unittest.TestCase):
             'url': 'http://example.com/t',
         })
 
+    def test_election_id_for_non_poltical_contribution(self):
+        it = ItemDefinition(
+            1, 'EUR20', 'http://example.com/t', 'title', item_type=constants.ITEM_TYPE_CONTRIBUTION,
+            election_id='123-election',
+        )
+        self.assertEqual(it.data, {
+            'campaign_id': 1,
+            'expiry': None,
+            'pricing': 'EUR20',
+            'title': 'title',
+            'url': 'http://example.com/t',
+        })
+
     def test_item_type_contribution(self):
         it = ItemDefinition(1, 'EUR20', 'http://example.com/t', 'title', item_type=constants.ITEM_TYPE_CONTRIBUTION)
         self.assertEqual(it.data, {
@@ -93,6 +106,21 @@ class TestItemDefinition(unittest.TestCase):
             'url': 'http://example.com/t',
         })
         self.assertEqual(it.item_type, 'donation')
+
+    def test_item_type_political_contribution(self):
+        it = ItemDefinition(
+            1, 'EUR20', 'http://example.com/t', 'title', item_type=constants.ITEM_TYPE_POLITICAL_CONTRIBUTION,
+            election_id='123-election',
+        )
+        self.assertEqual(it.data, {
+            'campaign_id': 1,
+            'expiry': None,
+            'pricing': 'EUR20',
+            'title': 'title',
+            'url': 'http://example.com/t',
+            'election_id': '123-election',
+        })
+        self.assertEqual(it.item_type, 'political')
 
     def test_item_type_unknown(self):
         it = ItemDefinition(1, 'EUR20', 'http://example.com/t', 'title', item_type='whatever')
@@ -285,6 +313,19 @@ class TestLaterPayClient(unittest.TestCase):
         self.assertQueryString(url, 'url', 'http://example.net/t')
         self.assertQueryString(url, 'title', 'Save the World!')
 
+    def test_get_add_url_political_contribution(self):
+        item = ItemDefinition(
+            '2', 'EUR20', 'http://example.net/t', 'Vote for Sue!',
+            item_type=constants.ITEM_TYPE_POLITICAL_CONTRIBUTION, election_id='123-election',
+        )
+        url = self.lp.get_add_url(item, item_type='political')
+        self.assertTrue(url.startswith('https://web.laterpay.net/dialog/political_contribution/pay_later?'))
+        self.assertQueryString(url, 'campaign_id', '2')
+        self.assertQueryString(url, 'pricing', 'EUR20')
+        self.assertQueryString(url, 'url', 'http://example.net/t')
+        self.assertQueryString(url, 'title', 'Vote for Sue!')
+        self.assertQueryString(url, 'election_id', '123-election')
+
     def test_get_buy_url(self):
         item = ItemDefinition(1, 'EUR20', 'http://example.net/t', 'title')
         url = self.lp.get_buy_url(
@@ -335,6 +376,19 @@ class TestLaterPayClient(unittest.TestCase):
         self.assertQueryString(url, 'pricing', 'EUR20')
         self.assertQueryString(url, 'url', 'http://example.net/t')
         self.assertQueryString(url, 'title', 'Save the World!')
+
+    def test_get_buy_url_political_contribution(self):
+        item = ItemDefinition(
+            'vote-for-sue', 'EUR20', 'http://example.net/t', 'Vote for Sue!',
+            item_type=constants.ITEM_TYPE_POLITICAL_CONTRIBUTION, election_id='123-election',
+        )
+        url = self.lp.get_buy_url(item)
+        self.assertTrue(url.startswith('https://web.laterpay.net/dialog/political_contribution/pay_now?'))
+        self.assertQueryString(url, 'campaign_id', 'vote-for-sue')
+        self.assertQueryString(url, 'pricing', 'EUR20')
+        self.assertQueryString(url, 'url', 'http://example.net/t')
+        self.assertQueryString(url, 'title', 'Vote for Sue!')
+        self.assertQueryString(url, 'election_id', '123-election')
 
     def test_get_subscribe_url(self):
         item = ItemDefinition(1, 'EUR20', 'http://example.net/t', 'title', sub_id='a0_-9Z', period=12345)
