@@ -11,6 +11,7 @@ def signed_query(secret,
                  url,
                  method="GET",
                  add_timestamp=True,
+                 is_permalink=False,
                  signature_param_name="hmac"):
     """
     Create a signed and url-encoded query string from passed in ``params``.
@@ -31,6 +32,9 @@ def signed_query(secret,
                    to ``signing.sign()``. "GET" is a default.
     :param add_timestamp: ``bool`` (default True) - Should a timestamp param be
                           added to the query.
+    :param is_permalink: ``bool`` (default False) - Generate a permanent
+                (non-expiring) link. If ``True``, ``add_timestamp`` will be
+                ignored and a timestamp will not be added to the query.
     :param signature_param_name: Name of the appended signature param
                                  (default "hmac")
 
@@ -38,7 +42,11 @@ def signed_query(secret,
     """
     params = signing.normalise_param_structure(params)
 
-    if "ts" not in params and add_timestamp:
+    if is_permalink:
+        params["permalink"] = "1"
+        if "ts" in params:
+            params.pop("ts")
+    elif "ts" not in params and add_timestamp:
         params["ts"] = str(int(time.time()))
 
     param_list = list(params.items())

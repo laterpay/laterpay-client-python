@@ -2,6 +2,10 @@
 
 ## 5.8.0 (under development)
 
+* The `is_permalink` option was added as a parameter when generating
+  purchase URLs, which is available for contributions and donations. If
+  present and `True`, this generates a non-expiring link.
+
 ## 5.7.0
 
 * The `ITEM_TYPE_POLITICAL_CONTRIBUTION` constant was added to the `constants`

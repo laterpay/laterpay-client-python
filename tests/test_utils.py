@@ -70,6 +70,31 @@ class UtilsTest(unittest.TestCase):
         self.assertEqual(qsd['ts'], ['123'])
         self.assertEqual(qsd['foo'], ['bar'])
 
+    def test_signed_query_is_permalink(self):
+        params = [('foo', 'bar')]
+        url = 'https://endpoint.com/api'
+        secret = 'secret'
+
+        qs = utils.signed_query(secret, params, url, is_permalink=True)
+        qsd = parse_qs(qs)
+
+        self.assertFalse('ts' in qsd)
+        self.assertEqual(qsd['permalink'], ['1'])
+        self.assertEqual(qsd['foo'], ['bar'])
+
+    def test_signed_query_is_permalink_removes_existing_ts_param(self):
+        params = [('foo', 'bar'), ('ts', '123')]
+
+        url = 'https://endpoint.com/api'
+        secret = 'secret'
+
+        qs = utils.signed_query(secret, params, url, is_permalink=True)
+        qsd = parse_qs(qs)
+
+        self.assertFalse('ts' in qsd)
+        self.assertEqual(qsd['permalink'], ['1'])
+        self.assertEqual(qsd['foo'], ['bar'])
+
     def test_signed_query_keep_duplicate_signature(self):
         params = {'foo': 'bar', 'ts': 123, 'hmac': 'blub'}
         url = 'https://endpoint.com/api'

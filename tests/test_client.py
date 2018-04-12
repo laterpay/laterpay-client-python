@@ -264,6 +264,25 @@ class TestLaterPayClient(unittest.TestCase):
         url = self.lp._get_web_url(self.item, 'PAGE_TYPE', muid=None)
         self.assertNotQueryString(url, 'muid')
 
+    @mock.patch('time.time')
+    def test_web_url_is_permalink(self, time_mock):
+        time_mock.return_value = '123'
+
+        # Default
+        url = self.lp._get_web_url(self.item, 'PAGE_TYPE')
+        self.assertQueryString(url, 'ts', '123')
+        self.assertNotQueryString(url, 'permalink')
+
+        # Given
+        url = self.lp._get_web_url(self.item, 'PAGE_TYPE', is_permalink=True)
+        self.assertNotQueryString(url, 'ts')
+        self.assertQueryString(url, 'permalink', '1')
+
+        # Omitted
+        url = self.lp._get_web_url(self.item, 'PAGE_TYPE', is_permalink=None)
+        self.assertQueryString(url, 'ts', '123')
+        self.assertNotQueryString(url, 'permalink')
+
     def test_get_add_url(self):
         item = ItemDefinition(1, 'EUR20', 'http://example.net/t', 'title')
         url = self.lp.get_add_url(
