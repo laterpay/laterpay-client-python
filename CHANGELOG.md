@@ -1,5 +1,13 @@
 # Changelog
 
+## 5.8.0
+
+* The `is_permalink` option was added as a parameter when generating
+  purchase URLs, which is available for contributions and donations. If
+  present and `True`, this generates a non-expiring link.
+
+* Adjusted "a year" to 365 days instead of 12 * 31 days.
+
 ## 5.7.0
 
 * The `ITEM_TYPE_POLITICAL_CONTRIBUTION` constant was added to the `constants`

@@ -269,6 +269,7 @@ class LaterPayClient(object):
                      return_url=None,
                      failure_url=None,
                      muid=None,
+                     is_permalink=False,
                      **kwargs):
 
         # filter out params with None value.
@@ -312,7 +313,13 @@ class LaterPayClient(object):
 
         base_url = "%s/%s" % (prefix, page_type)
 
-        return utils.signed_url(self.shared_secret, data, base_url, method='GET')
+        return utils.signed_url(
+            self.shared_secret,
+            data,
+            base_url,
+            method='GET',
+            is_permalink=is_permalink,
+        )
 
     def get_buy_url(self, item_definition, *args, **kwargs):
         """
