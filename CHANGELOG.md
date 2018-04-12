@@ -1,6 +1,6 @@
 # Changelog
 
-## 5.8.0 (under development)
+## 5.8.0
 
 * The `is_permalink` option was added as a parameter when generating
   purchase URLs, which is available for contributions and donations. If
