@@ -1,5 +1,7 @@
 # Changelog
 
+## 5.10.0 (under development)
+
 ## 5.9.0
 
 * The `ItemDefinition` does not validate the bounds for `period` any longer.
