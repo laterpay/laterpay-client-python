@@ -1,6 +1,6 @@
 # Changelog
 
-## 5.9.0 (under development)
+## 5.9.0
 
 * The `ItemDefinition` does not validate the bounds for `period` any longer.
   This has to be done by the integrating party. This is along the lines of what
