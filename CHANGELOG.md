@@ -2,6 +2,10 @@
 
 ## 5.9.0 (under development)
 
+* The `ItemDefinition` does not validate the bounds for `period` any longer.
+  This has to be done by the integrating party. This is along the lines of what
+  is alrady happening with `expiry`.
+
 ## 5.8.0
 
 * The `is_permalink` option was added as a parameter when generating

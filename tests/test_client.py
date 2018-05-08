@@ -39,10 +39,6 @@ class TestItemDefinition(unittest.TestCase):
 
     def test_invalid_period(self):
         with self.assertRaisesRegexp(InvalidItemDefinition, r'Period not set or invalid value'):
-            ItemDefinition(1, 'EUR20', 'http://example.com/t', 'title', sub_id='a', period=60 * 60 - 1)
-        with self.assertRaisesRegexp(InvalidItemDefinition, r'Period not set or invalid value'):
-            ItemDefinition(1, 'EUR20', 'http://example.com/t', 'title', sub_id='a', period=60 * 60 * 24 * 365 + 1)
-        with self.assertRaisesRegexp(InvalidItemDefinition, r'Period not set or invalid value'):
             ItemDefinition(1, 'EUR20', 'http://example.com/t', 'title', sub_id='a', period='12345')
 
     def test_item_definition(self):
@@ -57,9 +53,10 @@ class TestItemDefinition(unittest.TestCase):
         self.assertIsNone(it.item_type)
 
     def test_sub_id(self):
-        # Test sub_id_bounds
-        ItemDefinition(1, 'EUR20', 'http://example.com/t', 'title', sub_id='a', period=60 * 60)
-        ItemDefinition(1, 'EUR20', 'http://example.com/t', 'title', sub_id='a' * 128, period=60 * 60 * 24 * 365)
+        # We don't actually validate the bounds for the period in the client
+        # library.
+        ItemDefinition(1, 'EUR20', 'http://example.com/t', 'title', sub_id='a', period=3600 - 1)
+        ItemDefinition(1, 'EUR20', 'http://example.com/t', 'title', sub_id='a' * 128, period=3600 * 24 * 31 * 12 + 1)
 
         it = ItemDefinition(1, 'EUR20', 'http://example.com/t', 'title', sub_id='abc', period=12345)
         self.assertEqual(it.data, {

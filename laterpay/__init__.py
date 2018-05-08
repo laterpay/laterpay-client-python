@@ -106,17 +106,12 @@ class ItemDefinition(object):
                     "uppercase ASCII characters, digits, underscore and hyphen, the length of "
                     "which is between 1 and 128 characters." % sub_id
                 )
-            if (
-                isinstance(period, int) and
-                constants.EXPIRY_SECONDS_FOR_HOUR <= period <= constants.EXPIRY_SECONDS_FOR_YEAR
-            ):
+            if isinstance(period, int):
                 self.data['period'] = period
             else:
                 raise InvalidItemDefinition(
-                    "Period not set or invalid value '%s' for period. The subscription period "
-                    "must be an int in the range [%d, %d] (including)." % (
-                        period, constants.EXPIRY_SECONDS_FOR_HOUR, constants.EXPIRY_SECONDS_FOR_YEAR,
-                    )
+                    "Period not set or invalid value '%s'. The subscription period "
+                    "must be an int in the range [3600, 31536000] (including)." % period,
                 )
 
 
