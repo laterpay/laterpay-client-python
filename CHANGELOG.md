@@ -182,7 +182,7 @@
 
 ## 4.1.0
 
-* Dialog API Wrapper is [deprecated](http://docs.laterpay.net/platform/dialogs/third_party_cookies/).
+* Dialog API Wrapper is [deprecated](https://docs.laterpay.net/platform/dialogs/third_party_cookies/).
 * `get_buy_url()`, `get_add_url()`, `get_login_dialog_url()`, `get_signup_dialog_url()`, and `get_logout_dialog_url()` have a new `use_dialog_api` parameter that sets if the URL returned uses the Dialog API Wrapper or not. Defaults to True during the Dialog API deprecation period.
 * `ItemDefinition` no longer requires a `cp` argument.
 
@@ -204,7 +204,7 @@
 
 * Deprecating the `vat` parameter in `ItemDefinition` because of new [EU law for calculating VAT](http://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=CELEX:32006L0112&from=DE)
 * Deprecated `LaterPayClient.get_metered_access()` and `LaterPayClient.add_metered_access()` methods.
-* Added `return_url` / `failure_url` parameters for dialogs: http://docs.laterpay.net/platform/dialogs/
+* Added `return_url` / `failure_url` parameters for dialogs: https://docs.laterpay.net/platform/dialogs/
 
 ## 3.1.0
 
@@ -214,7 +214,7 @@
 * Fixed [an issue where omitted optional `ItemDefinition` data would be erroneously included in URLs as the string `"None"`](https://github.com/laterpay/laterpay-client-python/pull/19)
 * Added deprecation warnings to several methods that never should have been considered part of the public API
 * Deprecated the Django integration in favour of an explicit [`django-laterpay`](https://github.com/laterpay/django-laterpay) library.
-* Added support for [expiring items](hhttp://docs.laterpay.net/platform/dialogs/)
+* Added support for [expiring items](https://docs.laterpay.net/platform/dialogs/)
 
 ## 3.0.0 (Initial public release)
 

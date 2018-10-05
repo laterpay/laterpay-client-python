@@ -143,7 +143,7 @@ def create_base_message(params, url, method='POST'):
     stable part of the API. This will be deprecated and replaced with a internal
     method accordingly, in a future release.
 
-    http://docs.laterpay.net/platform/intro/signing_urls/
+    https://docs.laterpay.net/platform/intro/signing_urls/
     """
     # Process method
     method = compat.stringify(method).upper()

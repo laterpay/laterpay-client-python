@@ -25,7 +25,7 @@ Installation
 Usage
 -----
 
-See http://docs.laterpay.net/
+See https://docs.laterpay.net/
 
 Development
 -----------

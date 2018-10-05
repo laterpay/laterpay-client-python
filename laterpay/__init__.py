@@ -4,7 +4,7 @@
 """
 The LaterPay API Python client.
 
-http://docs.laterpay.net/
+https://docs.laterpay.net/
 """
 
 import collections
@@ -62,8 +62,8 @@ class ItemDefinition(object):
 
     Documentation for usage:
 
-    For PPU purchases: http://docs.laterpay.net/platform/dialogs/add/
-    For Single item purchases: http://docs.laterpay.net/platform/dialogs/buy/
+    For PPU purchases: https://docs.laterpay.net/platform/dialogs/add/
+    For Single item purchases: https://docs.laterpay.net/platform/dialogs/buy/
     """
 
     def __init__(self, item_id, pricing, url, title, expiry=None, sub_id=None,
@@ -130,7 +130,7 @@ class LaterPayClient(object):
 
         Defaults connecting to the production API.
 
-        http://docs.laterpay.net/
+        https://docs.laterpay.net/
 
         :param timeout_seconds: number of seconds after which backend api
             requests (e.g. /access) will time out (10 by default).
@@ -151,7 +151,7 @@ class LaterPayClient(object):
         """
         Get a URL from which a user will be issued a LaterPay token.
 
-        http://docs.laterpay.net/platform/identification/gettoken/
+        https://docs.laterpay.net/platform/identification/gettoken/
         """
         url = self._gettoken_url
         data = {
@@ -173,7 +173,7 @@ class LaterPayClient(object):
         """
         Get the URL for an iframe showing LaterPay account management links.
 
-        http://docs.laterpay.net/platform/inpage/login/
+        https://docs.laterpay.net/platform/inpage/login/
         """
         data = {'next': next_url}
         data['cp'] = self.cp_key
@@ -204,7 +204,7 @@ class LaterPayClient(object):
         """
         Get the URL for an iframe showing the user's invoice balance.
 
-        http://docs.laterpay.net/platform/inpage/balance/#get-controls-balance
+        https://docs.laterpay.net/platform/inpage/balance/#get-controls-balance
         """
         data = {'cp': self.cp_key}
         if forcelang is not None:
@@ -323,7 +323,7 @@ class LaterPayClient(object):
         The created URL is a "pay_now" link for a single item, timepass,
         contribution, or donations.
 
-        http://docs.laterpay.net/platform/dialogs/buy/
+        https://docs.laterpay.net/platform/dialogs/buy/
         """
         item_type = item_definition.item_type
         if item_type == constants.ITEM_TYPE_CONTRIBUTION:
@@ -344,7 +344,7 @@ class LaterPayClient(object):
         The created URL is a "pay_later" link for a single item, timepass,
         contribution, or donations.
 
-        http://docs.laterpay.net/platform/dialogs/add/
+        https://docs.laterpay.net/platform/dialogs/add/
         """
         item_type = item_definition.item_type
         if item_type == constants.ITEM_TYPE_CONTRIBUTION:
@@ -362,7 +362,7 @@ class LaterPayClient(object):
         """
         Get the URL at which a user can subscribe to an item.
 
-        http://docs.laterpay.net/platform/dialogs/subscribe/
+        https://docs.laterpay.net/platform/dialogs/subscribe/
         """
         return self._get_web_url(item_definition, 'subscribe', *args, **kwargs)
 
@@ -370,7 +370,7 @@ class LaterPayClient(object):
         """
         Do we have an identifier token.
 
-        http://docs.laterpay.net/platform/identification/gettoken/
+        https://docs.laterpay.net/platform/identification/gettoken/
         """
         return self.lptoken is not None
 
