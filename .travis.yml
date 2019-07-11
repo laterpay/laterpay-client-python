@@ -2,7 +2,7 @@ language: python
 install:
   - pip install tox coveralls
 script:
-  - tox -e py${TRAVIS_PYTHON_VERSION//./},flake8,pydocstyle
+  - tox -e py$(echo $TRAVIS_PYTHON_VERSION | tr -Cd 0-9),flake8,pydocstyle
   - coveralls
 matrix:
   fast_finish: true
@@ -20,5 +20,8 @@ matrix:
       dist: trusty
       sudo: false
     - python: 3.7
+      dist: xenial
+      sudo: true
+    - python: "3.8-dev"
       dist: xenial
       sudo: true
