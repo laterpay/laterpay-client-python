@@ -7,7 +7,17 @@ The LaterPay API Python client.
 https://docs.laterpay.net/
 """
 
-import collections
+try:
+    # Since 3.3 Abstract Base Classes (ABCs) are in the
+    # collections.abc namespace. In Python 3.7 you get a
+    # DeprecationWarning if you don't use this, and in Python 3.8 it
+    # will simply not work. Let's try for modern Python first; this
+    # should work on Python 3.3 and up, falling back to older ones if
+    # that fails. cf https://stackoverflow.com/a/53978543/5950
+    from collections.abc import Iterable
+except ImportError:
+    from collections import Iterable
+
 import logging
 import pkg_resources
 import random
@@ -405,7 +415,7 @@ class LaterPayClient(object):
         """
         if isinstance(article_ids, (six.text_type, six.binary_type)):
             article_ids = [article_ids]
-        elif isinstance(article_ids, collections.Iterable):
+        elif isinstance(article_ids, Iterable):
             article_ids = list(sorted(article_ids))
         else:
             warnings.warn(
