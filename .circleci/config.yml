@@ -1,0 +1,63 @@
+version: 2.1
+
+
+executors:
+  python27:
+    resource_class: small	
+    working_directory: ~/repo	
+    docker:
+      - image: circleci/python:2.7
+  python35:
+    resource_class: small	
+    working_directory: ~/repo	
+    docker:
+      - image: circleci/python:3.5
+  python36:
+    resource_class: small	
+    working_directory: ~/repo	
+    docker:
+      - image: circleci/python:3.6
+  python37:
+    resource_class: small
+    working_directory: ~/repo
+    docker:
+      - image: circleci/python:3.7
+jobs:
+  run-tests:
+    executor: << parameters.executor >>
+    parameters:
+      env:
+        type: string
+        description: The Python environment to run tests in
+      executor:
+          type: executor
+          default: python37
+    steps:
+      - run: pip install nox
+      - checkout
+      - run:
+          command: nox -p << parameters.env >>
+          name: Test
+
+workflows:
+  main:
+    jobs:
+      - run-tests:
+          name: Python2.7
+          env: "2.7"
+          executor: python37
+
+      - run-tests:
+          name: Python3.5
+          env: "3.5"
+          executor: python35
+
+      - run-tests:
+          name: Python3.6
+          env: "3.6"
+          executor: python36
+
+      - run-tests:
+          name: Python3.7
+          env: "3.7"
+          executor: python37

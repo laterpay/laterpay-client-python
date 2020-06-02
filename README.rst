@@ -4,11 +4,12 @@ laterpay-client-python
 .. image:: https://img.shields.io/pypi/v/laterpay-client.png
     :target: https://pypi.python.org/pypi/laterpay-client
 
-.. image:: https://img.shields.io/travis/laterpay/laterpay-client-python/develop.png
-    :target: https://travis-ci.org/laterpay/laterpay-client-python
 
-.. image:: https://img.shields.io/coveralls/laterpay/laterpay-client-python/develop.png
-    :target: https://coveralls.io/r/laterpay/laterpay-client-python
+.. image:: https://circleci.com/gh/laterpay/laterpay-client-python.svg?style=svg
+    :target: https://circleci.com/gh/laterpay/laterpay-client-python
+
+.. image:: https://codecov.io/gh/laterpay/laterpay-client-python/branch/develop/graph/badge.svg
+  :target: https://codecov.io/gh/laterpay/laterpay-client-python
 
 
 `LaterPay <http://www.laterpay.net/>`__ Python client.
@@ -32,7 +33,7 @@ Development
 
 See https://github.com/laterpay/laterpay-client-python
 
-`Tested by Travis <https://travis-ci.org/laterpay/laterpay-client-python>`__
+`Tested by CircleCI <https://app.circleci.com/pipelines/github/laterpay/laterpay-client-python>`__
 
 Release Checklist
 -----------------
